@@ -1,103 +1,203 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Task, Project } from '../types';
 import Sidebar from '../components/Sidebar';
 import AddTaskModal from '../components/AddTaskModal';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TaskList from '../components/dashboard/TaskList';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [projects, setProjects] = useState<Project[]>([
-    { id: 'school', name: 'School', count: 0 },
-    { id: 'home', name: 'Home', count: 0 },
-    { id: 'random', name: 'Random', count: 0 },
-    { id: 'friends', name: 'Friends', count: 0 },
-  ]);
-  const [activeTab, setActiveTab] = useState('today');
-  const [newTask, setNewTask] = useState({
+  // Get tasks and projects from localStorage or use default values
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const savedTasks = localStorage.getItem('tasks');
+    return savedTasks ? JSON.parse(savedTasks).map((task: any) => ({
+      ...task,
+      dueDate: task.dueDate ? new Date(task.dueDate) : null
+    })) : [];
+  });
+  
+  const [projects, setProjects] = useState<Project[]>(() => {
+    const savedProjects = localStorage.getItem('projects');
+    return savedProjects ? JSON.parse(savedProjects) : [
+      { id: 'school', name: 'School', count: 0 },
+      { id: 'home', name: 'Home', count: 0 },
+      { id: 'random', name: 'Random', count: 0 },
+      { id: 'friends', name: 'Friends', count: 0 },
+    ];
+  });
+  
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const savedTab = localStorage.getItem('activeTab');
+    return savedTab || 'today';
+  });
+  
+  const [newTask, setNewTask] = useState<any>({
     title: '',
-    location: '',
-    category: '',
-    tag: '',
+    description: '',
     project: '',
     dueDate: null as Date | null,
-    dueTime: ''
+    dueTime: '',
+    important: false
   });
+  
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const { toast } = useToast();
 
+  // Calculate task statistics
   const completedTasksCount = tasks.filter(task => task.completed).length;
   const totalTasksCount = tasks.length;
   const uncompletedTasksCount = totalTasksCount - completedTasksCount;
-  const upcomingTasksCount = tasks.filter(task => task.dueDate && new Date(task.dueDate).getTime() > Date.now() && !task.completed).length;
+  const upcomingTasksCount = tasks.filter(task => 
+    task.dueDate && new Date(task.dueDate).getTime() > Date.now() && !task.completed
+  ).length;
+  const importantTasksCount = tasks.filter(task => task.important && !task.completed).length;
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    localStorage.setItem('projects', JSON.stringify(projects));
+    localStorage.setItem('activeTab', activeTab);
+  }, [tasks, projects, activeTab]);
+
+  // Update project counts whenever tasks change
+  useEffect(() => {
+    updateProjectCounts(tasks);
+  }, [tasks]);
 
   const updateProjectCounts = (updatedTasks: Task[]) => {
     const projectCounts: { [key: string]: number } = {};
     updatedTasks.forEach(task => {
-      if (task.project) {
+      if (task.project && !task.completed) {
         projectCounts[task.project] = (projectCounts[task.project] || 0) + 1;
       }
     });
-    setProjects(projects.map(project => ({
+    
+    setProjects(prev => prev.map(project => ({
       ...project,
       count: projectCounts[project.id] || 0
     })));
   };
 
-  const getFilteredTasks = () => {
-    let filtered = tasks.filter(task => 
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (task.location && task.location.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (task.category && task.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (task.tag && task.tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-
-    switch (activeTab) {
-      case 'inbox':
-        return filtered;
-      case 'today':
-        return filtered.filter(task => task.dueDate && new Date(task.dueDate).toDateString() === new Date().toDateString());
-      case 'upcoming':
-        return filtered.filter(task => task.dueDate && new Date(task.dueDate).getTime() > Date.now());
-      case 'completed':
-        return filtered.filter(task => task.completed);
-      case 'important':
-        return filtered.filter(task => task.tag === 'School');
-      default:
-        if (activeTab.startsWith('project-')) {
-          const projectId = activeTab.replace('project-', '');
-          return filtered.filter(task => task.project === projectId);
-        }
-        return filtered;
-    }
-  };
-
   const handleAddTask = () => {
     if (newTask.title.trim() === '') return;
-    const newTaskItem: Task = { ...newTask, id: Date.now().toString(), completed: false };
+    
+    const newTaskItem: Task = { 
+      ...newTask, 
+      id: Date.now().toString(), 
+      completed: false 
+    };
+    
     const updatedTasks = [...tasks, newTaskItem];
     setTasks(updatedTasks);
-    updateProjectCounts(updatedTasks);
-    setNewTask({ title: '', location: '', category: '', tag: '', project: '', dueDate: null, dueTime: '' });
+    
+    // Show success toast
+    toast({
+      title: "Task added",
+      description: `"${newTask.title}" has been added to your tasks.`,
+    });
+    
+    // Reset form
+    setNewTask({ 
+      title: '', 
+      description: '', 
+      project: '', 
+      dueDate: null, 
+      dueTime: '',
+      important: false 
+    });
+    
     setShowAddTaskModal(false);
   };
 
   const toggleTaskCompletion = (id: string) => {
-    const updatedTasks = tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task);
+    const taskToUpdate = tasks.find(task => task.id === id);
+    const updatedTasks = tasks.map(task => 
+      task.id === id ? { ...task, completed: !task.completed } : task
+    );
+    
     setTasks(updatedTasks);
-    updateProjectCounts(updatedTasks);
+    
+    // Show toast based on completion status
+    if (taskToUpdate && !taskToUpdate.completed) {
+      toast({
+        title: "Task completed",
+        description: `"${taskToUpdate.title}" has been marked as completed.`,
+      });
+    }
+  };
+
+  const toggleTaskImportance = (id: string) => {
+    const updatedTasks = tasks.map(task => 
+      task.id === id ? { ...task, important: !task.important } : task
+    );
+    
+    setTasks(updatedTasks);
   };
 
   const deleteTask = (id: string) => {
+    const taskToDelete = tasks.find(task => task.id === id);
     const updatedTasks = tasks.filter(task => task.id !== id);
+    
     setTasks(updatedTasks);
-    updateProjectCounts(updatedTasks);
     setShowTaskMenu(null);
+    
+    // Show deletion toast
+    if (taskToDelete) {
+      toast({
+        title: "Task deleted",
+        description: `"${taskToDelete.title}" has been removed.`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Filter tasks based on active tab and search query
+  const getFilteredTasks = () => {
+    let filtered = tasks;
+    
+    // Apply search filter if query exists
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(task => 
+        task.title.toLowerCase().includes(query) || 
+        (task.description && task.description.toLowerCase().includes(query))
+      );
+    }
+    
+    // Apply tab filter
+    return filtered.filter(task => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const taskDate = task.dueDate ? new Date(task.dueDate) : null;
+      if (taskDate) {
+        taskDate.setHours(0, 0, 0, 0);
+      }
+      
+      switch (activeTab) {
+        case 'today':
+          return taskDate && taskDate.getTime() === today.getTime() && !task.completed;
+        case 'upcoming':
+          return taskDate && taskDate.getTime() > today.getTime() && !task.completed;
+        case 'completed':
+          return task.completed;
+        case 'important':
+          return task.important && !task.completed;
+        default:
+          if (activeTab.startsWith('project-')) {
+            const projectId = activeTab.replace('project-', '');
+            return task.project === projectId && !task.completed;
+          }
+          return !task.completed;
+      }
+    });
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar 
         projects={projects}
         activeTab={activeTab}
@@ -107,15 +207,17 @@ const Dashboard: React.FC = () => {
         totalTasksCount={totalTasksCount}
         uncompletedTasksCount={uncompletedTasksCount}
         upcomingTasksCount={upcomingTasksCount}
+        importantTasksCount={importantTasksCount}
       />
 
-      <div className="flex-1 flex flex-col bg-white">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader 
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
+          activeTab={activeTab}
         />
 
-        <main className="flex-1 overflow-auto p-6 bg-gray-50">
+        <main className="flex-1 overflow-auto p-6 animate-fade-in">
           <TaskList 
             activeTab={activeTab}
             filteredTasks={getFilteredTasks()}
@@ -123,6 +225,7 @@ const Dashboard: React.FC = () => {
             showTaskMenu={showTaskMenu}
             setShowTaskMenu={setShowTaskMenu}
             toggleTaskCompletion={toggleTaskCompletion}
+            toggleTaskImportance={toggleTaskImportance}
             deleteTask={deleteTask}
           />
         </main>

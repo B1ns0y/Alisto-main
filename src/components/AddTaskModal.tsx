@@ -1,22 +1,24 @@
-import React, { useState } from 'react';
-import { X, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Hash } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Hash, Star } from 'lucide-react';
 import { Project } from '../types';
 import { cn } from '@/lib/utils';
 
 interface AddTaskModalProps {
   newTask: {
     title: string;
-    location: string;
-    category: string;
-    tag: string;
+    description: string;
     project: string;
+    dueDate: Date | null;
+    dueTime: string;
+    important?: boolean;
   };
   setNewTask: React.Dispatch<React.SetStateAction<{
     title: string;
-    location: string;
-    category: string;
-    tag: string;
+    description: string;
     project: string;
+    dueDate: Date | null;
+    dueTime: string;
+    important?: boolean;
   }>>;
   handleAddTask: () => void;
   setShowAddTaskModal: (show: boolean) => void;
@@ -31,22 +33,52 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   projects
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<{hour: number, minute: number, period: 'AM' | 'PM'}>({
-    hour: 10,
-    minute: 0,
-    period: 'AM'
+  const [selectedDate, setSelectedDate] = useState<Date | null>(newTask.dueDate);
+  const [selectedTime, setSelectedTime] = useState<{hour: number, minute: number, period: 'AM' | 'PM'}>(() => {
+    if (newTask.dueTime) {
+      const [timeStr, period] = newTask.dueTime.split(' ');
+      const [hourStr, minuteStr] = timeStr.split(':');
+      return {
+        hour: parseInt(hourStr),
+        minute: parseInt(minuteStr),
+        period: period as 'AM' | 'PM'
+      };
+    }
+    return {
+      hour: 10,
+      minute: 0,
+      period: 'AM'
+    };
   });
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  
+  const [currentMonth, setCurrentMonth] = useState(
+    newTask.dueDate ? newTask.dueDate.getMonth() : new Date().getMonth()
+  );
+  const [currentYear, setCurrentYear] = useState(
+    newTask.dueDate ? newTask.dueDate.getFullYear() : new Date().getFullYear()
+  );
+  
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   const [showYearDropdown, setShowYearDropdown] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
-
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const years = [2024, 2025, 2026, 2027, 2028];
   
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i);
   const daysOfWeek = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+  
+  useEffect(() => {
+    setSelectedDate(newTask.dueDate);
+  }, [newTask.dueDate]);
+  
+  useEffect(() => {
+    if (selectedDate) {
+      setNewTask(prev => ({
+        ...prev,
+        dueDate: selectedDate,
+        dueTime: formatTime()
+      }));
+    }
+  }, [selectedDate, selectedTime]);
   
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate();
@@ -103,6 +135,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       day === selectedDate.getDate() &&
       currentMonth === selectedDate.getMonth() &&
       currentYear === selectedDate.getFullYear() &&
+      isCurrentMonth
+    );
+  };
+
+  const isToday = (day: number, isCurrentMonth: boolean) => {
+    const today = new Date();
+    return (
+      day === today.getDate() &&
+      currentMonth === today.getMonth() &&
+      currentYear === today.getFullYear() &&
       isCurrentMonth
     );
   };
@@ -171,17 +213,44 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     const { hour, minute, period } = selectedTime;
     return `${hour}:${minute.toString().padStart(2, '0')} ${period}`;
   };
+  
+  const getDisplayName = (projectId: string) => {
+    switch (projectId) {
+      case 'school':
+        return 'School';
+      case 'home':
+        return 'Home';
+      case 'random':
+        return 'Random';
+      case 'friends':
+        return 'Friends';
+      default:
+        return projectId;
+    }
+  };
 
   const handleProjectSelect = (projectId: string) => {
     setNewTask({...newTask, project: projectId});
     setShowProjectSelector(false);
   };
 
+  const toggleImportant = () => {
+    setNewTask(prev => ({
+      ...prev,
+      important: !prev.important
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleAddTask();
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 animate-in fade-in-50 zoom-in-95">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 animate-in fade-in-50 zoom-in-95">
         <div className="mb-5 flex justify-between">
-          <h2 className="text-xl font-bold text-gray-600">Add Task</h2>
+          <h2 className="text-xl font-bold text-gray-800">Add Task</h2>
           <button 
             onClick={() => setShowAddTaskModal(false)}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -190,54 +259,67 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           </button>
         </div>
         
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             value={newTask.title}
             onChange={(e) => setNewTask({...newTask, title: e.target.value})}
             className="w-full p-2 text-xl font-medium placeholder-gray-400 border-none focus:outline-none"
-            placeholder="Enter Task Name"
+            placeholder="Task name"
+            autoFocus
           />
           
-          <input
-            type="text"
-            value={newTask.location}
-            onChange={(e) => setNewTask({...newTask, location: e.target.value})}
-            className="w-full p-2 text-sm text-gray-500 border-none focus:outline-none"
+          <textarea
+            value={newTask.description}
+            onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+            className="w-full p-2 text-sm text-gray-700 border-none focus:outline-none resize-none"
             placeholder="Description"
+            rows={2}
           />
           
           <div className="flex flex-wrap gap-2 mt-4">
             <button 
-              className="px-2 py-1 text-xs border border-gray-300 rounded-full text-gray-500 hover:bg-gray-100"
+              type="button"
+              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${selectedDate ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
               onClick={() => setShowCalendar(prev => !prev)}
             >
-              ⏱ {selectedDate ? selectedDate.toLocaleDateString() : 'Set Date & Time'}
+              <CalendarIcon size={16} />
+              {selectedDate ? selectedDate.toLocaleDateString() : 'Set date & time'}
             </button>
             
             <button 
-              className={`px-2 py-1 text-xs border ${newTask.project ? 'border-blue-300 bg-blue-50' : 'border-gray-300'} rounded-full text-gray-500 hover:bg-gray-100`}
+              type="button"
+              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${newTask.project ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
               onClick={() => setShowProjectSelector(prev => !prev)}
             >
-              📎 {newTask.project ? projects.find(p => p.id === newTask.project)?.name || 'Project' : 'Project'}
+              <Hash size={16} />
+              {newTask.project ? `#${getDisplayName(newTask.project)}` : 'Project'}
             </button>
             
+            <button 
+              type="button"
+              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${newTask.important ? 'border-yellow-300 bg-yellow-50 text-yellow-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+              onClick={toggleImportant}
+            >
+              <Star size={16} fill={newTask.important ? "currentColor" : "none"} />
+              Important
+            </button>
           </div>
           
           {showProjectSelector && (
-            <div className="mt-4 border border-gray-100 rounded-lg shadow-sm">
+            <div className="mt-4 border border-gray-200 rounded-lg shadow-sm animate-in fade-in-50 zoom-in-95">
               <div className="p-4 bg-white rounded-lg">
                 <h3 className="text-sm font-medium mb-2">My Projects</h3>
                 
-                <div className="space-y-2">
+                <div className="space-y-1 max-h-48 overflow-y-auto">
                   {projects.map(project => (
                     <div 
                       key={project.id}
-                      className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 ${newTask.project === project.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                      className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${newTask.project === project.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
                       onClick={() => handleProjectSelect(project.id)}
                     >
                       <Hash size={16} className="mr-2 text-gray-500" />
-                      <span>{project.name}</span>
+                      <span>{getDisplayName(project.id)}</span>
                     </div>
                   ))}
                 </div>
@@ -246,27 +328,30 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           )}
           
           {showCalendar && (
-            <div className="mt-4 border border-gray-100 rounded-lg shadow-sm">
+            <div className="mt-4 border border-gray-200 rounded-lg shadow-sm animate-in fade-in-50 zoom-in-95">
               <div className="p-4 bg-white rounded-t-lg">
-                <h3 className="text-center font-medium mb-4">Set Date</h3>
+                <h3 className="text-center font-medium mb-4">Date</h3>
                 
                 <div className="flex justify-between items-center mb-4">
                   <div className="relative">
                     <button
-                      className="px-3 py-1 border rounded-md flex items-center justify-between w-28"
+                      type="button"
+                      className="px-3 py-1 border rounded-md flex items-center justify-between w-32 text-sm"
                       onClick={() => setShowMonthDropdown(!showMonthDropdown)}
                     >
                       {months[currentMonth]}
+                      <ChevronDown size={14} className="ml-1" />
                     </button>
                     
                     {showMonthDropdown && (
-                      <div className="absolute z-10 mt-1 bg-white border rounded-md shadow-lg w-36 max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 mt-1 bg-white border rounded-md shadow-lg w-36 max-h-60 overflow-y-auto animate-in fade-in-50 zoom-in-95">
                         {months.map((month, idx) => (
                           <button
+                            type="button"
                             key={month}
                             className={cn(
-                              "w-full px-3 py-1 text-left hover:bg-blue-50",
-                              currentMonth === idx ? "text-blue-500 font-medium" : ""
+                              "w-full px-3 py-1 text-left hover:bg-blue-50 text-sm",
+                              currentMonth === idx ? "text-blue-600 font-medium" : ""
                             )}
                             onClick={() => {
                               setCurrentMonth(idx);
@@ -282,20 +367,23 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   
                   <div className="relative">
                     <button
-                      className="px-3 py-1 border rounded-md flex items-center justify-between w-20"
+                      type="button"
+                      className="px-3 py-1 border rounded-md flex items-center justify-between w-24 text-sm"
                       onClick={() => setShowYearDropdown(!showYearDropdown)}
                     >
                       {currentYear}
+                      <ChevronDown size={14} className="ml-1" />
                     </button>
                     
                     {showYearDropdown && (
-                      <div className="absolute z-10 mt-1 bg-white border rounded-md shadow-lg w-24 max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 mt-1 bg-white border rounded-md shadow-lg w-24 max-h-60 overflow-y-auto animate-in fade-in-50 zoom-in-95">
                         {years.map((year) => (
                           <button
+                            type="button"
                             key={year}
                             className={cn(
-                              "w-full px-3 py-1 text-left hover:bg-blue-50",
-                              currentYear === year ? "text-blue-500 font-medium" : ""
+                              "w-full px-3 py-1 text-left hover:bg-blue-50 text-sm",
+                              currentYear === year ? "text-blue-600 font-medium" : ""
                             )}
                             onClick={() => {
                               setCurrentYear(year);
@@ -310,10 +398,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-2">
                   <button
+                    type="button"
                     onClick={prevMonth}
-                    className="p-1 hover:bg-gray-100 rounded-full"
+                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                   >
                     <ChevronLeft size={16} />
                   </button>
@@ -330,8 +419,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   </div>
                   
                   <button
+                    type="button"
                     onClick={nextMonth}
-                    className="p-1 hover:bg-gray-100 rounded-full"
+                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -340,11 +430,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                 <div className="grid grid-cols-7 gap-1">
                   {generateCalendarDays().map((day, index) => (
                     <button
+                      type="button"
                       key={index}
                       className={cn(
-                        "h-8 w-8 text-sm rounded-full flex items-center justify-center",
-                        day.currentMonth ? "text-gray-700" : "text-gray-400",
-                        isSelectedDay(day.day, day.currentMonth) ? "bg-blue-500 text-white" : "hover:bg-gray-100"
+                        "h-8 w-8 text-sm rounded-full flex items-center justify-center transition-colors",
+                        day.currentMonth ? "text-gray-800" : "text-gray-400",
+                        isSelectedDay(day.day, day.currentMonth) ? "bg-blue-500 text-white" : 
+                          isToday(day.day, day.currentMonth) ? "border border-blue-500 text-blue-500" : 
+                          day.currentMonth ? "hover:bg-gray-100" : ""
                       )}
                       onClick={() => handleDayClick(day.day, day.currentMonth)}
                     >
@@ -355,15 +448,15 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
               </div>
               
               <div className="p-4 bg-white rounded-b-lg border-t">
-                <h3 className="text-center font-medium mb-4">Set Time</h3>
+                <h3 className="text-center font-medium mb-4">Time</h3>
                 
                 <div className="flex items-center justify-center space-x-2">
                   <div className="relative flex flex-col items-center">
-                    <button onClick={incrementHour} className="hover:bg-gray-100 p-1 rounded">
+                    <button type="button" onClick={incrementHour} className="hover:bg-gray-100 p-1 rounded transition-colors">
                       <ChevronUp size={16} />
                     </button>
                     <div className="w-10 text-center">{selectedTime.hour}</div>
-                    <button onClick={decrementHour} className="hover:bg-gray-100 p-1 rounded">
+                    <button type="button" onClick={decrementHour} className="hover:bg-gray-100 p-1 rounded transition-colors">
                       <ChevronDown size={16} />
                     </button>
                   </div>
@@ -371,29 +464,31 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   <div className="text-xl font-medium">:</div>
                   
                   <div className="relative flex flex-col items-center">
-                    <button onClick={incrementMinute} className="hover:bg-gray-100 p-1 rounded">
+                    <button type="button" onClick={incrementMinute} className="hover:bg-gray-100 p-1 rounded transition-colors">
                       <ChevronUp size={16} />
                     </button>
                     <div className="w-10 text-center">{selectedTime.minute.toString().padStart(2, '0')}</div>
-                    <button onClick={decrementMinute} className="hover:bg-gray-100 p-1 rounded">
+                    <button type="button" onClick={decrementMinute} className="hover:bg-gray-100 p-1 rounded transition-colors">
                       <ChevronDown size={16} />
                     </button>
                   </div>
                   
                   <div className="ml-2 flex">
                     <button
+                      type="button"
                       className={cn(
-                        "px-2 py-0.5 text-xs rounded-l-md border",
-                        selectedTime.period === 'AM' ? "bg-blue-500 text-white" : "bg-white text-gray-700"
+                        "px-2 py-0.5 text-xs rounded-l-md border transition-colors",
+                        selectedTime.period === 'AM' ? "bg-blue-500 text-white" : "bg-white text-gray-800"
                       )}
                       onClick={() => togglePeriod('AM')}
                     >
                       AM
                     </button>
                     <button
+                      type="button"
                       className={cn(
-                        "px-2 py-0.5 text-xs rounded-r-md border-t border-r border-b",
-                        selectedTime.period === 'PM' ? "bg-blue-500 text-white" : "bg-white text-gray-700"
+                        "px-2 py-0.5 text-xs rounded-r-md border-t border-r border-b transition-colors",
+                        selectedTime.period === 'PM' ? "bg-blue-500 text-white" : "bg-white text-gray-800"
                       )}
                       onClick={() => togglePeriod('PM')}
                     >
@@ -405,22 +500,23 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             </div>
           )}
           
-          <div className="flex justify-end space-x-3 pt-8 mt-8 border-t">
+          <div className="flex justify-end space-x-3 pt-6 mt-4 border-t">
             <button
+              type="button"
               className="px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors rounded"
               onClick={() => setShowAddTaskModal(false)}
             >
               Cancel
             </button>
             <button
+              type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 transition-colors"
-              onClick={handleAddTask}
               disabled={!newTask.title.trim()}
             >
               Add Task
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
