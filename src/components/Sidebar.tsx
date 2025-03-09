@@ -12,10 +12,12 @@ import {
   ChevronDown,
   LogOut,
   Notebook,
-  Home
+  Home,
+  User
 } from 'lucide-react';
 import { Project } from '../types';
 import { useToast } from '../hooks/use-toast';
+import { useUser } from '../contexts/UserContext';
 
 interface SidebarProps {
   projects: Project[];
@@ -42,6 +44,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { username, profilePicture } = useUser();
+
 
   const handleLogout = () => {
     toast({
@@ -72,11 +76,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* User Profile */}
       <div className="p-4 border-b flex items-center justify-between">
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-            <span>U</span>
+        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 overflow-hidden">
+            {profilePicture ? (
+              <img src={profilePicture} alt={username} className="w-full h-full object-cover" />
+            ) : (
+              <User size={18} />
+            )}
           </div>
           <div className="ml-3">
-            <div className="text-sm font-medium">User</div>
+          <div className="text-sm font-medium">{username}</div>
             <div className="text-xs text-gray-500">{completedTasksCount}/{totalTasksCount} Tasks Done</div>
           </div>
         </div>
