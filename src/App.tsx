@@ -15,6 +15,8 @@ import Settings from "./pages/Settings";
 import Terms from "./pages/Terms";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Privacy from "./pages/PrivacyPolicy";
+import SetPassword2 from "./pages/SetPassword2";
+import SetPassword3 from "./pages/SetPassword3";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/set-password" element={<SetPassword />} />
+          <Route path="/set-password2" element={<SetPassword2 />} />
+          <Route path="/set-password3" element={<SetPassword3 />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
