@@ -5,7 +5,7 @@ const Terms: React.FC = () => {
   return (
     <div className="min-h-screen bg-white text-gray-900">
       {/* Navbar */}
-      <nav className="w-full max-w-6xl mx-auto flex justify-between items-center py-6 px-4 md:px-8">
+      <nav className="w-full max-w-6xl mx-auto flex justify-between items-center py-6 px-4 md:px-8 animate-fade-in">
       <img src="/logomark.png" alt="AListo Logo" className="w-28 h-auto" />
         <div className="hidden md:flex space-x-10 text-gray-500">
           <a href="home" className="hover:text-blue-600">Home</a>
@@ -20,7 +20,7 @@ const Terms: React.FC = () => {
       </nav>
 
       {/* Content Container */}
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row px-6 py-12 space-y-8 md:space-y-0">
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row px-6 py-12 space-y-8 md:space-y-0 animate-fade-in">
         
         {/* Table of Contents */}
         <aside className="md:w-1/4 border-none p-4 bg-transparent rounded-lg">

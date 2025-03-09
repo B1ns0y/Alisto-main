@@ -12,7 +12,7 @@ import Register from "./pages/Register";
 import SetPassword from "./pages/SetPassword";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
-import Terms from "./pages/terms";
+import Terms from "./pages/Terms";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Privacy from "./pages/PrivacyPolicy";
 
