@@ -17,12 +17,14 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import Privacy from "./pages/PrivacyPolicy";
 import SetPassword2 from "./pages/SetPassword2";
 import SetPassword3 from "./pages/SetPassword3";
+import { UserProvider } from "./contexts/UserContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <UserProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -38,10 +40,12 @@ const App = () => (
           <Route path="/set-password2" element={<SetPassword2 />} />
           <Route path="/set-password3" element={<SetPassword3 />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/" element={<Index />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </UserProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

@@ -5,10 +5,10 @@ import UploadImageModal from './UploadImageModal';
 import DeleteAccountModal from './DeleteAccountModal';
 import EditUsernameModal from '../EditUsernameModal';
 import EditPasswordModal from '../EditPasswordModal';
+import { useUser } from '@/contexts/UserContext';
 
 const AccountSettings: React.FC = () => {
-  const [username, setUsername] = useState('User');
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const { username, setUsername, profilePicture, setProfilePicture } = useUser();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditUsernameModal, setShowEditUsernameModal] = useState(false);
