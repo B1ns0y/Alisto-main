@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const SetPassword: React.FC = () => {
+const SetPassword3: React.FC = () => {
   return (
     <div className="bg-white flex items-center justify-center min-h-screen overflow-hidden relative">
       <img
@@ -15,22 +16,28 @@ const SetPassword: React.FC = () => {
         alt="Clouds"
       />
       <div className="flex flex-col items-center justify-center h-full blur-effect">
-        <div className="bg-white p-8 rounded-lg w-full text-center">
+        <div className="bg-white p-8 rounded-lg w-full max-w-md text-center">
           <h1 className="text-[35px] font-semibold text-[#007AFF] mb-2">Set new password</h1>
+          <p className="text-black mb-6 text-[14px]">
+            Your new password must be different to <br /> previously used passwords.
+          </p>
           <form className="space-y-4">
             <input
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Email"
-              type="email"
+              placeholder="Password"
+              type="password"
             />
-            <Link to="/set-password2">
+            <input
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="Confirm Password"
+              type="password"
+            />
             <button
-              className="mt-4 w-full bg-[#007AFF] text-white py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              className="w-full bg-[#007AFF] text-white py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               type="submit"
             >
-              Next
+              Reset Password
             </button>
-            </Link>
           </form>
           <p className="mt-4 text-gray-600">
             Back to&nbsp;
@@ -44,4 +51,4 @@ const SetPassword: React.FC = () => {
   );
 };
 
-export default SetPassword;
+export default SetPassword3;

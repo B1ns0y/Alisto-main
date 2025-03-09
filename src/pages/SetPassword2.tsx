@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const SetPassword: React.FC = () => {
+const SetPassword2: React.FC = () => {
   return (
     <div className="bg-white flex items-center justify-center min-h-screen overflow-hidden relative">
       <img
@@ -18,17 +18,13 @@ const SetPassword: React.FC = () => {
         <div className="bg-white p-8 rounded-lg w-full text-center">
           <h1 className="text-[35px] font-semibold text-[#007AFF] mb-2">Set new password</h1>
           <form className="space-y-4">
-            <input
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Email"
-              type="email"
-            />
-            <Link to="/set-password2">
+            <p className='text-[12px]'>A verification email has been sent to xxxx123@gmail.com. Please check<br /> your inbox and follow the instructions to verify your account. </p>
+            <Link to={"/set-password3"}>
             <button
               className="mt-4 w-full bg-[#007AFF] text-white py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               type="submit"
             >
-              Next
+              Confirm
             </button>
             </Link>
           </form>
@@ -44,4 +40,4 @@ const SetPassword: React.FC = () => {
   );
 };
 
-export default SetPassword;
+export default SetPassword2;
