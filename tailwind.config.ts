@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -85,12 +84,22 @@ export default {
 				'zoom-in-95': {
 					from: { transform: 'scale(0.95)' },
 					to: { transform: 'scale(1)' }
+				},
+				'cloudMove': {
+					'0%': { transform: 'translateX(-100%)' },
+					'100%': { transform: 'translateX(100%)' }
+				},
+				'slide-down': {
+					'0%': { transform: 'translateY(-100%)', opacity: '0' },
+					'100%': { transform: 'translateY(0)', opacity: '1' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'in': 'fade-in-50 0.3s ease-out, zoom-in-95 0.3s ease-out'
+				'in': 'fade-in-50 0.3s ease-out, zoom-in-95 0.3s ease-out',
+				'cloud': 'cloudMove 8s linear infinite',
+				'slide-down': 'slide-down 1s ease-out'
 			}
 		}
 	},

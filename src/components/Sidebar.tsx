@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     });
     
     setTimeout(() => {
-      navigate('/login');
+      navigate('/Home');
     }, 1000);
   };
 
