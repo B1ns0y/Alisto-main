@@ -11,6 +11,7 @@ import {
   Plus, 
   ChevronDown,
   LogOut,
+  Notebook,
   Home
 } from 'lucide-react';
 import { Project } from '../types';
@@ -98,6 +99,16 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-2">
         <ul className="space-y-1">
+        <li 
+            className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${activeTab === 'tasks' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+            onClick={() => setActiveTab('tasks')}
+          >
+            <Notebook size={18} className="mr-3" />
+            <span>All Tasks</span>
+            <span className={`ml-auto bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-md ${activeTab === 'tasks' ? 'bg-blue-100 text-blue-600' : ''}`}>
+              {uncompletedTasksCount}
+            </span>
+          </li>
           <li 
             className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${activeTab === 'today' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
             onClick={() => setActiveTab('today')}
