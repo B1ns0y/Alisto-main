@@ -11,7 +11,8 @@ import {
   Menu, 
   Plus, 
   ChevronDown,
-  LogOut
+  LogOut,
+  Home
 } from 'lucide-react';
 import { Project } from '../types';
 
@@ -42,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-4 border-b flex justify-between items-center">
         <div className="flex items-center">
           <span className="font-bold text-2xl flex items-center">
-            <span><img src='favicon.webp' className='w-12 h-12 mr-2'></img></span>
+            <span><Link to="/home"><img src='favicon.webp' className='w-12 h-12 mr-2 hover:scale-110'></img></Link></span>
             <span className="text-blue-500">A</span>
             <span className="text-green-500">L</span>
             <span className="text-blue-500">istō</span>

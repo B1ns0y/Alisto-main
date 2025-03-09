@@ -54,7 +54,7 @@ const Login: React.FC = () => {
               <button className="text-[16px] w-full px-4 py-2 bg-[#007AFF] text-white rounded hover:bg-blue-600 transition-all">Login</button>
             </Link>
             <hr className="my-5 w-full border-gray-300" />  
-            <p className='text-[14px]'>By continuing with Google, you agree to AListō’s <b>Terms of Service</b> and <b>Privacy Policy.</b></p>
+            <p className='text-[14px]'>By continuing with Google, you agree to AListō’s <a href='Terms'><b>Terms of Service</b></a> and <a href='Privacy'><b>Privacy Policy.</b></a></p>
             <button className="mt-4 flex items-center justify-center gap-2 w-full px-4 py-2 bg-[#333] text-white rounded transition-all hover:bg-[#222]">
               <img src="Google.png" alt="Google logo" className="w-5 h-5" />
               Sign in with Google

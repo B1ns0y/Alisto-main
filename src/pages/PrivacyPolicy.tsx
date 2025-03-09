@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Privacy: React.FC = () => {
   return (
@@ -11,9 +12,11 @@ const Privacy: React.FC = () => {
           <a href="Terms" className="hover:text-blue-600">Terms of Service</a>
           <a href="#" className="text-blue-600 font-semibold">Privacy Policy</a>
         </div>
+        <Link to="/register">
         <button className="px-4 py-2 text-sm bg-white border rounded-full shadow-md">
           Sign up
         </button>
+        </Link>
       </nav>
 
       {/* Content Container */}
@@ -47,66 +50,65 @@ const Privacy: React.FC = () => {
           </p>
           <section id="acceptance">
             <h3 className="text-xl font-semibold">1. Information We Collect</h3>
-            <p>By creating an account, accessing, or using AListō, you agree to be bound by these Terms. If you do not agree, please do not use the app.</p>
+            <h4 className="font-semibold">1.1 Personal Information</h4>
+            <p>Account Details: Name, email address, and username (required for registration).</p>
+            <p>Profile Information: Profile picture (if uploaded).</p>
+            <p>Authentication Data: If you sign in using third-party services (e.g., Google), we collect only the necessary authentication data.</p><br></br>
+            <h4 className="font-semibold">1.2 Usage & Task Data</h4>
+            <p>Tasks & Notes: Your to-do lists, completed tasks, and scheduled reminders.</p>
           </section>
 
           <section id="account">
             <h3 className="text-xl font-semibold">2. How We Use Your Information</h3>
+            <p>AListō is designed for personal task management. You agree to:</p>
             <ul className="list-disc pl-5">
-              <li>You must be at least 13 years old to use AListö.</li>
-              <li>You are responsible for maintaining the confidentiality of your account and password.</li>
-              <li>You agree not to share your login credentials or allow others to access your account.</li>
+              <li>Provide and improve AListō’s features.</li>
+              <li>Sync tasks across devices.</li>
+              <li>Customize your user experience.</li>
+              <li>Enhance security and prevent unauthorized access.</li><br></br>
             </ul>
+            <p>We do not sell or share your personal data with third parties for advertising purposes.</p>
           </section>
 
           <section id="use">
             <h3 className="text-xl font-semibold">3. Data Storage & Security</h3>
-            <p>AListö is designed for personal task management. You agree to:</p>
+            <p>We take reasonable measures to protect your data, including:</p>
             <ul className="list-disc pl-5">
-              <li>Use the app lawfully and ethically.</li>
-              <li>Provide accurate and up-to-date information.</li>
-              <li>Respect other users and avoid abusive, spammy, or harmful behavior.</li>
+              <li>Encryption for sensitive data storage.</li>
+              <li>Secure Authentication methods.</li><br></br>
             </ul>
-            <br />
-            <p>You must not:</p>
-            <ul className="list-disc pl-5">
-                <li>Use AListō for illegal or unauthorized purposes.</li>
-                <li>Attempt to hack, reverse-engineer, or disrupt the platform.</li>
-                <li>Upload or share harmful, offensive, or misleading content.</li>
-            </ul>
+            <p>However, no online service is completely secure. We recommend using a strong password and keeping your account credentials confidential.</p>
           </section>
 
           <section id="privacy">
             <h3 className="text-xl font-semibold">4. Third-Party Services</h3>
-            <p>We value your privacy. Your use of AListö is governed by our Privacy Policy, which explains how we collect, use, and protect your data.</p>
+            <p>AListō may integrate with third-party services such as:</p>
+            <ul className="list-disc pl-5">
+              <li>Google Authentication (for login).</li>
+              <li>Cloud Storage Providers (for data backups).</li>
+              <li>Analytics Tools (to improve app performance)</li><br />
+            </ul>
+            <p>These services have their own privacy policies, and we encourage you to review them.</p>
           </section>
 
           <section id="ownership">
             <h3 className="text-xl font-semibold">5. Your Rights & Control Over Your Data</h3>
+            <p>You have the right to:</p>
             <ul className="list-disc pl-5">
-                <li>You retain ownership of any tasks or notes you create within AListö.</li>
-                <li>By using AListō, you grant us permission to store and process your content to improve app functionality.</li>
-                <li>We do not sell or share your personal data with third parties.</li>
+                <li>Access & Update your personal information.</li>
+                <li>Delete Your Account & Data (this action is permanent and cannot be undone).</li><br />
             </ul>
+            <p>If you wish to exercise any of these rights, you can do so in the Settings section of the app.</p>
           </section>
 
           <section id="termination">
             <h3 className="text-xl font-semibold">6. Data Retention</h3>
-            <p>We reserve the right to suspend or terminate your account if you:</p>
-            <ul className="list-disc pl-5">
-              <li>Violate these Terms.</li>
-              <li>Engage in fraudulent or harmful activity.</li>
-              <li>Attempt to disrupt or misuse the app.</li>
-            </ul>
-            <p>You may also delete your account at any time. Keep in mind that this action is permanent and cannot be undone.</p>
+            <p>We retain your data only as long as necessary to provide AListō’s services. If you delete your account, your data will be permanently removed from our servers.</p>
           </section>
 
           <section id="availability">
             <h3 className="text-xl font-semibold">7. Changes to This Privacy Policy</h3>
-            <ul className="list-disc pl-5">
-              <li>AListō strives for maximum uptime, but we do not guarantee that the app will always be available.</li>
-              <li>We may update, modify, or discontinue features without prior notice.</li>
-            </ul>
+            <p>We may update this Privacy Policy from time to time. If significant changes are made, we will notify users through the app. Please review this policy periodically to stay informed.</p>
           </section>
         </main>
       </div>

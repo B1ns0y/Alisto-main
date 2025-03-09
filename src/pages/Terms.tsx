@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Terms: React.FC = () => {
   return (
@@ -11,9 +12,11 @@ const Terms: React.FC = () => {
           <a href="#" className="text-blue-600 font-semibold">Terms of Service</a>
           <a href="Privacy" className="hover:text-blue-600">Privacy Policy</a>
         </div>
+        <Link to="/register">
         <button className="px-4 py-2 text-sm bg-white border rounded-full shadow-md">
           Sign up
         </button>
+        </Link>
       </nav>
 
       {/* Content Container */}

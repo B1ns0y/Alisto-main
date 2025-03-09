@@ -12,7 +12,7 @@ const Hero: React.FC = () => {
           <a href="Terms" className="hover:text-blue-600">Terms of Service</a>
           <a href="Privacy" className="hover:text-blue-600">Privacy Policy</a>
         </div>
-        <Link to="/register">
+        <Link to="/login">
         <button className="px-4 py-2 text-sm bg-white border rounded-full shadow-md">
           Login
         </button>
@@ -23,8 +23,8 @@ const Hero: React.FC = () => {
       <div className="mb-10 flex flex-col-reverse md:flex-row items-center w-full max-w-5xl text-center md:text-left px-6">
         {/* Left Content */}
         <div className="flex-1 space-y-4">
-          <h2 className="text-4xl font-bold">
-            Stay Organized <br />with <span className="text-blue-600">AListö</span>
+          <h2 className="text-5xl font-bold">
+            Stay Organized <br />with <span className="text-blue-600">AListō</span>
           </h2>
           <p className="text-gray-600">
             Your Plans, Your Moves, AListö Grooves. Manage tasks<br /> effortlessly, 
