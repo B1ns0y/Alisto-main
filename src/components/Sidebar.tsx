@@ -108,8 +108,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <img src='favicon.webp' className='w-12 h-12 mr-2 hover:scale-105' alt="Logo" />
                 </Link>
               </span>
-              <span className="text-blue-500">A</span>
-              <span className="text-green-500">L</span>
+              <span className="text-black">A</span>
+              <span className="text-black">L</span>
               <span className="text-primary">istō</span>
             </span>
           )}
