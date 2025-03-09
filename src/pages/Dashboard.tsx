@@ -50,6 +50,16 @@ const Dashboard: React.FC = () => {
   const completedTasksCount = tasks.filter(task => task.completed).length;
   const totalTasksCount = tasks.length;
   const uncompletedTasksCount = totalTasksCount - completedTasksCount;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayTasksCount = tasks.filter(task => {
+    if (!task.dueDate || task.completed) return false;
+    const taskDate = new Date(task.dueDate);
+    taskDate.setHours(0, 0, 0, 0);
+    return taskDate.getTime() === today.getTime();
+  }).length;
+
   const upcomingTasksCount = tasks.filter(task => 
     task.dueDate && new Date(task.dueDate).getTime() > Date.now() && !task.completed
   ).length;
@@ -208,6 +218,7 @@ const Dashboard: React.FC = () => {
         uncompletedTasksCount={uncompletedTasksCount}
         upcomingTasksCount={upcomingTasksCount}
         importantTasksCount={importantTasksCount}
+        todayTasksCount={todayTasksCount}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
