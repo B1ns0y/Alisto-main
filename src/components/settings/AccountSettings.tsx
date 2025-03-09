@@ -40,7 +40,7 @@ const AccountSettings: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Username
               </label>
-              <div className="text-gray-900">KazutoKei03</div>
+              <div className="text-gray-900">User</div>
             </div>
             <button className="text-blue-500 hover:text-blue-600">
               <Pencil size={18} />
