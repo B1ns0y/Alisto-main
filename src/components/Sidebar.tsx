@@ -101,6 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Logo and User */}
       <div className="p-4 border-b flex justify-between items-center">
         <div className="flex items-center">
+
         {!collapsed && (
             <span className="font-bold text-2xl flex items-center">
               <span>
@@ -108,9 +109,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <img src='favicon.webp' className='w-12 h-12 mr-2 hover:scale-105' alt="Logo" />
                 </Link>
               </span>
-              <span className="text-blue-500">A</span>
-              <span className="text-green-500">L</span>
-              <span className="text-primary">istō</span>
+              <span><a href='/home'><img src='favicon.webp' className='w-14 h-14 mr-2 hover:scale-105'></img></a></span>
+            <span className="text-primary text-[20px]">AListō</span>
             </span>
           )}
           {collapsed && (
@@ -120,6 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               </Link>
             </span>
           )}
+
         </div>
         <button 
           className="text-gray-400 hover:text-gray-600 transition-colors"
