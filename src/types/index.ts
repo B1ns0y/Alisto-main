@@ -1,13 +1,16 @@
+
 export interface Task {
   id: string;
   title: string;
-  location?: string;
+  description?: string;
   category?: string;
   tag?: string;
   completed: boolean;
   project?: string;
-  dueDate?: Date;
+  dueDate?: Date | null;
   dueTime?: string;
+  important?: boolean;
+  location?: string;
 }
 
 export interface Project {
