@@ -8,9 +8,21 @@ const Hero: React.FC = () => {
       <nav className="z-20 w-full max-w-6xl flex justify-between items-center py-6 px-4 md:px-8 mb-20 animate-slide-down">
         <img src="/logomark.png" alt="AListo Logo" className="w-28 h-auto" />
         <div className="hidden md:flex space-x-10 text-gray-600">
-          <a href="#" className="text-blue-600 font-semibold">Home</a>
-          <a href="Terms" className="hover:text-blue-600">Terms of Service</a>
-          <a href="Privacy" className="hover:text-blue-600">Privacy Policy</a>
+          <Link to= "/#">
+          <button className="text-blue-600 font-semibold">
+            Home
+          </button>
+          </Link>
+          <Link to= "/Terms">
+          <button className="hover:text-blue-600"> 
+            Terms of Service
+          </button>
+          </Link>
+          <Link to= "/Privacy">
+          <button className="hover:text-blue-600">
+            Privacy Policy
+          </button>
+          </Link>          
         </div>
         <Link to="/login">
         <button className="px-4 py-2 text-sm bg-white border rounded-lg shadow-md">

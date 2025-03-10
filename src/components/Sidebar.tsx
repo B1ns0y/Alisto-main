@@ -101,21 +101,17 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Logo and User */}
       <div className="p-4 border-b flex justify-between items-center">
         <div className="flex items-center">
-        {!collapsed && (
+          {!collapsed && (
             <span className="font-bold text-2xl flex items-center">
               <span>
-                <Link to="/" className="inline-block">
+                <Link to="/#" className="inline-block">
                   <img src='mainlogo.jpg' className='w-13 h-13 mr-2 hover:scale-105'/>
                 </Link>
-             </span>
+              </span>
             </span>
           )}
           {collapsed && (
-            <span className="font-bold text-2xl flex items-center mx-auto">
-              <Link to="/" className="inline-block">
-                <img src='favicon.webp' className='w-10 h-10 hover:scale-105' alt="Logo" />
-              </Link>
-            </span>
+            <div className="w-13 h-13 mr-1 justify-center bg-white"></div>
           )}
         </div>
         <button 
@@ -129,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* User Profile with Dropdown */}
       <div className={`${collapsed ? 'py-4' : 'p-4'} border-b`}>
-  <div className="flex items-center justify-between relative">
+  <div className="flex items-center justify-center ">
     {/* Profile Picture & Username */}
     <div className="flex items-center gap-3">
       {/* Profile Picture */}

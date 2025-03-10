@@ -8,9 +8,21 @@ const Terms: React.FC = () => {
       <nav className="w-full max-w-6xl mx-auto flex justify-between items-center py-6 px-4 md:px-8 animate-fade-in">
       <img src="/logomark.png" alt="AListo Logo" className="w-28 h-auto" />
         <div className="hidden md:flex space-x-10 text-gray-500">
-          <a href="home" className="hover:text-blue-600">Home</a>
-          <a href="#" className="text-blue-600 font-semibold">Terms of Service</a>
-          <a href="Privacy" className="hover:text-blue-600">Privacy Policy</a>
+          <Link to= "/Home">
+          <button className="text-blue-600 font-semibold">
+            Home
+          </button>
+          </Link>
+          <Link to= "/#">
+          <button className="hover:text-blue-600"> 
+            Terms of Service
+          </button>
+          </Link>
+          <Link to= "/Privacy">
+          <button className="hover:text-blue-600">
+            Privacy Policy
+          </button>
+          </Link>
         </div>
         <Link to="/register">
         <button className="px-4 py-2 text-sm bg-white border rounded-lg shadow-md">
