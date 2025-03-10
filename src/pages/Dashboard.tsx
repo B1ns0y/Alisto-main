@@ -20,10 +20,10 @@ const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>(() => {
     const savedProjects = localStorage.getItem('projects');
     return savedProjects ? JSON.parse(savedProjects) : [
-      { id: 'school', name: 'School', count: 0 },
-      { id: 'home', name: 'Home', count: 0 },
-      { id: 'random', name: 'Random', count: 0 },
-      { id: 'friends', name: 'Friends', count: 0 },
+      { id: 'work', name: 'Work', count: 0 },
+      { id: 'personal', name: 'Personal', count: 0 },
+      { id: 'education', name: 'Education', count: 0 },
+      { id: 'friends', name: 'Health', count: 0 },
     ];
   });
   
