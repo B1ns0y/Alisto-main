@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MoreHorizontal, Trash2, Star, Clock, Calendar } from 'lucide-react';
+import { MoreHorizontal, Trash2, Star, Clock, Calendar, Edit } from 'lucide-react';
 import { Task } from '../types';
 import { cn } from '@/lib/utils';
 
@@ -9,6 +9,7 @@ interface TaskItemProps {
   toggleTaskCompletion: (id: string) => void;
   toggleTaskImportance: (id: string) => void;
   deleteTask: (id: string) => void;
+  editTask: (task: Task) => void;
   showTaskMenu: string | null;
   setShowTaskMenu: (id: string | null) => void;
   projectName?: string;
@@ -18,7 +19,8 @@ const TaskItem: React.FC<TaskItemProps> = ({
   task, 
   toggleTaskCompletion, 
   toggleTaskImportance,
-  deleteTask, 
+  deleteTask,
+  editTask, 
   showTaskMenu, 
   setShowTaskMenu,
   projectName
@@ -97,6 +99,13 @@ const TaskItem: React.FC<TaskItemProps> = ({
                 {showTaskMenu === task.id && (
                   <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border animate-in fade-in-50 slide-in-from-top-1">
                     <div className="py-1">
+                    <button 
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center"
+                        onClick={() => editTask(task)}
+                      >
+                        <Edit size={16} className="mr-2 text-gray-500" />
+                        Edit Task
+                      </button>
                       <button 
                         className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center"
                         onClick={() => toggleTaskImportance(task.id)}

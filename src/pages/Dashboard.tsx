@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Task, Project } from '../types';
 import Sidebar from '../components/Sidebar';
@@ -32,7 +31,7 @@ const Dashboard: React.FC = () => {
     return savedTab || 'today';
   });
   
-  const [newTask, setNewTask] = useState<any>({
+  const [taskData, setTaskData] = useState<any>({
     title: '',
     description: '',
     project: '',
@@ -41,7 +40,8 @@ const Dashboard: React.FC = () => {
     important: false
   });
   
-  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
@@ -92,25 +92,42 @@ const Dashboard: React.FC = () => {
   };
 
   const handleAddTask = () => {
-    if (newTask.title.trim() === '') return;
+    if (taskData.title.trim() === '') return;
     
-    const newTaskItem: Task = { 
-      ...newTask, 
-      id: Date.now().toString(), 
-      completed: false 
-    };
+    if (isEditMode && taskData.id) {
+      // Update existing task
+      const updatedTasks = tasks.map(task => 
+        task.id === taskData.id ? { ...taskData, completed: task.completed } : task
+      );
+      setTasks(updatedTasks);
+      
+      toast({
+        title: "Task updated",
+        description: `"${taskData.title}" has been updated.`,
+      });
+    } else {
+      // Add new task
+      const newTaskItem: Task = { 
+        ...taskData, 
+        id: Date.now().toString(), 
+        completed: false 
+      };
+      
+      const updatedTasks = [...tasks, newTaskItem];
+      setTasks(updatedTasks);
+      
+      toast({
+        title: "Task added",
+        description: `"${taskData.title}" has been added to your tasks.`,
+      });
+    }
     
-    const updatedTasks = [...tasks, newTaskItem];
-    setTasks(updatedTasks);
-    
-    // Show success toast
-    toast({
-      title: "Task added",
-      description: `"${newTask.title}" has been added to your tasks.`,
-    });
-    
-    // Reset form
-    setNewTask({ 
+    // Reset form and close modal
+    resetTaskForm();
+  };
+
+  const resetTaskForm = () => {
+    setTaskData({ 
       title: '', 
       description: '', 
       project: '', 
@@ -119,7 +136,29 @@ const Dashboard: React.FC = () => {
       important: false 
     });
     
-    setShowAddTaskModal(false);
+    setIsEditMode(false);
+    setShowTaskModal(false);
+  };
+
+  const startAddTask = () => {
+    resetTaskForm();
+    setIsEditMode(false);
+    setShowTaskModal(true);
+  };
+
+  const startEditTask = (task: Task) => {
+    setTaskData({
+      id: task.id,
+      title: task.title,
+      description: task.description || '',
+      project: task.project || '',
+      dueDate: task.dueDate || null,
+      dueTime: task.dueTime || '',
+      important: task.important || false
+    });
+    setIsEditMode(true);
+    setShowTaskModal(true);
+    setShowTaskMenu(null);
   };
 
   const toggleTaskCompletion = (id: string) => {
@@ -212,7 +251,7 @@ const Dashboard: React.FC = () => {
         projects={projects}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        setShowAddTaskModal={setShowAddTaskModal}
+        setShowAddTaskModal={startAddTask}
         completedTasksCount={completedTasksCount}
         totalTasksCount={totalTasksCount}
         uncompletedTasksCount={uncompletedTasksCount}
@@ -238,16 +277,18 @@ const Dashboard: React.FC = () => {
             toggleTaskCompletion={toggleTaskCompletion}
             toggleTaskImportance={toggleTaskImportance}
             deleteTask={deleteTask}
+            editTask={startEditTask}
           />
         </main>
       </div>
 
-      {showAddTaskModal && (
+      {showTaskModal && (
         <AddTaskModal 
-          newTask={newTask}
-          setNewTask={setNewTask}
-          handleAddTask={handleAddTask}
-          setShowAddTaskModal={setShowAddTaskModal}
+        isEditMode={isEditMode}
+        taskData={taskData}
+        setTaskData={setTaskData}
+        handleSubmit={handleAddTask}
+        closeModal={resetTaskForm}
           projects={projects}
         />
       )}
