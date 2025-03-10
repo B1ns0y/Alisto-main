@@ -6,8 +6,10 @@ import AddTaskModal from '../components/AddTaskModal';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TaskList from '../components/dashboard/TaskList';
 import { useToast } from '@/hooks/use-toast';
+import { fetch_todos } from '@/services/todos/todos';
 
 const Dashboard: React.FC = () => {
+  fetch_todos();
   // Get tasks and projects from localStorage or use default values
   const [tasks, setTasks] = useState<Task[]>(() => {
     const savedTasks = localStorage.getItem('tasks');
@@ -46,6 +48,7 @@ const Dashboard: React.FC = () => {
   const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
+  
 
   // Calculate task statistics
   const completedTasksCount = tasks.filter(task => task.completed).length;

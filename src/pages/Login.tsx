@@ -1,11 +1,14 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(""); // Store error messages
   const [loading, setLoading] = useState(false); // Loading state
+  
 
   const navigate = useNavigate();
 
@@ -15,23 +18,18 @@ const Login: React.FC = () => {
     setError("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/token/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
+      const response = await axios.post("http://127.0.0.1:8000/api/token/", {
+        username,
+        password,
       });
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         if (response.status === 401) {
           setError("Wrong credentials");
         } else if (response.status === 404) {
           setError("User does not exist");
-        } else {
-          setError("An error occurred. Please try again.");
         }
         return;
       }
@@ -43,7 +41,7 @@ const Login: React.FC = () => {
       // Redirect to dashboard
       navigate("/dashboard");
     } catch (err) {
-      setError("An error occurred. Please check your connection.");
+      setError("Wrong credentials");
     } finally {
       setLoading(false);
     }

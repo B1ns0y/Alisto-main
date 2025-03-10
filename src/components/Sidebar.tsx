@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { Project } from '../types';
 import { useToast } from '../hooks/use-toast';
 import { useUser } from '../contexts/UserContext';
+import { fetch_user } from '@/services/getUser/getUser';
 
 interface SidebarProps {
   projects: Project[];
@@ -52,6 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const [collapsed, setCollapsed] = useState(false);
+  fetch_user();
 
   // Handle clicking outside of dropdown
   React.useEffect(() => {
@@ -104,9 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed && (
             <span className="font-bold text-2xl flex items-center">
               <span>
-                <Link to="/#" className="inline-block">
-                  <img src='mainlogo.jpg' className='w-13 h-13 mr-2 hover:scale-105'/>
-                </Link>
+                  <img src='mainlogo.jpg' className='w-13 h-13 mr-4'/>
               </span>
             </span>
           )}

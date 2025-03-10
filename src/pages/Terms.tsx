@@ -9,12 +9,12 @@ const Terms: React.FC = () => {
       <img src="/logomark.png" alt="AListo Logo" className="w-28 h-auto" />
         <div className="hidden md:flex space-x-10 text-gray-500">
           <Link to= "/Home">
-          <button className="text-blue-600 font-semibold">
+          <button className="hover:text-blue-600 font-semibold">
             Home
           </button>
           </Link>
           <Link to= "/#">
-          <button className="hover:text-blue-600"> 
+          <button className="text-blue-600"> 
             Terms of Service
           </button>
           </Link>
