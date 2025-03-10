@@ -20,10 +20,10 @@ const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>(() => {
     const savedProjects = localStorage.getItem('projects');
     return savedProjects ? JSON.parse(savedProjects) : [
-      { id: 'school', name: 'School', count: 0 },
-      { id: 'home', name: 'Home', count: 0 },
-      { id: 'random', name: 'Random', count: 0 },
-      { id: 'friends', name: 'Friends', count: 0 },
+      { id: 'work', name: 'Work', count: 0 },
+      { id: 'personal', name: 'Personal', count: 0 },
+      { id: 'education', name: 'Education', count: 0 },
+      { id: 'friends', name: 'Health', count: 0 },
     ];
   });
   
@@ -32,7 +32,7 @@ const Dashboard: React.FC = () => {
     return savedTab || 'today';
   });
   
-  const [newTask, setNewTask] = useState<any>({
+  const [taskData, setTaskData] = useState<any>({
     title: '',
     description: '',
     project: '',
@@ -41,7 +41,8 @@ const Dashboard: React.FC = () => {
     important: false
   });
   
-  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
@@ -50,6 +51,16 @@ const Dashboard: React.FC = () => {
   const completedTasksCount = tasks.filter(task => task.completed).length;
   const totalTasksCount = tasks.length;
   const uncompletedTasksCount = totalTasksCount - completedTasksCount;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayTasksCount = tasks.filter(task => {
+    if (!task.dueDate || task.completed) return false;
+    const taskDate = new Date(task.dueDate);
+    taskDate.setHours(0, 0, 0, 0);
+    return taskDate.getTime() === today.getTime();
+  }).length;
+
   const upcomingTasksCount = tasks.filter(task => 
     task.dueDate && new Date(task.dueDate).getTime() > Date.now() && !task.completed
   ).length;
@@ -82,25 +93,42 @@ const Dashboard: React.FC = () => {
   };
 
   const handleAddTask = () => {
-    if (newTask.title.trim() === '') return;
+    if (taskData.title.trim() === '') return;
     
-    const newTaskItem: Task = { 
-      ...newTask, 
-      id: Date.now().toString(), 
-      completed: false 
-    };
+    if (isEditMode && taskData.id) {
+      // Update existing task
+      const updatedTasks = tasks.map(task => 
+        task.id === taskData.id ? { ...taskData, completed: task.completed } : task
+      );
+      setTasks(updatedTasks);
+      
+      toast({
+        title: "Task updated",
+        description: `"${taskData.title}" has been updated.`,
+      });
+    } else {
+      // Add new task
+      const newTaskItem: Task = { 
+        ...taskData, 
+        id: Date.now().toString(), 
+        completed: false 
+      };
+      
+      const updatedTasks = [...tasks, newTaskItem];
+      setTasks(updatedTasks);
+      
+      toast({
+        title: "Task added",
+        description: `"${taskData.title}" has been added to your tasks.`,
+      });
+    }
     
-    const updatedTasks = [...tasks, newTaskItem];
-    setTasks(updatedTasks);
-    
-    // Show success toast
-    toast({
-      title: "Task added",
-      description: `"${newTask.title}" has been added to your tasks.`,
-    });
-    
-    // Reset form
-    setNewTask({ 
+    // Reset form and close modal
+    resetTaskForm();
+  };
+
+  const resetTaskForm = () => {
+    setTaskData({ 
       title: '', 
       description: '', 
       project: '', 
@@ -109,7 +137,29 @@ const Dashboard: React.FC = () => {
       important: false 
     });
     
-    setShowAddTaskModal(false);
+    setIsEditMode(false);
+    setShowTaskModal(false);
+  };
+
+  const startAddTask = () => {
+    resetTaskForm();
+    setIsEditMode(false);
+    setShowTaskModal(true);
+  };
+
+  const startEditTask = (task: Task) => {
+    setTaskData({
+      id: task.id,
+      title: task.title,
+      description: task.description || '',
+      project: task.project || '',
+      dueDate: task.dueDate || null,
+      dueTime: task.dueTime || '',
+      important: task.important || false
+    });
+    setIsEditMode(true);
+    setShowTaskModal(true);
+    setShowTaskMenu(null);
   };
 
   const toggleTaskCompletion = (id: string) => {
@@ -202,12 +252,13 @@ const Dashboard: React.FC = () => {
         projects={projects}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        setShowAddTaskModal={setShowAddTaskModal}
+        setShowAddTaskModal={startAddTask}
         completedTasksCount={completedTasksCount}
         totalTasksCount={totalTasksCount}
         uncompletedTasksCount={uncompletedTasksCount}
         upcomingTasksCount={upcomingTasksCount}
         importantTasksCount={importantTasksCount}
+        todayTasksCount={todayTasksCount}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -227,16 +278,18 @@ const Dashboard: React.FC = () => {
             toggleTaskCompletion={toggleTaskCompletion}
             toggleTaskImportance={toggleTaskImportance}
             deleteTask={deleteTask}
+            editTask={startEditTask}
           />
         </main>
       </div>
 
-      {showAddTaskModal && (
+      {showTaskModal && (
         <AddTaskModal 
-          newTask={newTask}
-          setNewTask={setNewTask}
-          handleAddTask={handleAddTask}
-          setShowAddTaskModal={setShowAddTaskModal}
+        isEditMode={isEditMode}
+        taskData={taskData}
+        setTaskData={setTaskData}
+        handleSubmit={handleAddTask}
+        closeModal={resetTaskForm}
           projects={projects}
         />
       )}

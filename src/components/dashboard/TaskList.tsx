@@ -13,6 +13,7 @@ interface TaskListProps {
   toggleTaskCompletion: (id: string) => void;
   toggleTaskImportance: (id: string) => void;
   deleteTask: (id: string) => void;
+  editTask: (task: Task) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({ 
@@ -23,7 +24,8 @@ const TaskList: React.FC<TaskListProps> = ({
   setShowTaskMenu,
   toggleTaskCompletion,
   toggleTaskImportance,
-  deleteTask
+  deleteTask,
+  editTask
 }) => {
   // Group tasks by date for upcoming tab
   const getGroupedTasks = () => {
@@ -48,14 +50,14 @@ const TaskList: React.FC<TaskListProps> = ({
   
   const getProjectName = (projectId: string) => {
     switch (projectId) {
-      case 'school':
-        return 'School';
-      case 'home':
-        return 'Home';
-      case 'random':
-        return 'Random';
-      case 'friends':
-        return 'Friends';
+      case 'work':
+        return 'Work';
+      case 'personal':
+        return 'Personal';
+      case 'education':
+        return 'Education';
+      case 'health':
+        return 'Health';
       default:
         return 'Unknown Project';
     }
@@ -123,6 +125,7 @@ const TaskList: React.FC<TaskListProps> = ({
                     toggleTaskCompletion={toggleTaskCompletion}
                     toggleTaskImportance={toggleTaskImportance}
                     deleteTask={deleteTask}
+                    editTask={editTask}
                     showTaskMenu={showTaskMenu}
                     setShowTaskMenu={setShowTaskMenu}
                     projectName={task.project ? getProjectName(task.project) : undefined}
@@ -141,6 +144,7 @@ const TaskList: React.FC<TaskListProps> = ({
               toggleTaskCompletion={toggleTaskCompletion}
               toggleTaskImportance={toggleTaskImportance}
               deleteTask={deleteTask}
+              editTask={editTask}
               showTaskMenu={showTaskMenu}
               setShowTaskMenu={setShowTaskMenu}
               projectName={task.project ? getProjectName(task.project) : undefined}

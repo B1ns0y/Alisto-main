@@ -59,15 +59,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="bg-gray-100 pl-10 pr-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all"
           />
-        </div>
-        
-        {/* User - now redirects to settings when clicked */}
-        <button 
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
-          onClick={handleProfileClick}
-        >
-          <User size={18} className="text-gray-600" />
-        </button>
+        </div>       
       </div>
     </header>
   );
