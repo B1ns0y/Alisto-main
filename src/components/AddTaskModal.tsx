@@ -323,7 +323,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                       onClick={() => handleProjectSelect(project.id)}
                     >
                       <Hash size={16} className="mr-2 text-gray-500" />
-                      <span>#{getDisplayName(project.id)}</span>
+                      <span>{getDisplayName(project.id)}</span>
                     </div>
                   ))}
                 </div>
