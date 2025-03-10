@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Hash, Star } from 'lucide-react';
-import { Project } from '../types';
+import { Project, Task } from '../types';
 import { cn } from '@/lib/utils';
 
 interface AddTaskModalProps {
-  newTask: {
+  isEditMode: boolean;
+  taskData: {
+    id?: string;
     title: string;
     description: string;
     project: string;
@@ -12,7 +14,8 @@ interface AddTaskModalProps {
     dueTime: string;
     important?: boolean;
   };
-  setNewTask: React.Dispatch<React.SetStateAction<{
+  setTaskData: React.Dispatch<React.SetStateAction<{
+    id?: string;
     title: string;
     description: string;
     project: string;
@@ -20,23 +23,24 @@ interface AddTaskModalProps {
     dueTime: string;
     important?: boolean;
   }>>;
-  handleAddTask: () => void;
-  setShowAddTaskModal: (show: boolean) => void;
+  handleSubmit: () => void;
+  closeModal: () => void;
   projects: Project[];
 }
 
 const AddTaskModal: React.FC<AddTaskModalProps> = ({ 
-  newTask, 
-  setNewTask, 
-  handleAddTask, 
-  setShowAddTaskModal,
+  isEditMode,
+  taskData, 
+  setTaskData, 
+  handleSubmit, 
+  closeModal,
   projects
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(newTask.dueDate);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
   const [selectedTime, setSelectedTime] = useState<{hour: number, minute: number, period: 'AM' | 'PM'}>(() => {
-    if (newTask.dueTime) {
-      const [timeStr, period] = newTask.dueTime.split(' ');
+    if (taskData.dueTime) {
+      const [timeStr, period] = taskData.dueTime.split(' ');
       const [hourStr, minuteStr] = timeStr.split(':');
       return {
         hour: parseInt(hourStr),
@@ -52,10 +56,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   });
   
   const [currentMonth, setCurrentMonth] = useState(
-    newTask.dueDate ? newTask.dueDate.getMonth() : new Date().getMonth()
+    taskData.dueDate ? taskData.dueDate.getMonth() : new Date().getMonth()
   );
   const [currentYear, setCurrentYear] = useState(
-    newTask.dueDate ? newTask.dueDate.getFullYear() : new Date().getFullYear()
+    taskData.dueDate ? taskData.dueDate.getFullYear() : new Date().getFullYear()
   );
   
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
@@ -67,12 +71,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const daysOfWeek = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
   
   useEffect(() => {
-    setSelectedDate(newTask.dueDate);
-  }, [newTask.dueDate]);
+    setSelectedDate(taskData.dueDate);
+  }, [taskData.dueDate]);
   
   useEffect(() => {
     if (selectedDate) {
-      setNewTask(prev => ({
+      setTaskData(prev => ({
         ...prev,
         dueDate: selectedDate,
         dueTime: formatTime()
@@ -230,48 +234,48 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   };
 
   const handleProjectSelect = (projectId: string) => {
-    setNewTask({...newTask, project: projectId});
+    setTaskData({...taskData, project: projectId});
     setShowProjectSelector(false);
   };
 
   const toggleImportant = () => {
-    setNewTask(prev => ({
+    setTaskData(prev => ({
       ...prev,
       important: !prev.important
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    handleAddTask();
+    handleSubmit();
   };
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
       <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 animate-in fade-in-50 zoom-in-95">
         <div className="mb-5 flex justify-between">
-          <h2 className="text-xl font-bold text-gray-800">Add Task</h2>
+          <h2 className="text-xl font-bold text-gray-800">{isEditMode ? 'Edit Task' : 'Add Task'}</h2>
           <button 
-            onClick={() => setShowAddTaskModal(false)}
+            onClick={closeModal}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X size={20} />
           </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
           <input
             type="text"
-            value={newTask.title}
-            onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+            value={taskData.title}
+            onChange={(e) => setTaskData({...taskData, title: e.target.value})}
             className="w-full p-2 text-xl font-medium placeholder-gray-400 border-none focus:outline-none"
             placeholder="Task name"
             autoFocus
           />
           
           <textarea
-            value={newTask.description}
-            onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+            value={taskData.description}
+            onChange={(e) => setTaskData({...taskData, description: e.target.value})}
             className="w-full p-2 text-sm text-gray-700 border-none focus:outline-none resize-none"
             placeholder="Description"
             rows={2}
@@ -289,19 +293,19 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             
             <button 
               type="button"
-              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${newTask.project ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${taskData.project ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
               onClick={() => setShowProjectSelector(prev => !prev)}
             >
               <Hash size={16} />
-              {newTask.project ? `#${getDisplayName(newTask.project)}` : 'Project'}
+              {taskData.project ? `#${getDisplayName(taskData.project)}` : 'Project'}
             </button>
             
             <button 
               type="button"
-              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${newTask.important ? 'border-yellow-300 bg-yellow-50 text-yellow-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${taskData.important ? 'border-yellow-300 bg-yellow-50 text-yellow-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
               onClick={toggleImportant}
             >
-              <Star size={16} fill={newTask.important ? "currentColor" : "none"} />
+              <Star size={16} fill={taskData.important ? "currentColor" : "none"} />
               Important
             </button>
           </div>
@@ -315,11 +319,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   {projects.map(project => (
                     <div 
                       key={project.id}
-                      className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${newTask.project === project.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                      className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${taskData.project === project.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
                       onClick={() => handleProjectSelect(project.id)}
                     >
                       <Hash size={16} className="mr-2 text-gray-500" />
-                      <span>{getDisplayName(project.id)}</span>
+                      <span>#{getDisplayName(project.id)}</span>
                     </div>
                   ))}
                 </div>
@@ -504,16 +508,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             <button
               type="button"
               className="px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors rounded"
-              onClick={() => setShowAddTaskModal(false)}
+              onClick={closeModal}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 transition-colors"
-              disabled={!newTask.title.trim()}
+              disabled={!taskData.title.trim()}
             >
-              Add Task
+              {isEditMode ? 'Save Changes' : 'Add Task'}
             </button>
           </div>
         </form>
