@@ -220,14 +220,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
   const getDisplayName = (projectId: string) => {
     switch (projectId) {
-      case 'school':
-        return 'School';
-      case 'home':
-        return 'Home';
-      case 'random':
-        return 'Random';
-      case 'friends':
-        return 'Friends';
+      case 'work':
+        return 'Work';
+      case 'perosnal':
+        return 'Personal';
+      case 'education':
+        return 'Education';
+      case 'health':
+        return 'Health';
       default:
         return projectId;
     }
