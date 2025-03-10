@@ -105,12 +105,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             <span className="font-bold text-2xl flex items-center">
               <span>
                 <Link to="/" className="inline-block">
-                  <img src='favicon.webp' className='w-12 h-12 mr-2 hover:scale-105' alt="Logo" />
+                  <img src='mainlogo.jpg' className='w-13 h-13 mr-2 hover:scale-105'/>
                 </Link>
-              </span>
-              <span className="text-black">A</span>
-              <span className="text-black">L</span>
-              <span className="text-primary">istō</span>
+             </span>
             </span>
           )}
           {collapsed && (
