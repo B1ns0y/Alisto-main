@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Task, Project } from '../types';
 import Sidebar from '../components/Sidebar';
@@ -6,12 +7,31 @@ import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TaskList from '../components/dashboard/TaskList';
 import { useToast } from '@/hooks/use-toast';
 
-const API_BASE_URL = "http://127.0.0.1:8000/api"; // Update this if necessary
-
 const Dashboard: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [activeTab, setActiveTab] = useState<string>('today');
+  // Get tasks and projects from localStorage or use default values
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const savedTasks = localStorage.getItem('tasks');
+    return savedTasks ? JSON.parse(savedTasks).map((task: any) => ({
+      ...task,
+      dueDate: task.dueDate ? new Date(task.dueDate) : null
+    })) : [];
+  });
+  
+  const [projects, setProjects] = useState<Project[]>(() => {
+    const savedProjects = localStorage.getItem('projects');
+    return savedProjects ? JSON.parse(savedProjects) : [
+      { id: 'work', name: 'Work', count: 0 },
+      { id: 'personal', name: 'Personal', count: 0 },
+      { id: 'education', name: 'Education', count: 0 },
+      { id: 'friends', name: 'Health', count: 0 },
+    ];
+  });
+  
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const savedTab = localStorage.getItem('activeTab');
+    return savedTab || 'today';
+  });
+  
   const [taskData, setTaskData] = useState<any>({
     title: '',
     description: '',
@@ -20,160 +40,193 @@ const Dashboard: React.FC = () => {
     dueTime: '',
     important: false
   });
-
+  
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
+  // Calculate task statistics
+  const completedTasksCount = tasks.filter(task => task.completed).length;
+  const totalTasksCount = tasks.length;
+  const uncompletedTasksCount = totalTasksCount - completedTasksCount;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayTasksCount = tasks.filter(task => {
+    if (!task.dueDate || task.completed) return false;
+    const taskDate = new Date(task.dueDate);
+    taskDate.setHours(0, 0, 0, 0);
+    return taskDate.getTime() === today.getTime();
+  }).length;
+
+  const upcomingTasksCount = tasks.filter(task => 
+    task.dueDate && new Date(task.dueDate).getTime() > Date.now() && !task.completed
+  ).length;
+  const importantTasksCount = tasks.filter(task => task.important && !task.completed).length;
+
+  // Save to localStorage whenever data changes
   useEffect(() => {
-    fetchTasks();
-    fetchProjects();
-  }, []);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    localStorage.setItem('projects', JSON.stringify(projects));
+    localStorage.setItem('activeTab', activeTab);
+  }, [tasks, projects, activeTab]);
 
-  const fetchTasks = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/tasks/`);
-      const data = await response.json();
-      setTasks(data);
-    } catch (error) {
-      console.error("Error fetching tasks:", error);
-    }
-  };
+  // Update project counts whenever tasks change
+  useEffect(() => {
+    updateProjectCounts(tasks);
+  }, [tasks]);
 
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/projects/`);
-      const data = await response.json();
-      setProjects(data);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-    }
-  };
-
-  const handleAddTask = async () => {
-    if (taskData.title.trim() === '') return;
-
-    try {
-      if (isEditMode && taskData.id) {
-        // Update existing task
-        const response = await fetch(`${API_BASE_URL}/tasks/${taskData.id}/`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(taskData),
-        });
-
-        if (response.ok) {
-          fetchTasks();
-          toast({ title: "Task updated", description: `"${taskData.title}" has been updated.` });
-        }
-      } else {
-        // Add new task
-        const response = await fetch(`${API_BASE_URL}/tasks/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...taskData, completed: false }),
-        });
-
-        if (response.ok) {
-          fetchTasks();
-          toast({ title: "Task added", description: `"${taskData.title}" has been added.` });
-        }
+  const updateProjectCounts = (updatedTasks: Task[]) => {
+    const projectCounts: { [key: string]: number } = {};
+    updatedTasks.forEach(task => {
+      if (task.project && !task.completed) {
+        projectCounts[task.project] = (projectCounts[task.project] || 0) + 1;
       }
-    } catch (error) {
-      console.error("Error saving task:", error);
-    }
+    });
+    
+    setProjects(prev => prev.map(project => ({
+      ...project,
+      count: projectCounts[project.id] || 0
+    })));
+  };
 
+  const handleAddTask = () => {
+    if (taskData.title.trim() === '') return;
+    
+    if (isEditMode && taskData.id) {
+      // Update existing task
+      const updatedTasks = tasks.map(task => 
+        task.id === taskData.id ? { ...taskData, completed: task.completed } : task
+      );
+      setTasks(updatedTasks);
+      
+      toast({
+        title: "Task updated",
+        description: `"${taskData.title}" has been updated.`,
+      });
+    } else {
+      // Add new task
+      const newTaskItem: Task = { 
+        ...taskData, 
+        id: Date.now().toString(), 
+        completed: false 
+      };
+      
+      const updatedTasks = [...tasks, newTaskItem];
+      setTasks(updatedTasks);
+      
+      toast({
+        title: "Task added",
+        description: `"${taskData.title}" has been added to your tasks.`,
+      });
+    }
+    
+    // Reset form and close modal
     resetTaskForm();
   };
 
-  const toggleTaskCompletion = async (id: string) => {
-    try {
-      const taskToUpdate = tasks.find(task => task.id === id);
-      if (!taskToUpdate) return;
-
-      const response = await fetch(`${API_BASE_URL}/tasks/${id}/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: !taskToUpdate.completed }),
-      });
-
-      if (response.ok) {
-        fetchTasks();
-        toast({
-          title: taskToUpdate.completed ? "Task marked as incomplete" : "Task completed",
-          description: `"${taskToUpdate.title}" has been updated.`,
-        });
-      }
-    } catch (error) {
-      console.error("Error updating task:", error);
-    }
-  };
-
-  const toggleTaskImportance = async (id: string) => {
-    try {
-      const taskToUpdate = tasks.find(task => task.id === id);
-      if (!taskToUpdate) return;
-
-      const response = await fetch(`${API_BASE_URL}/tasks/${id}/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ important: !taskToUpdate.important }),
-      });
-
-      if (response.ok) {
-        fetchTasks();
-      }
-    } catch (error) {
-      console.error("Error updating importance:", error);
-    }
-  };
-
-  const deleteTask = async (id: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/tasks/${id}/`, { method: 'DELETE' });
-
-      if (response.ok) {
-        fetchTasks();
-        toast({ title: "Task deleted", description: "Task has been removed.", variant: "destructive" });
-      }
-    } catch (error) {
-      console.error("Error deleting task:", error);
-    }
-  };
-
   const resetTaskForm = () => {
-    setTaskData({
-      title: '',
-      description: '',
-      project: '',
-      dueDate: null,
+    setTaskData({ 
+      title: '', 
+      description: '', 
+      project: '', 
+      dueDate: null, 
       dueTime: '',
-      important: false
+      important: false 
     });
-    setShowTaskModal(false);
+    
     setIsEditMode(false);
+    setShowTaskModal(false);
   };
 
+  const startAddTask = () => {
+    resetTaskForm();
+    setIsEditMode(false);
+    setShowTaskModal(true);
+  };
+
+  const startEditTask = (task: Task) => {
+    setTaskData({
+      id: task.id,
+      title: task.title,
+      description: task.description || '',
+      project: task.project || '',
+      dueDate: task.dueDate || null,
+      dueTime: task.dueTime || '',
+      important: task.important || false
+    });
+    setIsEditMode(true);
+    setShowTaskModal(true);
+    setShowTaskMenu(null);
+  };
+
+  const toggleTaskCompletion = (id: string) => {
+    const taskToUpdate = tasks.find(task => task.id === id);
+    const updatedTasks = tasks.map(task => 
+      task.id === id ? { ...task, completed: !task.completed } : task
+    );
+    
+    setTasks(updatedTasks);
+    
+    // Show toast based on completion status
+    if (taskToUpdate && !taskToUpdate.completed) {
+      toast({
+        title: "Task completed",
+        description: `"${taskToUpdate.title}" has been marked as completed.`,
+      });
+    }
+  };
+
+  const toggleTaskImportance = (id: string) => {
+    const updatedTasks = tasks.map(task => 
+      task.id === id ? { ...task, important: !task.important } : task
+    );
+    
+    setTasks(updatedTasks);
+  };
+
+  const deleteTask = (id: string) => {
+    const taskToDelete = tasks.find(task => task.id === id);
+    const updatedTasks = tasks.filter(task => task.id !== id);
+    
+    setTasks(updatedTasks);
+    setShowTaskMenu(null);
+    
+    // Show deletion toast
+    if (taskToDelete) {
+      toast({
+        title: "Task deleted",
+        description: `"${taskToDelete.title}" has been removed.`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Filter tasks based on active tab and search query
   const getFilteredTasks = () => {
     let filtered = tasks;
-
+    
+    // Apply search filter if query exists
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(task =>
-        task.title.toLowerCase().includes(query) ||
+      filtered = filtered.filter(task => 
+        task.title.toLowerCase().includes(query) || 
         (task.description && task.description.toLowerCase().includes(query))
       );
     }
-
+    
+    // Apply tab filter
     return filtered.filter(task => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-
+      
       const taskDate = task.dueDate ? new Date(task.dueDate) : null;
-      if (taskDate) taskDate.setHours(0, 0, 0, 0);
-
+      if (taskDate) {
+        taskDate.setHours(0, 0, 0, 0);
+      }
+      
       switch (activeTab) {
         case 'today':
           return taskDate && taskDate.getTime() === today.getTime() && !task.completed;
@@ -195,36 +248,48 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar
+      <Sidebar 
         projects={projects}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        setShowAddTaskModal={() => setShowTaskModal(true)} completedTasksCount={0} totalTasksCount={0} uncompletedTasksCount={0} upcomingTasksCount={0} importantTasksCount={0} todayTasksCount={0}      />
+        setShowAddTaskModal={startAddTask}
+        completedTasksCount={completedTasksCount}
+        totalTasksCount={totalTasksCount}
+        uncompletedTasksCount={uncompletedTasksCount}
+        upcomingTasksCount={upcomingTasksCount}
+        importantTasksCount={importantTasksCount}
+        todayTasksCount={todayTasksCount}
+      />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} activeTab={activeTab} />
+        <DashboardHeader 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          activeTab={activeTab}
+        />
 
         <main className="flex-1 overflow-auto p-6 animate-fade-in">
-          <TaskList
+          <TaskList 
             activeTab={activeTab}
             filteredTasks={getFilteredTasks()}
+            projects={projects}
+            showTaskMenu={showTaskMenu}
+            setShowTaskMenu={setShowTaskMenu}
             toggleTaskCompletion={toggleTaskCompletion}
             toggleTaskImportance={toggleTaskImportance}
-            deleteTask={deleteTask} projects={[]} showTaskMenu={''} setShowTaskMenu={function (id: string | null): void {
-              throw new Error('Function not implemented.');
-            } } editTask={function (task: Task): void {
-              throw new Error('Function not implemented.');
-            } }          />
+            deleteTask={deleteTask}
+            editTask={startEditTask}
+          />
         </main>
       </div>
 
       {showTaskModal && (
-        <AddTaskModal
-          isEditMode={isEditMode}
-          taskData={taskData}
-          setTaskData={setTaskData}
-          handleSubmit={handleAddTask}
-          closeModal={resetTaskForm}
+        <AddTaskModal 
+        isEditMode={isEditMode}
+        taskData={taskData}
+        setTaskData={setTaskData}
+        handleSubmit={handleAddTask}
+        closeModal={resetTaskForm}
           projects={projects}
         />
       )}
