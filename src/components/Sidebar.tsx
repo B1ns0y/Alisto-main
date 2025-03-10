@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -53,6 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const [collapsed, setCollapsed] = useState(false);
+
   // Handle clicking outside of dropdown
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -67,8 +67,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
   }, []);
 
-   // Load collapsed state from localStorage
-   useEffect(() => {
+  // Load collapsed state from localStorage
+  useEffect(() => {
     const savedState = localStorage.getItem('sidebar-collapsed');
     if (savedState !== null) {
       setCollapsed(savedState === 'true');
@@ -125,29 +125,29 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* User Profile with Dropdown */}
       <div className={`${collapsed ? 'py-4' : 'p-4'} border-b`}>
-  <div className="flex items-center justify-center ">
-    {/* Profile Picture & Username */}
-    <div className="flex items-center gap-3">
-      {/* Profile Picture */}
-      <div className={`${collapsed ? 'w-8 h-8 mx-auto' : 'w-10 h-10'} rounded-full bg-gray-200 flex items-center justify-center text-gray-500 overflow-hidden`}>
-        {profilePicture ? (
-          <img src={profilePicture} alt={username} className="w-full h-full object-cover" />
-        ) : (
-          <User size={collapsed ? 16 : 18} />
-        )}
-      </div>
+        <div className="flex items-center justify-center ">
+          {/* Profile Picture & Username */}
+          <div className="flex items-center gap-3">
+            {/* Profile Picture */}
+            <div className={`${collapsed ? 'w-8 h-8 mx-auto' : 'w-10 h-10'} rounded-full bg-gray-200 flex items-center justify-center text-gray-500 overflow-hidden`}>
+              {profilePicture ? (
+                <img src={profilePicture} alt={username} className="w-full h-full object-cover" />
+              ) : (
+                <User size={collapsed ? 16 : 18} />
+              )}
+            </div>
 
-      {/* Username & Task Info */}
-      {!collapsed && (
+            {/* Username & Task Info */}
+            {!collapsed && (
               <div className="ml-3">
                 <div className="text-sm font-medium">{username}</div>
                 <div className="text-xs text-gray-500">{completedTasksCount}/{totalTasksCount} Tasks Done</div>
               </div>
             )}
-    </div>
+          </div>
 
-    {/* Dropdown Button (Now Properly Positioned) */}
-    {!collapsed && (
+          {/* Dropdown Button (Now Properly Positioned) */}
+          {!collapsed && (
             <div className="relative" ref={dropdownRef}>
               <button 
                 onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -180,8 +180,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               )}
             </div>
           )}
-  </div>
-</div>
+        </div>
+      </div>
 
       {/* Add Task Button */}
       <div className={`${collapsed ? 'px-2 py-4' : 'p-4'}`}>
@@ -197,7 +197,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-2">
         <ul className="space-y-1">
-        <li 
+          <li 
             className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${activeTab === 'tasks' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
             onClick={() => setActiveTab('tasks')}
             title={collapsed ? "All Tasks" : undefined}
