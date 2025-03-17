@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Hash, Star } from 'lucide-react';
+import { X, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Hash, Star, AlertCircle } from 'lucide-react';
 import { Project, Task } from '../types';
 import { cn } from '@/lib/utils';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../api/axios'; 
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface AddTaskModalProps {
   isEditMode: boolean;
@@ -9,24 +13,29 @@ interface AddTaskModalProps {
     id?: string;
     title: string;
     description: string;
-    project: string;
+    project: number;
     dueDate: Date | null;
     dueTime: string;
     important?: boolean;
+    completed?: boolean;
+    userId: string; 
   };
   setTaskData: React.Dispatch<React.SetStateAction<{
     id?: string;
     title: string;
     description: string;
-    project: string;
+    project: number;
     dueDate: Date | null;
     dueTime: string;
     important?: boolean;
+    completed?: boolean;
   }>>;
   handleSubmit: () => void;
   closeModal: () => void;
   projects: Project[];
+  userId: string;
 }
+
 
 const AddTaskModal: React.FC<AddTaskModalProps> = ({ 
   isEditMode,
@@ -34,8 +43,21 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   setTaskData, 
   handleSubmit, 
   closeModal,
-  projects
+  projects,
+  userId
 }) => {
+  const { user, isAuthenticated, getAuthHeaders } = useAuth();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (user?.id) {
+      setTaskData(prev => ({
+        ...prev,
+        userId: user.id
+      }));
+    }
+  }, [user]);
+  
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
   const [selectedTime, setSelectedTime] = useState<{hour: number, minute: number, period: 'AM' | 'PM'}>(() => {
@@ -65,10 +87,87 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   const [showYearDropdown, setShowYearDropdown] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [dateError, setDateError] = useState<string | null>(null);
   
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i);
   const daysOfWeek = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+  
+  const queryClient = useQueryClient();
+  
+  // Add error state
+  const [apiError, setApiError] = useState<string | null>(null);
+  
+  // Fix the mutation function to handle dates properly
+  const taskMutation = useMutation({
+    mutationFn: async (taskData: Task) => {
+      const url = isEditMode 
+        ? `http://127.0.0.1:8000/api/todos/update_task/${taskData.id}` 
+        : 'http://127.0.0.1:8000/api/todos/create_task/';
+      
+      const method = isEditMode ? 'PUT' : 'POST';
+      
+      
+      let deadline = null;
+      if (taskData.dueDate) {
+        const date = new Date(taskData.dueDate);
+        
+        if (taskData.dueTime) {
+          const [timeStr, period] = taskData.dueTime.split(' ');
+          const [hourStr, minuteStr] = timeStr.split(':');
+          let hours = parseInt(hourStr);
+          const minutes = parseInt(minuteStr);
+          
+          if (period === 'PM' && hours < 12) {
+            hours += 12;
+          } else if (period === 'AM' && hours === 12) {
+            hours = 0;
+          }
+          
+          date.setHours(hours, minutes, 0, 0);
+        } else {
+          date.setHours(0, 0, 0, 0);
+        }
+        
+        // Use ISO string format
+        deadline = date.toISOString();
+      }
+      
+      // Send the formatted data to the API with more explicit type checking
+      const apiData = {
+        title: taskData.title,
+        description: taskData.description,
+        project: taskData.project ? Number(taskData.project) : null,
+        deadline: deadline,
+        is_important: Boolean(taskData.important),
+        user_id: taskData.userId
+      };
+    
+      console.log("Sending to API:", apiData);
+      
+      try {
+        const response = await api({
+          method,
+          url,
+          data: apiData,
+          headers: getAuthHeaders ? getAuthHeaders() : {}
+        });
+        
+        return response.data;
+      } catch (error: any) {
+        console.error("API Error Details:", error.response?.data || error.message);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      // Navigate to dashboard
+      navigate('/dashboard');
+      // Close the modal
+      closeModal();
+    }
+  });
   
   useEffect(() => {
     setSelectedDate(taskData.dueDate);
@@ -78,11 +177,32 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     if (selectedDate) {
       setTaskData(prev => ({
         ...prev,
-        dueDate: selectedDate,
+        userId: userId,
+        dueDate: selectedDate instanceof Date ? selectedDate : null,
         dueTime: formatTime()
       }));
+      
+      // Check if selected date is valid (not in the past)
+      validateDate(selectedDate);
     }
-  }, [selectedDate, selectedTime]);
+  }, [selectedDate, selectedTime, userId]);
+  
+  const validateDate = (date: Date | null) => {
+    if (!date) return;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const selectedDateOnly = new Date(date);
+    selectedDateOnly.setHours(0, 0, 0, 0);
+    
+    if (selectedDateOnly < today) {
+      setDateError("Due date cannot be in the past");
+    } else {
+      setDateError(null);
+    }
+  };
+  
   
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate();
@@ -153,6 +273,18 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     );
   };
 
+  const isPastDate = (day: number, isCurrentMonth: boolean) => {
+    if (!isCurrentMonth) return false;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const checkDate = new Date(currentYear, currentMonth, day);
+    checkDate.setHours(0, 0, 0, 0);
+    
+    return checkDate < today;
+  };
+
   const nextMonth = () => {
     if (currentMonth === 11) {
       setCurrentMonth(0);
@@ -218,23 +350,29 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     return `${hour}:${minute.toString().padStart(2, '0')} ${period}`;
   };
   
-  const getDisplayName = (projectId: string) => {
-    switch (projectId) {
-      case 'work':
-        return 'Work';
-      case 'perosnal':
-        return 'Personal';
-      case 'education':
-        return 'Education';
-      case 'health':
-        return 'Health';
-      default:
-        return projectId;
-    }
+  const getDisplayName = (projectId: string | number) => {
+    const id = typeof projectId === 'number' ? projectId.toString() : projectId;
+    const foundProject = projects?.find((p) => p.id === id);
+    return foundProject ? foundProject.name : "Unknown";
   };
-
-  const handleProjectSelect = (projectId: string) => {
-    setTaskData({...taskData, project: projectId});
+ 
+  const handleProjectSelect = (id: string) => {
+    console.log("Raw Project ID/name:", id);
+    
+    // Convert project name to numeric ID
+    const numericId = getProjectIdFromName(id);
+    console.log("Mapped to numeric ID:", numericId);
+    
+    if (numericId === 0) {
+      console.error("Invalid project name:", id);
+      return; // Don't set invalid data
+    }
+    
+    setTaskData(prev => ({
+      ...prev,
+      project: numericId
+    }));
+    
     setShowProjectSelector(false);
   };
 
@@ -245,10 +383,59 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     }));
   };
 
+  const getProjectIdFromName = (projectName: string): number => {
+    const projectMap: Record<string, number> = {
+      'school': 1,
+      'home': 2,
+      'random': 3,
+      'friends': 4
+    };
+    
+    // Convert to lowercase for case-insensitive matching
+    const normalizedName = projectName.toLowerCase();
+    return projectMap[normalizedName] || 0; // Return 0 or another default if not found
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    handleSubmit();
+  
+    // Validate date before submitting
+    if (taskData.dueDate) {
+      validateDate(taskData.dueDate);
+      if (dateError) return;
+    }
+  
+    setApiError(null); // Clear previous errors before attempting submission
+  
+    // Prepare task data for submission
+    const newTask: Task = {
+      ...taskData,
+      id: taskData.id ?? '', // Ensure id is set
+      completed: taskData.completed ?? false, // Ensure completed is set
+      dueDate: taskData.dueDate, // Keep as Date object
+      project: taskData.project.toString(),
+      deadline: undefined // This will be handled in the mutation function
+    };
+  
+    // Use mutation to submit the task
+    taskMutation.mutate(newTask);
   };
+  
+  const getProjectNameFromId = (projectId: number): string => {
+    const projectMap: Record<number, string> = {
+      1: 'School',
+      2: 'Home',
+      3: 'Random',
+      4: 'Friends'
+    };
+    
+    return projectMap[projectId] || 'Unknown';
+  };
+  
+  // Don't require project for validation
+  const isFormValid = taskData.title.trim() !== '' && !dateError;
+  // Check if the due date is valid
+  const isDateValid = !dateError && taskData.title.trim() !== '';
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
@@ -285,21 +472,28 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             <button 
               type="button"
               className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${selectedDate ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
-              onClick={() => setShowCalendar(prev => !prev)}
+              onClick={() => {
+                setShowCalendar(prev => !prev);
+                setShowProjectSelector(false); // Close project selector if it's open
+              }}
             >
               <CalendarIcon size={16} />
               {selectedDate ? selectedDate.toLocaleDateString() : 'Set date & time'}
             </button>
-            
             <button 
               type="button"
-              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${taskData.project ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
-              onClick={() => setShowProjectSelector(prev => !prev)}
+              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 
+                ${taskData.project ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+                onClick={() => {
+                  setShowProjectSelector(prev => !prev);
+                  setShowCalendar(false); // Close calendar if it's open
+                }}
             >
               <Hash size={16} />
-              {taskData.project ? `#${getDisplayName(taskData.project)}` : 'Project'}
+              {taskData.project && taskData.project > 0
+                ? getProjectNameFromId(taskData.project)
+                : 'Project'}
             </button>
-            
             <button 
               type="button"
               className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${taskData.important ? 'border-yellow-300 bg-yellow-50 text-yellow-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
@@ -310,22 +504,53 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             </button>
           </div>
           
+          {dateError && (
+            <div className="text-red-500 text-sm flex items-center gap-1">
+              <AlertCircle size={16} />
+              {dateError}
+            </div>
+          )}
+          
           {showProjectSelector && (
             <div className="mt-4 border border-gray-200 rounded-lg shadow-sm animate-in fade-in-50 zoom-in-95">
               <div className="p-4 bg-white rounded-lg">
                 <h3 className="text-sm font-medium mb-2">My Projects</h3>
                 
                 <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {projects.map(project => (
-                    <div 
-                      key={project.id}
-                      className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${taskData.project === project.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
-                      onClick={() => handleProjectSelect(project.id)}
+                {projects?.length > 0 ? (
+                  <>
+                    {/* Add option to clear project selection */}
+                    <div
+                      className="flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => {
+                        setTaskData(prev => ({
+                          ...prev,
+                          project: undefined
+                        }));
+                        setShowProjectSelector(false);
+                      }}
                     >
-                      <Hash size={16} className="mr-2 text-gray-500" />
-                      <span>{getDisplayName(project.id)}</span>
+                      <X size={16} className="mr-2 text-gray-500" />
+                      <span>No Project</span>
                     </div>
-                  ))}
+                    
+                    {/* Existing project options */}
+                    {projects.map((project) => (
+                      <div
+                        key={project.id}
+                        className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${
+                          taskData.project === getProjectIdFromName(project.id) ? "bg-blue-50 text-blue-600" : "text-gray-600"
+                        }`}
+                        onClick={() => handleProjectSelect(project.id)}
+                      >
+                        <Hash size={16} className="mr-2 text-gray-500" />
+                        <span>{project.name || project.id}</span>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <p className="text-gray-400">Cancel Project</p>
+                )}
                 </div>
               </div>
             </div>
@@ -333,99 +558,86 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           
           {showCalendar && (
             <div className="mt-4 border border-gray-200 rounded-lg shadow-sm animate-in fade-in-50 zoom-in-95">
-              <div className="p-4 bg-white rounded-t-lg">
-                <h3 className="text-center font-medium mb-4">Date</h3>
-                
-                <div className="flex justify-between items-center mb-4">
+              <div className="p-4 bg-white rounded-lg">
+                <div className="mb-4 flex justify-between items-center">
                   <div className="relative">
-                    <button
+                    <button 
                       type="button"
-                      className="px-3 py-1 border rounded-md flex items-center justify-between w-32 text-sm"
-                      onClick={() => setShowMonthDropdown(!showMonthDropdown)}
+                      className="flex items-center gap-1 text-sm font-medium hover:bg-gray-100 p-1 rounded"
+                      onClick={() => setShowMonthDropdown(prev => !prev)}
                     >
                       {months[currentMonth]}
-                      <ChevronDown size={14} className="ml-1" />
+                      <ChevronDown size={16} />
                     </button>
                     
                     {showMonthDropdown && (
-                      <div className="absolute z-10 mt-1 bg-white border rounded-md shadow-lg w-36 max-h-60 overflow-y-auto animate-in fade-in-50 zoom-in-95">
-                        {months.map((month, idx) => (
-                          <button
-                            type="button"
-                            key={month}
-                            className={cn(
-                              "w-full px-3 py-1 text-left hover:bg-blue-50 text-sm",
-                              currentMonth === idx ? "text-blue-600 font-medium" : ""
-                            )}
+                      <div className="absolute z-10 top-full left-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-2 w-40 max-h-48 overflow-y-auto">
+                        {months.map((month, index) => (
+                          <div 
+                            key={month} 
+                            className={`p-1 text-sm cursor-pointer rounded hover:bg-gray-100 ${index === currentMonth ? 'bg-blue-50 text-blue-600' : ''}`}
                             onClick={() => {
-                              setCurrentMonth(idx);
+                              setCurrentMonth(index);
                               setShowMonthDropdown(false);
                             }}
                           >
                             {month}
-                          </button>
+                          </div>
                         ))}
                       </div>
                     )}
                   </div>
                   
                   <div className="relative">
-                    <button
+                    <button 
                       type="button"
-                      className="px-3 py-1 border rounded-md flex items-center justify-between w-24 text-sm"
-                      onClick={() => setShowYearDropdown(!showYearDropdown)}
+                      className="flex items-center gap-1 text-sm font-medium hover:bg-gray-100 p-1 rounded"
+                      onClick={() => setShowYearDropdown(prev => !prev)}
                     >
                       {currentYear}
-                      <ChevronDown size={14} className="ml-1" />
+                      <ChevronDown size={16} />
                     </button>
                     
                     {showYearDropdown && (
-                      <div className="absolute z-10 mt-1 bg-white border rounded-md shadow-lg w-24 max-h-60 overflow-y-auto animate-in fade-in-50 zoom-in-95">
-                        {years.map((year) => (
-                          <button
-                            type="button"
-                            key={year}
-                            className={cn(
-                              "w-full px-3 py-1 text-left hover:bg-blue-50 text-sm",
-                              currentYear === year ? "text-blue-600 font-medium" : ""
-                            )}
+                      <div className="absolute z-10 top-full right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-2 w-24 max-h-48 overflow-y-auto">
+                        {years.map(year => (
+                          <div 
+                            key={year} 
+                            className={`p-1 text-sm cursor-pointer rounded hover:bg-gray-100 ${year === currentYear ? 'bg-blue-50 text-blue-600' : ''}`}
                             onClick={() => {
                               setCurrentYear(year);
                               setShowYearDropdown(false);
                             }}
                           >
                             {year}
-                          </button>
+                          </div>
                         ))}
                       </div>
                     )}
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between mb-2">
-                  <button
+                <div className="flex justify-between mb-2">
+                  <button 
                     type="button"
+                    className="p-1 rounded-full hover:bg-gray-100"
                     onClick={prevMonth}
-                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                   >
                     <ChevronLeft size={16} />
                   </button>
                   
-                  <div className="grid grid-cols-7 gap-1 w-full">
+                  <div className="flex gap-1">
                     {daysOfWeek.map(day => (
-                      <div
-                        key={day}
-                        className="text-xs text-center font-medium text-gray-500"
-                      >
+                      <div key={day} className="w-8 h-8 flex items-center justify-center text-xs font-medium text-gray-500">
                         {day}
                       </div>
                     ))}
                   </div>
                   
-                  <button
+                  <button 
                     type="button"
+                    className="p-1 rounded-full hover:bg-gray-100"
                     onClick={nextMonth}
-                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -434,14 +646,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                 <div className="grid grid-cols-7 gap-1">
                   {generateCalendarDays().map((day, index) => (
                     <button
-                      type="button"
                       key={index}
+                      type="button"
+                      disabled={!day.currentMonth}
                       className={cn(
-                        "h-8 w-8 text-sm rounded-full flex items-center justify-center transition-colors",
-                        day.currentMonth ? "text-gray-800" : "text-gray-400",
-                        isSelectedDay(day.day, day.currentMonth) ? "bg-blue-500 text-white" : 
-                          isToday(day.day, day.currentMonth) ? "border border-blue-500 text-blue-500" : 
-                          day.currentMonth ? "hover:bg-gray-100" : ""
+                        "w-8 h-8 text-xs flex items-center justify-center rounded-full transition-colors",
+                        isSelectedDay(day.day, day.currentMonth) && "bg-blue-600 text-white",
+                        !isSelectedDay(day.day, day.currentMonth) && isToday(day.day, day.currentMonth) && "border border-blue-600 text-blue-600",
+                        !isSelectedDay(day.day, day.currentMonth) && !isToday(day.day, day.currentMonth) && day.currentMonth && "hover:bg-gray-100",
+                        !day.currentMonth && "text-gray-300",
+                        isPastDate(day.day, day.currentMonth) && "text-gray-400 line-through"
                       )}
                       onClick={() => handleDayClick(day.day, day.currentMonth)}
                     >
@@ -449,75 +663,93 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                     </button>
                   ))}
                 </div>
-              </div>
-              
-              <div className="p-4 bg-white rounded-b-lg border-t">
-                <h3 className="text-center font-medium mb-4">Time</h3>
                 
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="relative flex flex-col items-center">
-                    <button type="button" onClick={incrementHour} className="hover:bg-gray-100 p-1 rounded transition-colors">
-                      <ChevronUp size={16} />
-                    </button>
-                    <div className="w-10 text-center">{selectedTime.hour}</div>
-                    <button type="button" onClick={decrementHour} className="hover:bg-gray-100 p-1 rounded transition-colors">
-                      <ChevronDown size={16} />
-                    </button>
-                  </div>
-                  
-                  <div className="text-xl font-medium">:</div>
-                  
-                  <div className="relative flex flex-col items-center">
-                    <button type="button" onClick={incrementMinute} className="hover:bg-gray-100 p-1 rounded transition-colors">
-                      <ChevronUp size={16} />
-                    </button>
-                    <div className="w-10 text-center">{selectedTime.minute.toString().padStart(2, '0')}</div>
-                    <button type="button" onClick={decrementMinute} className="hover:bg-gray-100 p-1 rounded transition-colors">
-                      <ChevronDown size={16} />
-                    </button>
-                  </div>
-                  
-                  <div className="ml-2 flex">
-                    <button
-                      type="button"
-                      className={cn(
-                        "px-2 py-0.5 text-xs rounded-l-md border transition-colors",
-                        selectedTime.period === 'AM' ? "bg-blue-500 text-white" : "bg-white text-gray-800"
-                      )}
-                      onClick={() => togglePeriod('AM')}
-                    >
-                      AM
-                    </button>
-                    <button
-                      type="button"
-                      className={cn(
-                        "px-2 py-0.5 text-xs rounded-r-md border-t border-r border-b transition-colors",
-                        selectedTime.period === 'PM' ? "bg-blue-500 text-white" : "bg-white text-gray-800"
-                      )}
-                      onClick={() => togglePeriod('PM')}
-                    >
-                      PM
-                    </button>
+                <div className="mt-4 flex justify-between items-center">
+                  <div className="text-xs text-gray-500">Time</div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col items-center">
+                      <button 
+                        type="button"
+                        className="p-1 hover:bg-gray-100 rounded"
+                        onClick={incrementHour}
+                      >
+                        <ChevronUp size={14} />
+                      </button>
+                      <div className="w-8 text-center font-mono">
+                        {selectedTime.hour.toString().padStart(2, '0')}
+                      </div>
+                      <button 
+                        type="button"
+                        className="p-1 hover:bg-gray-100 rounded"
+                        onClick={decrementHour}
+                      >
+                        <ChevronDown size={14} />
+                      </button>
+                    </div>
+                    <div className="text-lg font-mono">:</div>
+                    <div className="flex flex-col items-center">
+                      <button 
+                        type="button"
+                        className="p-1 hover:bg-gray-100 rounded"
+                        onClick={incrementMinute}
+                      >
+                        <ChevronUp size={14} />
+                      </button>
+                      <div className="w-8 text-center font-mono">
+                        {selectedTime.minute.toString().padStart(2, '0')}
+                      </div>
+                      <button 
+                        type="button"
+                        className="p-1 hover:bg-gray-100 rounded"
+                        onClick={decrementMinute}
+                      >
+                        <ChevronDown size={14} />
+                      </button>
+                    </div>
+                    <div className="flex flex-col gap-1 ml-2">
+                      <button 
+                        type="button"
+                        className={`px-2 py-1 text-xs rounded ${selectedTime.period === 'AM' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
+                        onClick={() => togglePeriod('AM')}
+                      >
+                        AM
+                      </button>
+                      <button 
+                        type="button"
+                        className={`px-2 py-1 text-xs rounded ${selectedTime.period === 'PM' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
+                        onClick={() => togglePeriod('PM')}
+                      >
+                        PM
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
-          
-          <div className="flex justify-end space-x-3 pt-6 mt-4 border-t">
+        
+          <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
             <button
               type="button"
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors rounded"
               onClick={closeModal}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 transition-colors"
-              disabled={!taskData.title.trim()}
+              disabled={!isDateValid || taskMutation.isPending}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                isDateValid && !taskMutation.isPending
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-blue-300 text-white cursor-not-allowed'
+              }`}
             >
-              {isEditMode ? 'Save Changes' : 'Add Task'}
+              {taskMutation.isPending 
+                ? 'Saving...' 
+                : isEditMode 
+                  ? 'Update Task' 
+                  : 'Add Task'}
             </button>
           </div>
         </form>

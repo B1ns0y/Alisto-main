@@ -1,5 +1,7 @@
 
 export interface Task {
+  deadline: Date;
+  userId: any;
   id: string;
   title: string;
   description?: string;
@@ -10,7 +12,6 @@ export interface Task {
   dueDate?: Date | null;
   dueTime?: string;
   important?: boolean;
-  location?: string;
 }
 
 export interface Project {

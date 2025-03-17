@@ -17,10 +17,11 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Project } from '../types';
+import { Project, Task } from '../types';
 import { useToast } from '../hooks/use-toast';
-import { useUser } from '../contexts/UserContext';
-import { fetch_user } from '@/services/getUser/getUser';
+import { fetchUserTasks } from "../services/todos/todosService";
+import { useTodos } from '@/hooks/tanstack/todos/useQueryTodos';
+
 
 interface SidebarProps {
   projects: Project[];
@@ -33,6 +34,7 @@ interface SidebarProps {
   upcomingTasksCount: number;
   importantTasksCount: number;
   todayTasksCount: number;
+  userData: { username: string; profilePicture: string };
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -45,16 +47,26 @@ const Sidebar: React.FC<SidebarProps> = ({
   uncompletedTasksCount,
   upcomingTasksCount,
   importantTasksCount,
-  todayTasksCount
+  todayTasksCount,
+  userData
 }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { username, profilePicture } = useUser();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const [collapsed, setCollapsed] = useState(false);
-  fetch_user();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const { data, isLoading, isError } = useTodos();
 
+  useEffect(() => {
+    if (data) {
+      setTasks(data);
+    }
+  }, [data]); // Runs only when `data` changes
+  
+  console.log(tasks);
+  
+  
   // Handle clicking outside of dropdown
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -86,15 +98,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     setCollapsed(!collapsed);
   };
 
-  const handleLogout = () => {
-    toast({
-      title: "Logging out",
-      description: "You have been successfully logged out",
-    });
-    
-    setTimeout(() => {
-      navigate('/Home');
-    }, 1000);
+  const handleLogout = (): void => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_data');
+        
+    navigate('/Home');
   };
 
   return (
@@ -130,17 +139,17 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center gap-3">
             {/* Profile Picture */}
             <div className={`${collapsed ? 'w-8 h-8 mx-auto' : 'w-10 h-10'} rounded-full bg-gray-200 flex items-center justify-center text-gray-500 overflow-hidden`}>
-              {profilePicture ? (
-                <img src={profilePicture} alt={username} className="w-full h-full object-cover" />
-              ) : (
-                <User size={collapsed ? 16 : 18} />
-              )}
+            {userData.profilePicture ? (
+              <img src={userData.profilePicture} alt={userData.username} className="w-full h-full object-cover" />
+            ) : (
+              <img src="https://i.imgur.com/BLpauUN.jpeg" alt="Default Profile" className="w-full h-full object-cover" />
+            )}
             </div>
 
             {/* Username & Task Info */}
             {!collapsed && (
               <div className="ml-3">
-                <div className="text-sm font-medium">{username}</div>
+                <div className="text-sm font-medium">{userData.username}</div>
                 <div className="text-xs text-gray-500">{completedTasksCount}/{totalTasksCount} Tasks Done</div>
               </div>
             )}
@@ -211,7 +220,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
           </li>
           <li 
-            className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${activeTab === 'today' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+            className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-color ${activeTab === 'today' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
             onClick={() => setActiveTab('today')}
             title={collapsed ? "Today" : undefined}
           >
@@ -222,7 +231,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {todayTasksCount}
               </span>
             )}
-          </li>
+            </li>
+          
           <li 
             className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${activeTab === 'upcoming' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
             onClick={() => setActiveTab('upcoming')}

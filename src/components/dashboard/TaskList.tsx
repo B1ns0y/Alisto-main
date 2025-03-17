@@ -48,21 +48,59 @@ const TaskList: React.FC<TaskListProps> = ({
   
   const groupedTasks = getGroupedTasks();
   
-  const getProjectName = (projectId: string) => {
+  const getProjectName = (projectId?: string) => {
+    // Check if projectId is undefined or empty
+    if (projectId === undefined || projectId === '') {
+      return null; // Return null when no project is provided
+    }
+  
     switch (projectId) {
-      case 'work':
-        return 'Work';
-      case 'personal':
-        return 'Personal';
-      case 'education':
-        return 'Education';
-      case 'health':
-        return 'Health';
+      case 'school':
+        return 'School';
+      case 'home':
+        return 'Home';
+      case 'random':
+        return 'Random';
+      case 'friends':
+        return 'Friends';
       default:
         return 'Unknown Project';
     }
   };
   
+  const formatDeadline = (dueDate: Date | null, dueTime: string | undefined) => {
+    if (!dueDate) return '';
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const taskDate = new Date(dueDate);
+    taskDate.setHours(0, 0, 0, 0);
+    
+    let dateStr = '';
+    
+    if (taskDate.getTime() === today.getTime()) {
+      dateStr = 'Today';
+    } else if (taskDate.getTime() === tomorrow.getTime()) {
+      dateStr = 'Tomorrow';
+    } else {
+      dateStr = taskDate.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: taskDate.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined 
+      });
+    }
+    
+    if (dueTime) {
+      dateStr += ` at ${dueTime}`;
+    }
+    
+    return dateStr;
+  };
+
   const formatDate = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -129,6 +167,7 @@ const TaskList: React.FC<TaskListProps> = ({
                     showTaskMenu={showTaskMenu}
                     setShowTaskMenu={setShowTaskMenu}
                     projectName={task.project ? getProjectName(task.project) : undefined}
+                    deadline={formatDeadline(task.dueDate, task.dueTime)} 
                   />
                 ))}
               </div>
@@ -136,6 +175,7 @@ const TaskList: React.FC<TaskListProps> = ({
           ))
       ) : (
         // Regular list
+        
         <div className="space-y-3">
           {filteredTasks.map(task => (
             <TaskItem
@@ -148,6 +188,7 @@ const TaskList: React.FC<TaskListProps> = ({
               showTaskMenu={showTaskMenu}
               setShowTaskMenu={setShowTaskMenu}
               projectName={task.project ? getProjectName(task.project) : undefined}
+              deadline={formatDeadline(task.dueDate, task.dueTime)} 
             />
           ))}
         </div>

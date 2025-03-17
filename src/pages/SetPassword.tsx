@@ -1,7 +1,36 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const SetPassword: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+ 
+  // In SetPassword.tsx
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    
+    try {
+      // Make sure this URL matches exactly what's defined in your Django urls.py
+      const response = await axios.post('http://127.0.0.1:8000/api/password-reset/', { email });
+      console.log('Response:', response); // Add this for debugging
+
+      localStorage.setItem('resetEmail', email);
+      console.log('Navigating to /set-password2');
+      navigate('/set-password2');
+    } catch (err) {
+      console.error('Password reset error:', err);
+      setError('Error sending reset email. Please check your server connection.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white flex items-center justify-center min-h-screen overflow-hidden relative">
       <img
@@ -17,25 +46,28 @@ const SetPassword: React.FC = () => {
       <div className="flex flex-col items-center justify-center h-full blur-effect">
         <div className="bg-white p-8 rounded-lg w-full text-center">
           <h1 className="text-[35px] font-semibold text-[#007AFF] mb-2">Set new password</h1>
-          <form className="space-y-4">
+          {error && <p className="text-red-500 mb-4">{error}</p>}
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <input
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="Email"
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
-            <Link to="/set-password2">
             <button
               className="mt-4 w-full bg-[#007AFF] text-white py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               type="submit"
+              disabled={loading}
             >
-              Next
+              {loading ? 'Sending...' : 'Next'}
             </button>
-            </Link>
           </form>
           <p className="mt-4 text-gray-600">
             Back to&nbsp;
             <Link className="text-[#007AFF] hover:underline" to="/login">
-              log in
+              Log in
             </Link>
           </p>
         </div>

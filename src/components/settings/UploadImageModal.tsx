@@ -62,35 +62,47 @@ const UploadImageModal: React.FC<UploadImageModalProps> = ({ onClose, onUpload }
 
   const handleUpload = async () => {
     if (!selectedFile) return;
-
+  
     setIsLoading(true);
     const formData = new FormData();
     formData.append("profile_picture", selectedFile);
-
+    
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "You are not logged in. Please log in to upload an image.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+    
     try {
-      const response = await fetch("/api/user/upload-profile-picture/", {
+      const response = await fetch("http://127.0.0.1:8000/api/user/upload-profile-picture/", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`, // Add authentication token if needed
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         throw new Error(data.error || "Failed to upload image");
       }
-
+  
       if (onUpload) {
-        onUpload(data.profile_picture);
+        onUpload(data.profile_picture); // ✅ Update profile picture state
       }
-
+  
       toast({
         title: "Success",
         description: "Profile picture updated successfully",
       });
-
+  
       onClose();
     } catch (error) {
       toast({
@@ -102,6 +114,7 @@ const UploadImageModal: React.FC<UploadImageModalProps> = ({ onClose, onUpload }
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">

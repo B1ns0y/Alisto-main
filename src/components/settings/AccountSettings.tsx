@@ -20,9 +20,22 @@ const AccountSettings: React.FC = () => {
   // 🚀 Fetch user settings on load
   useEffect(() => {
     console.log("Fetching user settings...");
-    fetch(API_URL, {
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "You are not logged in. Please log in to access your settings.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    fetch("http://127.0.0.1:8000/api/users/user/", {
       method: "GET",
-      credentials: "include", // Ensures cookies are sent
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     })
       .then((response) => {
         console.log("User settings response:", response);
@@ -36,21 +49,45 @@ const AccountSettings: React.FC = () => {
       })
       .catch((error) => {
         console.error("Error fetching user settings:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load account settings",
-          variant: "destructive",
-        });
+        
+        // Handle token expiration
+        if (error.message.includes("401")) {
+          toast({
+            title: "Session Expired",
+            description: "Your session has expired. Please log in again.",
+            variant: "destructive",
+          });
+          // You might want to redirect to login page here
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to load account settings",
+            variant: "destructive",
+          });
+        }
       });
   }, []);
 
   // ✏️ Update username
   const handleUsernameUpdate = (newUsername: string) => {
     console.log("Updating username to:", newUsername);
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "You are not logged in. Please log in to update your username.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     fetch(API_URL, {
       method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ username: newUsername }),
     })
       .then((response) => {
@@ -76,10 +113,23 @@ const AccountSettings: React.FC = () => {
   // 🔒 Update password
   const handlePasswordUpdate = (newPassword: string) => {
     console.log("Updating password...");
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "You are not logged in. Please log in to update your password.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     fetch(API_URL, {
       method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ password: newPassword }),
     })
       .then((response) => {
@@ -133,37 +183,16 @@ const AccountSettings: React.FC = () => {
   
           {/* ✅ Profile Picture Section (Fixed Alignment & Delete Button) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                {profilePicture ? (
-                  <img src={profilePicture} className="w-full h-full object-cover" alt="Profile" />
-                ) : (
-                  <User size={32} className="text-gray-400" />
-                )}
-              </div>
-  
-              <div className="flex space-x-2">
-                <button
-                  className="px-3 py-1 bg-blue-500 text-white text-sm rounded"
-                  onClick={() => setShowUploadModal(true)}
-                >
-                  Edit
-                </button>
-  
-                {/* ✅ Conditional Delete Button */}
-                <button
-                  className={`px-3 py-1 text-sm rounded ${
-                    profilePicture
-                      ? "bg-red-500 text-white hover:bg-red-600"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-                  disabled={!profilePicture}
-                  onClick={() => profilePicture && setProfilePicture(null)}
-                >
-                  Delete
-                </button>
-              </div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+          <div className="flex items-center space-x-4">
+          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+            <img
+              src={profilePicture || "https://i.imgur.com/BLpauUN.jpeg"}
+              className="w-full h-full object-cover"
+              alt="Profile"
+              onError={(e) => (e.currentTarget.src = "https://i.imgur.com/BLpauUN.jpeg")} // Fallback if image fails to load
+            />
+          </div>
             </div>
           </div>
         </div>
@@ -184,7 +213,8 @@ const AccountSettings: React.FC = () => {
       </div>
   
       {/* ✅ Modals */}
-      {showUploadModal && <UploadImageModal onClose={() => setShowUploadModal(false)} />}
+      {showUploadModal && <UploadImageModal onClose={() => setShowUploadModal(false)} onUpload={setProfilePicture} />}
+
       {showEditUsernameModal && (
         <EditUsernameModal
           currentUsername={username}

@@ -9,13 +9,14 @@ const Register: React.FC = () => {
     username: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    confirm_password: "",
   });
 
   const [errors, setErrors] = useState<string[]>([]);
   const [backendMessage, setBackendMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false); // ✅ Toggle password visibility
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // ✅ Toggle confirm password
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -26,41 +27,70 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setErrors([]);
 
-    if (formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.confirm_password) {
       setErrors(["Passwords do not match."]);
+      setIsSubmitting(false);
       return;
     }
 
     try {
+      const requestData = {
+        full_name: formData.full_name,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        confirm_password: formData.confirm_password
+      };
+
+      // For debugging - remove in production
+      console.log("Sending data:", requestData);
+
       const response = await fetch("http://127.0.0.1:8000/api/users/register/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          full_name: formData.full_name,
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          confirm_password: formData.confirmPassword,
-        }),
+        body: JSON.stringify(requestData),
       });
 
       const data = await response.json();
-      console.log("📌 Backend Response:", data);
+      console.log("Response:", data);
 
       if (!response.ok) {
-        setErrors(data.password || data.error || ["Registration failed."]);
+        // Handle different types of error responses
+        if (data.detail) {
+          setErrors([data.detail]);
+        } else if (data.error) {
+          setErrors([data.error]);
+        } else if (typeof data === 'object') {
+          // Extract error messages from object fields
+          const errorMessages = Object.entries(data)
+            .map(([key, value]) => {
+              if (Array.isArray(value)) return `${key}: ${value[0]}`;
+              if (typeof value === 'string') return `${key}: ${value}`;
+              return null;
+            })
+            .filter(Boolean) as string[];
+          
+          setErrors(errorMessages.length > 0 ? errorMessages : ["Registration failed."]);
+        } else {
+          setErrors(["Registration failed. Please try again."]);
+        }
+        setIsSubmitting(false);
         return;
       }
 
       setBackendMessage("Registration successful! Please verify your email.");
       setErrors([]);
-      setTimeout(() => navigate("/login"), 2000);
+      setTimeout(() => navigate("/login"), 1000);
     } catch (error) {
-      console.error("❌ Fetch Error:", error);
+      console.error("Registration error:", error);
       setErrors(["An error occurred. Please try again."]);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -133,8 +163,8 @@ const Register: React.FC = () => {
             {/* Confirm Password Field with Toggle */}
             <div className="mb-4 relative">
               <input
-                name="confirmPassword"
-                value={formData.confirmPassword}
+                name="confirm_password"
+                value={formData.confirm_password}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border-gray-300 border rounded pr-10" // Add padding for icon
                 placeholder="Confirm Password"
@@ -159,8 +189,13 @@ const Register: React.FC = () => {
               </div>
             )}
 
-            <button className="text-[16px] w-full px-4 py-2 bg-[#007AFF] text-white rounded hover:bg-blue-600">
-              Register
+            <button 
+              className={`text-[16px] w-full px-4 py-2 bg-[#007AFF] text-white rounded hover:bg-blue-600 ${
+                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+              }`}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Registering..." : "Register"}
             </button>
           </form>
         </div>

@@ -1,0 +1,96 @@
+// src/contexts/AuthContext.tsx
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../utils/axiosConfig';
+
+interface AuthContextType {
+  isAuthenticated: boolean;
+  user: UserData | null;
+  login: (tokens: TokenResponse) => void;
+  logout: () => void;
+}
+
+interface UserData {
+  id: string;
+  email: string;
+  name: string;
+}
+
+interface TokenResponse {
+  access: string;
+  refresh: string;
+  user_id: string;
+  email: string;
+  name: string;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<UserData | null>(null);
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Check auth status on app load
+    const token = localStorage.getItem('access_token');
+    const userId = localStorage.getItem('user_id');
+    const userEmail = localStorage.getItem('user_email');
+    const userName = localStorage.getItem('user_name');
+    
+    if (token && userId && userEmail) {
+      setIsAuthenticated(true);
+      setUser({
+        id: userId,
+        email: userEmail,
+        name: userName || '',
+      });
+    }
+  }, []);
+  
+  const login = (tokens: TokenResponse): void => {
+    localStorage.setItem('access_token', tokens.access);
+    localStorage.setItem('refresh_token', tokens.refresh);
+    localStorage.setItem('user_id', tokens.user_id);
+    localStorage.setItem('user_email', tokens.email);
+    localStorage.setItem('user_name', tokens.name);
+    
+    setIsAuthenticated(true);
+    setUser({
+      id: tokens.user_id,
+      email: tokens.email,
+      name: tokens.name,
+    });
+    
+    navigate('/dashboard');
+  };
+  
+  // In src/services/auth.js or src/contexts/AuthContext.js
+  const logout = (): void => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_data');
+    // Reset any state
+    setUser(null); // If you have a user state
+    setIsAuthenticated(false); // If you have an auth state
+    navigate('/login');
+  };
+  
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
