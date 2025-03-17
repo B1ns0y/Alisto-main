@@ -40,9 +40,6 @@ export const addTodo = async (todoData) => {
     return response.data;
   };
   
-  // Delete a todo
-// In your services/todos/todos.js file
-// Verify this matches your backend route structure
 export const deleteTodo = async (id) => {
     try {
       console.log("deleteTodo function called with ID:", id);
@@ -64,7 +61,6 @@ export const deleteTodo = async (id) => {
     }
   };
 
-// In your services/todos/todos.ts file
 export const updateTodo = async (todoData) => {
     const { id, ...updateData } = todoData;
     const token = localStorage.getItem('access_token');

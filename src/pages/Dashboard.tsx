@@ -15,23 +15,17 @@ const Dashboard: React.FC = () => {
   const { data, isLoading, isError } = useTodos();
   const updateTaskMutation = useUpdateTodo(); 
   const deleteTaskMutation = useDeleteTodo();
-  
-  
-
-  // Create a mapping between backend project IDs and frontend project identifiers
   const projectMapping = {
-    '1': 'school',  // Backend ID 1 -> frontend ''
+    '1': 'school',  
     '2': 'home',
     '3': 'random',
     '4': 'friends'
   };
 
-  // Then when processing the data
   useEffect(() => {
     
     if (data) {
       const formattedTasks = data.map((task: any) => {
-        // Project handling remains the same
         let projectValue = task.project;
         
         if (typeof task.project === 'string' && !projectMapping[task.project]) {
@@ -41,16 +35,14 @@ const Dashboard: React.FC = () => {
           projectValue = projectMapping[String(task.project)];
         }
         
-        // Improved date handling
+   
         let dueDate = null;
         let dueTime = '';
         
-        // Check if deadline exists first
         if (task.deadline) {
           const deadlineDate = new Date(task.deadline);
           dueDate = deadlineDate;
           
-          // Extract time if needed
           const hours = deadlineDate.getHours();
           const minutes = deadlineDate.getMinutes();
           if (hours !== 0 || minutes !== 0) {
@@ -94,9 +86,8 @@ const Dashboard: React.FC = () => {
       return;
     }
   
-    setShowTaskMenu(null); // Close menu before making the request
+    setShowTaskMenu(null);
   
-    // Show toast for user feedback
     toast({
       title: "Deleting task...",
       description: `"${taskToDelete.title}" is being removed.`,
@@ -107,7 +98,6 @@ const Dashboard: React.FC = () => {
       onSuccess: () => {
         console.log("Task successfully deleted from backend");
   
-        // Fetch updated tasks from backend to keep UI in sync
         setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
   
         toast({
@@ -137,7 +127,7 @@ const Dashboard: React.FC = () => {
     };
   });
 
-  // Get tasks and projects from localStorage or use default values
+  // Get tasks and projects from localStorage 
   const [tasks, setTasks] = useState<Task[]>(() => {
     const savedTasks = localStorage.getItem('tasks');
     return savedTasks ? JSON.parse(savedTasks).map((task: any) => ({
@@ -149,10 +139,10 @@ const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>(() => {
     const savedProjects = localStorage.getItem('projects');
     return savedProjects ? JSON.parse(savedProjects) : [
-      { id: '1', name: 'School', count: 0 },  // Changed '' to '1' to match backend
-      { id: '2', name: 'Home', count: 0 },    // Changed 'work' to '2'
-      { id: '3', name: 'Random', count: 0 }, // Changed 'personal' to '3'
-      { id: '4', name: 'Friends', count: 0 },  // Changed 'friends' to '4'
+      { id: '1', name: 'School', count: 0 },  
+      { id: '2', name: 'Home', count: 0 },   
+      { id: '3', name: 'Random', count: 0 }, 
+      { id: '4', name: 'Friends', count: 0 },  
     ];
   });
   
@@ -177,7 +167,6 @@ const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   
-  // Add effect to fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -187,7 +176,6 @@ const Dashboard: React.FC = () => {
           return;
         }
         
-        // Replace with your actual API endpoint
         const response = await axios.get('http://127.0.0.1:8000/api/users/user', {
           headers: {
             'Authorization': `Bearer ${token}`

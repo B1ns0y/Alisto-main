@@ -40,7 +40,6 @@ export const useDeleteTodo = () => {
   });
 };
 
-// Add this to your useQueryTodos.tsx file
 export const useUpdateTodo = () => {
   const queryClient = useQueryClient();
 

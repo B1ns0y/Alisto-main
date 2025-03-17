@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react"; // ✅ Import eye icons
+import { Eye, EyeOff } from "lucide-react"; 
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -9,13 +9,13 @@ const Register: React.FC = () => {
     username: "",
     email: "",
     password: "",
-    confirm_password: "",
+    confirmPassword: "",
   });
 
   const [errors, setErrors] = useState<string[]>([]);
   const [backendMessage, setBackendMessage] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // ✅ Toggle password visibility
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // ✅ Toggle confirm password
+  const [showPassword, setShowPassword] = useState(false); // 
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,7 +30,7 @@ const Register: React.FC = () => {
     setIsSubmitting(true);
     setErrors([]);
 
-    if (formData.password !== formData.confirm_password) {
+    if (formData.password !== formData.confirmPassword) {
       setErrors(["Passwords do not match."]);
       setIsSubmitting(false);
       return;
@@ -42,7 +42,7 @@ const Register: React.FC = () => {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        confirm_password: formData.confirm_password
+        confirm_password: formData.confirmPassword
       };
 
       // For debugging - remove in production
@@ -163,8 +163,8 @@ const Register: React.FC = () => {
             {/* Confirm Password Field with Toggle */}
             <div className="mb-4 relative">
               <input
-                name="confirm_password"
-                value={formData.confirm_password}
+                name="confirmPassword"
+                value={formData.confirmPassword}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border-gray-300 border rounded pr-10" // Add padding for icon
                 placeholder="Confirm Password"

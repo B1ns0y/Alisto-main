@@ -8,17 +8,15 @@ const SetPassword: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
- 
-  // In SetPassword.tsx
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     
     try {
-      // Make sure this URL matches exactly what's defined in your Django urls.py
       const response = await axios.post('http://127.0.0.1:8000/api/password-reset/', { email });
-      console.log('Response:', response); // Add this for debugging
+      console.log('Response:', response); 
 
       localStorage.setItem('resetEmail', email);
       console.log('Navigating to /set-password2');

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const VerifyEmail = () => {
-  const { uid, token } = useParams(); // Get uid and token from URL
+  const { uid, token } = useParams(); 
   const navigate = useNavigate();
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

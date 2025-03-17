@@ -57,7 +57,6 @@ const AccountSettings: React.FC = () => {
             description: "Your session has expired. Please log in again.",
             variant: "destructive",
           });
-          // You might want to redirect to login page here
         } else {
           toast({
             title: "Error",

@@ -49,9 +49,8 @@ const TaskList: React.FC<TaskListProps> = ({
   const groupedTasks = getGroupedTasks();
   
   const getProjectName = (projectId?: string) => {
-    // Check if projectId is undefined or empty
     if (projectId === undefined || projectId === '') {
-      return null; // Return null when no project is provided
+      return null; 
     }
   
     switch (projectId) {

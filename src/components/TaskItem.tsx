@@ -27,10 +27,8 @@ const TaskItem: React.FC<TaskItemProps> = ({
   projectName,
   deadline 
 }) => {
-  // Create a ref to the menu button
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
-  
-  // Handle click outside to close the menu
+
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuButtonRef.current && !menuButtonRef.current.contains(event.target as Node)) {
@@ -43,9 +41,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
     };
   }, [setShowTaskMenu]);
 
-  // In your TaskItem.tsx file, modify the formatDueDate function to handle both dueDate and deadline
 const formatDueDate = () => {
-  // First check if we have a dueDate (frontend format)
   if (task.dueDate) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -72,7 +68,6 @@ const formatDueDate = () => {
     }
   }
   
-  // If no dueDate but we have a deadline (backend format), use that instead
   if (task.deadline) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);

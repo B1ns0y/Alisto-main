@@ -19,7 +19,6 @@ import {
 import { Link } from 'react-router-dom';
 import { Project, Task } from '../types';
 import { useToast } from '../hooks/use-toast';
-import { fetchUserTasks } from "../services/todos/todosService";
 import { useTodos } from '@/hooks/tanstack/todos/useQueryTodos';
 
 
