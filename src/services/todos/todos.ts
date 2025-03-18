@@ -3,6 +3,7 @@ import { api } from "../../api/axios";
 
 
 import { API_BASE_URL } from "../getUser/userService";
+import { axiosClient } from "../axiosClient";
 // Fetch all todos
 
 
@@ -12,7 +13,7 @@ export const fetchTodos = async () => {
         const token = localStorage.getItem("access_token");
         console.log("Fetching todos with token:", token ? "Token exists" : "No token");
         
-        const response = await axios.get(`${API_BASE_URL}/todos/`, {
+        const response = await axiosClient.get(`/todos/`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -32,15 +33,9 @@ export const fetchTodos = async () => {
 // Add a new todo
 export const addTodo = async (todoData) => {
     const token = localStorage.getItem('access_token');
-    const response = await axios.post(
-      `${API_BASE_URL}/todos/create_task/`,
+    const response = await axiosClient.post(
+      `/todos/create_task/`,
       todoData,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
     );
     return response.data;
   };

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { axiosClient } from '../axiosClient';
 
 // Update this to match your API base URL
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -16,11 +17,7 @@ export const fetchUserData = async (): Promise<UserData> => {
   }
   
   try {
-    const response = await axios.get(`${API_BASE_URL}/users/user/`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+    const response = await axiosClient.get(`/users/user/`);
     
     return {
       username: response.data.username,

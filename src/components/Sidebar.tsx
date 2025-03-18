@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { Project, Task } from '../types';
 import { useToast } from '../hooks/use-toast';
 import { useTodos } from '@/hooks/tanstack/todos/useQueryTodos';
+import { fetchUserData } from '@/services/getUser/userService';
 
 
 interface SidebarProps {
@@ -56,7 +57,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [collapsed, setCollapsed] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const { data, isLoading, isError } = useTodos();
-
   useEffect(() => {
     if (data) {
       setTasks(data);
@@ -88,6 +88,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, []);
 
+  useEffect(() => {
+    console.log(userData);
+  }, [userData]
+);
   // Save collapsed state to localStorage when it changes
   useEffect(() => {
     localStorage.setItem('sidebar-collapsed', collapsed.toString());

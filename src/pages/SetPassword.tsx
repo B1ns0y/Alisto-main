@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { axiosClient } from '@/services/axiosClient';
 
 const SetPassword: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +15,7 @@ const SetPassword: React.FC = () => {
     setError('');
     
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/password-reset/`, { email });
+      const response = await axiosClient.post(`/password-reset/`, { email });
       console.log('Response:', response); 
 
       localStorage.setItem('resetEmail', email);

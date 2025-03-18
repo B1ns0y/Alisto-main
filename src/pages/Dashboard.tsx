@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
 import { useTodos,useDeleteTodo, useUpdateTodo } from '@/hooks/tanstack/todos/useQueryTodos';
 import { useNavigate } from 'react-router-dom';
+import { axiosClient } from '@/services/axiosClient';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -176,7 +177,7 @@ const Dashboard: React.FC = () => {
           return;
         }
         
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/user`, {
+        const response = await axiosClient.get(`/users/user`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
