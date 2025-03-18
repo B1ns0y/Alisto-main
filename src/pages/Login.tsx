@@ -98,6 +98,9 @@ const Login: React.FC = () => {
       if (response.status === 200) {
         localStorage.setItem("access_token", response.data.access);
         localStorage.setItem("refresh_token", response.data.refresh);
+        localStorage.setItem("user_id", response.data.id);
+        localStorage.setItem("user_email", response.data.email);
+        localStorage.setItem("user_name", response.data.username);
 
         // Save credentials to local storage if "Remember Me" is checked
         if (rememberMe) {
