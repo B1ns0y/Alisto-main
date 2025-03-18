@@ -15,7 +15,7 @@ const VerifyEmail = () => {
     }
 
     axios
-      .get(`http://127.0.0.1:8000/api/users/verify-email/${uid}/${token}/`)
+      .get(`${process.env.BASE_URL}/users/verify-email/${uid}/${token}/`)
       .then((response) => {
         setMessage(
             "✅ Email verified successfully! Redirecting to login in a second..."

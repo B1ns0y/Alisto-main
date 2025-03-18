@@ -6,7 +6,7 @@ interface RefreshTokenResponse {
 }
 
 const api: AxiosInstance = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: process.env.BASE_URL,
 });
 
 // Add request interceptor
@@ -46,7 +46,7 @@ api.interceptors.response.use(
         
         // Attempt to refresh token
         const response = await axios.post<RefreshTokenResponse>(
-          'http://127.0.0.1:8000/api/token/refresh/', 
+          `${process.env.BASE_URL}/token/refresh/`, 
           { refresh: refreshToken }
         );
         

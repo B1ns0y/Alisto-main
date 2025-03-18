@@ -36,7 +36,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/users/user/", {
+        const response = await axios.get(`${process.env.BASE_URL}/users/user/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -68,7 +68,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-      const response = await axios.patch("http://127.0.0.1:8000/api/users/user/", data, {
+      const response = await axios.patch(`${process.env.BASE_URL}/users/user/`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

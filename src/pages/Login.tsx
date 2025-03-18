@@ -18,7 +18,7 @@ const Login: React.FC = () => {
     const token = localStorage.getItem("access_token");
     if (token) {
       axios
-        .get("http://127.0.0.1:8000/api/user/", {
+        .get(`${process.env.BASE_URL}/user/`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then(() => navigate("/dashboard")) // Redirect if token is valid
@@ -45,7 +45,7 @@ const Login: React.FC = () => {
     try {
       // Include withCredentials if your server expects cookies
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/users/google/",
+        `${process.env.BASE_URL}/users/google/`,
         { credential: credentialResponse.credential },
         { 
           headers: { "Content-Type": "application/json" },
@@ -88,7 +88,7 @@ const Login: React.FC = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/token/", {
+      const response = await axios.post(`${process.env.BASE_URL}/token/`, {
         username,
         password,
       });

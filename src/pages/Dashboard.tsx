@@ -176,7 +176,7 @@ const Dashboard: React.FC = () => {
           return;
         }
         
-        const response = await axios.get('http://127.0.0.1:8000/api/users/user', {
+        const response = await axios.get(`${process.env.BASE_URL}/users/user`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

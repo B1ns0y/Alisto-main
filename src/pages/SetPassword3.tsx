@@ -33,7 +33,7 @@ const SetPassword3: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      await axios.post(`http://127.0.0.1:8000/api/password-reset-confirm/${uidb64}/${token}/`, {
+      await axios.post(`${process.env.BASE_URL}/password-reset-confirm/${uidb64}/${token}/`, {
         new_password: password,
         confirm_password: confirmPassword,
       });

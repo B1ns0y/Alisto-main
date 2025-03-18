@@ -15,7 +15,7 @@ const SetPassword: React.FC = () => {
     setError('');
     
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/password-reset/', { email });
+      const response = await axios.post(`${process.env.BASE_URL}/password-reset/`, { email });
       console.log('Response:', response); 
 
       localStorage.setItem('resetEmail', email);

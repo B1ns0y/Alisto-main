@@ -80,7 +80,7 @@ const UploadImageModal: React.FC<UploadImageModalProps> = ({ onClose, onUpload }
     }
     
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/user/upload-profile-picture/", {
+      const response = await fetch(`${process.env.BASE_URL}/user/upload-profile-picture/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
