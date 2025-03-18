@@ -7,7 +7,7 @@ import EditUsernameModal from "../EditUsernameModal";
 import EditPasswordModal from "../EditPasswordModal";
 import { useUser } from "@/contexts/UserContext";
 
-const API_URL = `${process.env.BASE_URL}/settings/`;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/settings/`;
 
 const AccountSettings: React.FC = () => {
   const { username, setUsername, profilePicture, setProfilePicture } = useUser();
@@ -31,7 +31,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    fetch(`${process.env.BASE_URL}/users/user/`, {
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/users/user/`, {
       method: "GET",
       headers: {
         'Authorization': `Bearer ${token}`,

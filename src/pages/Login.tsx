@@ -18,7 +18,7 @@ const Login: React.FC = () => {
     const token = localStorage.getItem("access_token");
     if (token) {
       axios
-        .get(`${process.env.BASE_URL}/user/`, {
+        .get(`${import.meta.env.VITE_API_BASE_URL}/user/`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then(() => navigate("/dashboard")) // Redirect if token is valid
@@ -45,7 +45,7 @@ const Login: React.FC = () => {
     try {
       // Include withCredentials if your server expects cookies
       const response = await axios.post(
-        `${process.env.BASE_URL}/users/google/`,
+        `${import.meta.env.VITE_API_BASE_URL}/users/google/`,
         { credential: credentialResponse.credential },
         { 
           headers: { "Content-Type": "application/json" },
@@ -88,7 +88,7 @@ const Login: React.FC = () => {
     setError("");
 
     try {
-      const response = await axios.post(`${process.env.BASE_URL}/token/`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/token/`, {
         username,
         password,
       });

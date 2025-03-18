@@ -102,8 +102,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const taskMutation = useMutation({
     mutationFn: async (taskData: Task) => {
       const url = isEditMode 
-        ? `${process.env.BASE_URL}/todos/update_task/${taskData.id}` 
-        : `${process.env.BASE_URL}/todos/create_task/`;
+        ? `${import.meta.env.VITE_API_BASE_URL}/todos/update_task/${taskData.id}` 
+        : `${import.meta.env.VITE_API_BASE_URL}/todos/create_task/`;
       
       const method = isEditMode ? 'PUT' : 'POST';
       

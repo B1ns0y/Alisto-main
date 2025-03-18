@@ -15,7 +15,7 @@ const VerifyEmail = () => {
     }
 
     axios
-      .get(`${process.env.BASE_URL}/users/verify-email/${uid}/${token}/`)
+      .get(`${import.meta.env.VITE_API_BASE_URL}/users/verify-email/${uid}/${token}/`)
       .then((response) => {
         setMessage(
             "✅ Email verified successfully! Redirecting to login in a second..."

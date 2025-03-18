@@ -48,7 +48,7 @@ const Register: React.FC = () => {
       // For debugging - remove in production
       console.log("Sending data:", requestData);
 
-      const response = await fetch(`${process.env.BASE_URL}/users/register/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/register/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -176,7 +176,7 @@ const Dashboard: React.FC = () => {
           return;
         }
         
-        const response = await axios.get(`${process.env.BASE_URL}/users/user`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/user`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

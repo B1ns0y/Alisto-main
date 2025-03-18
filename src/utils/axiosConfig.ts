@@ -6,7 +6,7 @@ interface RefreshTokenResponse {
 }
 
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
 // Add request interceptor
@@ -46,7 +46,7 @@ api.interceptors.response.use(
         
         // Attempt to refresh token
         const response = await axios.post<RefreshTokenResponse>(
-          `${process.env.BASE_URL}/token/refresh/`, 
+          `${import.meta.env.VITE_API_BASE_URL}/token/refresh/`, 
           { refresh: refreshToken }
         );
         

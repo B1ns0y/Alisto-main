@@ -80,7 +80,7 @@ const UploadImageModal: React.FC<UploadImageModalProps> = ({ onClose, onUpload }
     }
     
     try {
-      const response = await fetch(`${process.env.BASE_URL}/user/upload-profile-picture/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/upload-profile-picture/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

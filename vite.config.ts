@@ -22,5 +22,5 @@ export default defineConfig(({ mode }) => ({
   define: {
     VITE_GOOGLE_CLIENT_ID: JSON.stringify(process.env.VITE_GOOGLE_CLIENT_ID),
   },
-  base: process.env.VITE_BASE_PATH || "/Alisto-main", 
+
 }));

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = `${process.env.BASE_URL}/settings/`;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/settings/`;
 
 interface DeleteAccountModalProps {
   onClose: () => void;

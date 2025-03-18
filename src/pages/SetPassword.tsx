@@ -15,7 +15,7 @@ const SetPassword: React.FC = () => {
     setError('');
     
     try {
-      const response = await axios.post(`${process.env.BASE_URL}/password-reset/`, { email });
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/password-reset/`, { email });
       console.log('Response:', response); 
 
       localStorage.setItem('resetEmail', email);
