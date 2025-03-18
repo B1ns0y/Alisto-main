@@ -93,6 +93,8 @@ const Login: React.FC = () => {
         password,
       });
 
+      console.log("Logged in user: ", response.data)
+
       if (response.status === 200) {
         localStorage.setItem("access_token", response.data.access);
         localStorage.setItem("refresh_token", response.data.refresh);
