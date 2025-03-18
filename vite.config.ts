@@ -6,14 +6,13 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    host: "0.0.0.0", // Supports both IPv4 & IPv6
     port: 8080,
     open: true,
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -21,8 +20,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
-    "process.env.VITE_GOOGLE_CLIENT_ID": JSON.stringify(process.env.VITE_GOOGLE_CLIENT_ID),
+    VITE_GOOGLE_CLIENT_ID: JSON.stringify(process.env.VITE_GOOGLE_CLIENT_ID),
   },
-  base: process.env.VITE_BASE_PATH || "/Alisto-main",
+  base: process.env.VITE_BASE_PATH || "/Alisto-main", 
 }));
-
