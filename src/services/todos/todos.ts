@@ -1,13 +1,18 @@
 import axios from "axios";
 import { api } from "../../api/axios";
 
+
+import { API_BASE_URL } from "../getUser/userService";
 // Fetch all todos
+
+
+
 export const fetchTodos = async () => {
     try {
         const token = localStorage.getItem("access_token");
         console.log("Fetching todos with token:", token ? "Token exists" : "No token");
         
-        const response = await axios.get("http://localhost:8000/api/todos/", {
+        const response = await axios.get(`${API_BASE_URL}/todos/`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -28,7 +33,7 @@ export const fetchTodos = async () => {
 export const addTodo = async (todoData) => {
     const token = localStorage.getItem('access_token');
     const response = await axios.post(
-      "http://127.0.0.1:8000/api/todos/create_task/",
+      `${API_BASE_URL}/todos/create_task/`,
       todoData,
       {
         headers: {
@@ -47,7 +52,7 @@ export const deleteTodo = async (id) => {
       console.log(`Attempting to delete task with ID: ${id}`);
       
       // Check if this URL structure matches your backend
-      const response = await axios.delete(`http://127.0.0.1:8000/api/todos/delete_task/${id}/`, {
+      const response = await axios.delete(`${API_BASE_URL}/todos/delete_task/${id}/`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -77,7 +82,7 @@ export const updateTodo = async (todoData) => {
     
     try {
       const response = await axios.patch(
-        `http://127.0.0.1:8000/api/todos/update_task/${id}/`,
+        `${API_BASE_URL}/todos/update_task/${id}/`,
         updateData,
         {
           headers: {
@@ -96,7 +101,7 @@ export const updateTodo = async (todoData) => {
 export const fetchProjects = async () => {
     try {
         const token = localStorage.getItem("access_token"); // Retrieve token from storage
-        const response = await axios.get("http://localhost:8000/api/todos/", {
+        const response = await axios.get("${API_BASE_URL}/todos/", {
             headers: {
                 Authorization: `Bearer ${token}`, // Attach token
             },
