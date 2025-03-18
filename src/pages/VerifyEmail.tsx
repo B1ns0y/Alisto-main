@@ -13,9 +13,12 @@ const VerifyEmail = () => {
       setError("Invalid verification link.");
       return;
     }
-
     axios
-      .get(`${import.meta.env.VITE_API_BASE_URL}/users/verify-email/${uid}/${token}/`)
+      .get(`${import.meta.env.VITE_API_BASE_URL}/users/verify-email/${uid}/${token}/`, {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+      })
       .then((response) => {
         setMessage(
             "✅ Email verified successfully! Redirecting to login in a second..."
