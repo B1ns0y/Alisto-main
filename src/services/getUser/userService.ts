@@ -9,27 +9,14 @@ export interface UserData {
   profile_picture?: string;
 }
 
-export const fetchUserData = async (): Promise<UserData> => {
-  const token = localStorage.getItem('access_token');
-  
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-  
+export const fetchUserData = () => {
   try {
-    const response = await axiosClient.get(`/users/user/`);
-    
-    return {
-      username: response.data.username,
-      profile_picture: response.data.profile_picture || ''
-    };
+    const res = axiosClient.get("/users/user/")
+    return res
   } catch (error) {
-    console.error('Error fetching user data:', error);
-    throw error;
+    throw error
   }
-};
-
-
+}
 
 export const refreshToken = async (): Promise<string> => {
   const refreshToken = localStorage.getItem('refresh_token');
