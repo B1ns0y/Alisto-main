@@ -137,12 +137,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: taskData.project ? Number(taskData.project) : null,
+        project: taskData.project ? parseInt(taskData.project.toString(), 10) : null,
         deadline: deadline,
         is_important: Boolean(taskData.important),
         user_id: taskData.userId
       };
-    
+      console.log("Full API request data:", JSON.stringify(apiData));
       console.log("Sending to API:", apiData);
       
       try {
@@ -382,7 +382,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       important: !prev.important
     }));
   };
-
+  
   const getProjectIdFromName = (projectNameOrId: string): number => {
     // First, check if it's already a number (as a string)
     if (/^\d+$/.test(projectNameOrId)) {
@@ -401,7 +401,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     const normalizedName = projectNameOrId.toLowerCase();
     return projectMap[normalizedName] || 0;
   };
-  
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
   
