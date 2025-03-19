@@ -18,7 +18,7 @@ interface AddTaskModalProps {
     dueTime: string;
     important?: boolean;
     completed?: boolean;
-    userId: string; 
+    userData: string; 
   };
   setTaskData: React.Dispatch<React.SetStateAction<{
     id?: string;
@@ -29,12 +29,12 @@ interface AddTaskModalProps {
     dueTime: string;
     important?: boolean;
     completed?: boolean;
-    userId: string; 
+    userData: string; 
   }>>;
   handleSubmit: () => void;
   closeModal: () => void;
   projects: Project[];
-  userId: string;
+  userData: string;
 }
 
 
@@ -45,44 +45,44 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   handleSubmit: parentHandleSubmit, // Rename to avoid confusion
   closeModal,
   projects,
-  userId
+  userData
 }) => {
   const { user, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
   
-  // Wait for authentication to be ready before setting userId
+  // Wait for authentication to be ready before setting userData
   useEffect(() => {
     // Get the most reliable user ID from multiple sources
-    const getUserId = () => {
+    const getuserData = () => {
       // First try from auth context
       if (user?.id && user.id !== "undefined") {
         return user.id;
       }
       
       // Then try from props
-      if (userId && userId !== "undefined") {
-        return userId;
+      if (userData && userData !== "undefined") {
+        return userData;
       }
       
       // Then try from localStorage
-      const storedUserId = localStorage.getItem("user_id");
-      if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-        return storedUserId;
+      const storeduserData = localStorage.getItem("user_id");
+      if (storeduserData && storeduserData !== "undefined" && storeduserData !== "null") {
+        return storeduserData;
       }
       
       // If all else fails, return null
       return null;
     };
     
-    const effectiveUserId = getUserId();
+    const effectiveuserData = getuserData();
     
-    if (effectiveUserId) {
+    if (effectiveuserData) {
       setTaskData(prev => ({
         ...prev,
-        userId: effectiveUserId
+        userData: effectiveuserData
       }));
     }
-  }, [user, userId]);
+  }, [user, userData]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -158,10 +158,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       }
       
       // Improved user ID handling
-      const getUserId = () => {
+      const getuserData = () => {
         // First try from taskData
-        if (taskData.userId && taskData.userId !== "undefined") {
-          return taskData.userId;
+        if (taskData.userData && taskData.userData !== "undefined") {
+          return taskData.userData;
         }
         
         // Then try from auth context
@@ -170,16 +170,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         }
         
         // Then try from localStorage
-        const storedUserId = localStorage.getItem("user_id");
-        if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-          return storedUserId;
+        const storeduserData = localStorage.getItem("user_id");
+        if (storeduserData && storeduserData !== "undefined" && storeduserData !== "null") {
+          return storeduserData;
         }
         
         // If all else fails, throw an error
         throw new Error("Valid user ID is required but not available");
       };
       
-      const userIdToUse = getUserId();
+      const userDataToUse = getuserData();
       
       const apiData = {
         title: taskData.title,
@@ -187,7 +187,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         project: typeof taskData.project === 'number' && taskData.project > 0 ? taskData.project : null, 
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        user: userIdToUse
+        user: userDataToUse
       };
       
       console.log("Full API request data:", JSON.stringify(apiData));
@@ -229,16 +229,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   useEffect(() => {
     if (selectedDate) {
       // Get the most reliable user ID
-      const effectiveUserId = 
-        taskData.userId !== "undefined" ? taskData.userId : 
-        userId !== "undefined" ? userId : 
+      const effectiveuserData = 
+        taskData.userData !== "undefined" ? taskData.userData : 
+        userData !== "undefined" ? userData : 
         user?.id || 
         localStorage.getItem("user_id") || 
         "";
       
       setTaskData(prev => ({
         ...prev,
-        userId: effectiveUserId,
+        userData: effectiveuserData,
         dueDate: selectedDate instanceof Date ? selectedDate : null,
         dueTime: formatTime()
       }));
@@ -246,7 +246,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       // Check if selected date is valid (not in the past)
       validateDate(selectedDate);
     }
-  }, [selectedDate, selectedTime, userId, user]);
+  }, [selectedDate, selectedTime, userData, user]);
   
   const validateDate = (date: Date | null) => {
     if (!date) return;
@@ -474,10 +474,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     setApiError(null); // Clear previous errors before attempting submission
   
     // Get the most reliable user ID from multiple sources
-    const getUserId = () => {
+    const getuserData = () => {
       // First try from taskData
-      if (taskData.userId && taskData.userId !== "undefined") {
-        return taskData.userId;
+      if (taskData.userData && taskData.userData !== "undefined") {
+        return taskData.userData;
       }
       
       // Then try from auth context
@@ -486,23 +486,23 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       }
       
       // Then try from props
-      if (userId && userId !== "undefined") {
-        return userId;
+      if (userData && userData !== "undefined") {
+        return userData;
       }
       
       // Then try from localStorage
-      const storedUserId = localStorage.getItem("user_id");
-      if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-        return storedUserId;
+      const storeduserData = localStorage.getItem("user_id");
+      if (storeduserData && storeduserData !== "undefined" && storeduserData !== "null") {
+        return storeduserData;
       }
       
       // If all else fails, return null
       return null;
     };
     
-    const effectiveUserId = getUserId();
+    const effectiveuserData = getuserData();
     
-    if (!effectiveUserId) {
+    if (!effectiveuserData) {
       setApiError("User ID is required but not available. Please log in again.");
       return;
     }
@@ -510,7 +510,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     // Update the taskData one last time to ensure it has the right user ID
     setTaskData(prev => ({
       ...prev,
-      userId: effectiveUserId
+      userData: effectiveuserData
     }));
   
     // Prepare task data for submission with safety checks
@@ -521,7 +521,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       dueDate: taskData.dueDate, // Keep as Date object
       // Safely handle project conversion
       project: taskData.project != null ? taskData.project.toString() : "0",
-      userId: effectiveUserId, // Use the effective user ID
+      userData: effectiveuserData, // Use the effective user ID
       deadline: undefined // This will be handled in the mutation function
     };
   

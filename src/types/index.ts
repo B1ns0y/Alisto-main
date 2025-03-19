@@ -1,7 +1,7 @@
 
 export interface Task {
   deadline: Date;
-  userId: any;
+  userData: any;
   id: string;
   title: string;
   description?: string;
