@@ -384,6 +384,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   };
 
   const getProjectIdFromName = (projectNameOrId: string): number => {
+    // First, check if it's already a number (as a string)
     if (/^\d+$/.test(projectNameOrId)) {
       return parseInt(projectNameOrId, 10);
     }
@@ -398,9 +399,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     
     // Convert to lowercase for case-insensitive matching
     const normalizedName = projectNameOrId.toLowerCase();
-    return projectMap[normalizedName] || 0; // Return 0 or another default if not found
+    return projectMap[normalizedName] || 0;
   };
-
+  
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
   
