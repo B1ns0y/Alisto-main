@@ -145,13 +145,26 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         deadline = date.toISOString();
       }
       
-      // Get the userId from localStorage directly if not in taskData
-      const userIdToUse = taskData.userId && taskData.userId !== "undefined" 
-        ? taskData.userId 
-        : localStorage.getItem("user_id");
+      let userIdToUse = null;
+    
+      // First try from auth context
+      if (user && user.id) {
+        userIdToUse = user.id;
+      } 
+      // Then try from taskData
+      else if (taskData.userId && taskData.userId !== "undefined") {
+        userIdToUse = taskData.userId;
+      } 
+      // Finally try from localStorage
+      else {
+        const storedUserId = localStorage.getItem("user_id");
+        if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
+          userIdToUse = storedUserId;
+        }
+      }
       
       // Validate that we have a real user ID
-      if (!userIdToUse || userIdToUse === "undefined" || userIdToUse === "null") {
+      if (!userIdToUse) {
         throw new Error("Valid user ID is required but not available");
       }
       
@@ -161,7 +174,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         project: typeof taskData.project === 'number' && taskData.project > 0 ? taskData.project : null, 
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        user: userIdToUse // Now guaranteed to be a valid value
+        user: userIdToUse
       };
       
       console.log("Full API request data:", JSON.stringify(apiData));
