@@ -142,19 +142,23 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           date.setHours(0, 0, 0, 0);
         }
         
-        // Use ISO string format
         deadline = date.toISOString();
       }
-      const projectId = taskData.project ? Number(taskData.project) : null;
-
-
+      
+      // Get the userId from localStorage directly if not in taskData
+      const userIdToUse = taskData.userId || localStorage.getItem("user_id");
+      
+      if (!userIdToUse) {
+        throw new Error("User ID is required but not available");
+      }
+      
       const apiData = {
         title: taskData.title,
         description: taskData.description,
         project: taskData.project ? Number(taskData.project) : null, 
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        user: userId
+        user: userIdToUse // Use the direct userId instead of the one in taskData
       };
       
       console.log("Full API request data:", JSON.stringify(apiData));
@@ -433,6 +437,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
     setApiError(null); // Clear previous errors before attempting submission
   
+    // Get user ID from localStorage if not set in taskData
+    const effectiveUserId = taskData.userId || localStorage.getItem("user_id");
+    
+    if (!effectiveUserId) {
+      setApiError("User ID is required but not available. Please log in again.");
+      return;
+    }
+  
     // Prepare task data for submission
     const newTask: Task = {
       ...taskData,
@@ -440,6 +452,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       completed: taskData.completed ?? false, // Ensure completed is set
       dueDate: taskData.dueDate, // Keep as Date object
       project: taskData.project.toString(),
+      userId: effectiveUserId, // Use the effective user ID
       deadline: undefined // This will be handled in the mutation function
     };
   
