@@ -155,10 +155,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: taskData.project ? Number(taskData.project) : null, 
+        project: taskData.project != null ? Number(taskData.project) : null, 
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        user: userIdToUse // Use the direct userId instead of the one in taskData
+        user: userIdToUse
       };
       
       console.log("Full API request data:", JSON.stringify(apiData));
@@ -445,13 +445,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       return;
     }
   
-    // Prepare task data for submission
+    // Prepare task data for submission with safety checks
     const newTask: Task = {
       ...taskData,
       id: taskData.id ?? '', // Ensure id is set
       completed: taskData.completed ?? false, // Ensure completed is set
       dueDate: taskData.dueDate, // Keep as Date object
-      project: taskData.project.toString(),
+      // Safely handle project conversion
+      project: taskData.project != null ? taskData.project.toString() : "0",
       userId: effectiveUserId, // Use the effective user ID
       deadline: undefined // This will be handled in the mutation function
     };
