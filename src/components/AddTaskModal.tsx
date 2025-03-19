@@ -50,13 +50,23 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const navigate = useNavigate();
   
   useEffect(() => {
-    if (user?.id && user.id !== "undefined") {
+    console.log("User authentication state:", { 
+      isAuthenticated, 
+      userId: user?.id, 
+      headers: getAuthHeaders ? getAuthHeaders() : "No headers function" 
+    });
+    
+    // Don't update if user is not properly authenticated
+    if (isAuthenticated && user?.id && user.id !== "undefined") {
+      console.log("Setting user ID in task data:", user.id);
       setTaskData(prev => ({
         ...prev,
         userId: user.id
       }));
+    } else {
+      console.log("Authentication issue - not setting user ID");
     }
-  }, [user, setTaskData]);
+  }, [user, isAuthenticated, setTaskData]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -133,7 +143,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       }
       const projectId = taskData.project ? Number(taskData.project) : null;
 
-      const userId = user?.id || (taskData.userId && taskData.userId !== "undefined" ? taskData.userId : null);
 
       const apiData = {
         title: taskData.title,
@@ -141,9 +150,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         project: projectId, 
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        ...(userId ? { user_id: userId } : {})
       };
-            
+      
       console.log("Full API request data:", JSON.stringify(apiData));
       console.log("Sending to API:", apiData);
       
