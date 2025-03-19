@@ -18,7 +18,7 @@ interface AddTaskModalProps {
     dueTime: string;
     important?: boolean;
     completed?: boolean;
-    userData: string; 
+    userId: string; 
   };
   setTaskData: React.Dispatch<React.SetStateAction<{
     id?: string;
@@ -29,12 +29,12 @@ interface AddTaskModalProps {
     dueTime: string;
     important?: boolean;
     completed?: boolean;
-    userData: string; 
+    userId:string;
   }>>;
   handleSubmit: () => void;
   closeModal: () => void;
   projects: Project[];
-  userData: string;
+  userId: string;
 }
 
 
@@ -42,47 +42,22 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   isEditMode,
   taskData, 
   setTaskData, 
-  handleSubmit: parentHandleSubmit, // Rename to avoid confusion
+  handleSubmit, 
   closeModal,
   projects,
-  userData
+  userId
 }) => {
-  const { user, getAuthHeaders } = useAuth();
+  const { user, isAuthenticated, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
   
-  // Wait for authentication to be ready before setting userData
   useEffect(() => {
-    // Get the most reliable user ID from multiple sources
-    const getuserData = () => {
-      // First try from auth context
-      if (user?.id && user.id !== "undefined") {
-        return user.id;
-      }
-      
-      // Then try from props
-      if (userData && userData !== "undefined") {
-        return userData;
-      }
-      
-      // Then try from localStorage
-      const storeduserData = localStorage.getItem("user_id");
-      if (storeduserData && storeduserData !== "undefined" && storeduserData !== "null") {
-        return storeduserData;
-      }
-      
-      // If all else fails, return null
-      return null;
-    };
-    
-    const effectiveuserData = getuserData();
-    
-    if (effectiveuserData) {
+    if (user?.id) {
       setTaskData(prev => ({
         ...prev,
-        userData: effectiveuserData
+        userId: user.id
       }));
     }
-  }, [user, userData]);
+  }, [user]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -133,6 +108,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       
       const method = isEditMode ? 'PUT' : 'POST';
       
+      
       let deadline = null;
       if (taskData.dueDate) {
         const date = new Date(taskData.dueDate);
@@ -154,43 +130,20 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           date.setHours(0, 0, 0, 0);
         }
         
+        // Use ISO string format
         deadline = date.toISOString();
       }
       
-      // Improved user ID handling
-      const getuserData = () => {
-        // First try from taskData
-        if (taskData.userData && taskData.userData !== "undefined") {
-          return taskData.userData;
-        }
-        
-        // Then try from auth context
-        if (user?.id && user.id !== "undefined") {
-          return user.id;
-        }
-        
-        // Then try from localStorage
-        const storeduserData = localStorage.getItem("user_id");
-        if (storeduserData && storeduserData !== "undefined" && storeduserData !== "null") {
-          return storeduserData;
-        }
-        
-        // If all else fails, throw an error
-        throw new Error("Valid user ID is required but not available");
-      };
-      
-      const userDataToUse = getuserData();
-      
+      // Send the formatted data to the API with more explicit type checking
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: typeof taskData.project === 'number' && taskData.project > 0 ? taskData.project : null, 
+        project: taskData.project ? Number(taskData.project) : null,
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        user: userDataToUse
+        user_id: taskData.userId
       };
-      
-      console.log("Full API request data:", JSON.stringify(apiData));
+    
       console.log("Sending to API:", apiData);
       
       try {
@@ -198,7 +151,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           method,
           url,
           data: apiData,
-          headers: getAuthHeaders()
+          headers: getAuthHeaders ? getAuthHeaders() : {}
         });
         
         return response.data;
@@ -214,11 +167,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       navigate('/dashboard');
       // Close the modal
       closeModal();
-    },
-    onError: (error: any) => {
-      // Set error message for user feedback
-      setApiError(error.response?.data?.message || error.response?.data?.user?.[0] || "Failed to save task. Please try again.");
-      console.error("Task mutation error:", error);
     }
   });
   
@@ -228,17 +176,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
   useEffect(() => {
     if (selectedDate) {
-      // Get the most reliable user ID
-      const effectiveuserData = 
-        taskData.userData !== "undefined" ? taskData.userData : 
-        userData !== "undefined" ? userData : 
-        user?.id || 
-        localStorage.getItem("user_id") || 
-        "";
-      
       setTaskData(prev => ({
         ...prev,
-        userData: effectiveuserData,
+        userId: userId,
         dueDate: selectedDate instanceof Date ? selectedDate : null,
         dueTime: formatTime()
       }));
@@ -246,7 +186,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       // Check if selected date is valid (not in the past)
       validateDate(selectedDate);
     }
-  }, [selectedDate, selectedTime, userData, user]);
+  }, [selectedDate, selectedTime, userId]);
   
   const validateDate = (date: Date | null) => {
     if (!date) return;
@@ -263,6 +203,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       setDateError(null);
     }
   };
+  
   
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate();
@@ -416,15 +357,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     return foundProject ? foundProject.name : "Unknown";
   };
  
-  // Ensure project exists in the user's projects
   const handleProjectSelect = (id: string) => {
-    // Make sure the selected project is one of the available projects
-    const numericId = Number(id);
-    const projectExists = projects.some(p => Number(p.id) === numericId);
+    console.log("Raw Project ID/name:", id);
     
-    if (!projectExists) {
-      console.error("Selected project not found in user's projects:", id);
-      return;
+    // Convert project name to numeric ID
+    const numericId = getProjectIdFromName(id);
+    console.log("Mapped to numeric ID:", numericId);
+    
+    if (numericId === 0) {
+      console.error("Invalid project name:", id);
+      return; // Don't set invalid data
     }
     
     setTaskData(prev => ({
@@ -441,14 +383,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       important: !prev.important
     }));
   };
-  
-  const getProjectIdFromName = (projectNameOrId: string): number => {
-    // First, check if it's already a number (as a string)
-    if (/^\d+$/.test(projectNameOrId)) {
-      return parseInt(projectNameOrId, 10);
-    }
-    
-    // If it's a name, use the mapping
+
+  const getProjectIdFromName = (projectName: string): number => {
     const projectMap: Record<string, number> = {
       'school': 1,
       'home': 2,
@@ -457,11 +393,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     };
     
     // Convert to lowercase for case-insensitive matching
-    const normalizedName = projectNameOrId.toLowerCase();
-    return projectMap[normalizedName] || 0;
+    const normalizedName = projectName.toLowerCase();
+    return projectMap[normalizedName] || 0; // Return 0 or another default if not found
   };
 
-  // New handleFormSubmit that fixes the issue with the add task button
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
   
@@ -473,65 +408,19 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
     setApiError(null); // Clear previous errors before attempting submission
   
-    // Get the most reliable user ID from multiple sources
-    const getuserData = () => {
-      // First try from taskData
-      if (taskData.userData && taskData.userData !== "undefined") {
-        return taskData.userData;
-      }
-      
-      // Then try from auth context
-      if (user?.id && user.id !== "undefined") {
-        return user.id;
-      }
-      
-      // Then try from props
-      if (userData && userData !== "undefined") {
-        return userData;
-      }
-      
-      // Then try from localStorage
-      const storeduserData = localStorage.getItem("user_id");
-      if (storeduserData && storeduserData !== "undefined" && storeduserData !== "null") {
-        return storeduserData;
-      }
-      
-      // If all else fails, return null
-      return null;
-    };
-    
-    const effectiveuserData = getuserData();
-    
-    if (!effectiveuserData) {
-      setApiError("User ID is required but not available. Please log in again.");
-      return;
-    }
-  
-    // Update the taskData one last time to ensure it has the right user ID
-    setTaskData(prev => ({
-      ...prev,
-      userData: effectiveuserData
-    }));
-  
-    // Prepare task data for submission with safety checks
+    // Prepare task data for submission
     const newTask: Task = {
       ...taskData,
       id: taskData.id ?? '', // Ensure id is set
       completed: taskData.completed ?? false, // Ensure completed is set
       dueDate: taskData.dueDate, // Keep as Date object
-      // Safely handle project conversion
-      project: taskData.project != null ? taskData.project.toString() : "0",
-      userData: effectiveuserData, // Use the effective user ID
-      deadline: undefined // This will be handled in the mutation function
+      project: taskData.project.toString(),
+      deadline: undefined, // This will be handled in the mutation function
+      userData: {} // Add userData property
     };
   
     // Use mutation to submit the task
     taskMutation.mutate(newTask);
-    
-    // Also call the parent's handleSubmit if provided
-    if (typeof parentHandleSubmit === 'function') {
-      parentHandleSubmit();
-    }
   };
   
   const getProjectNameFromId = (projectId: number): string => {
@@ -549,12 +438,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const isFormValid = taskData.title.trim() !== '' && !dateError;
   // Check if the due date is valid
   const isDateValid = !dateError && taskData.title.trim() !== '';
-  
-  // This function serves as a wrapper for the handleSubmit prop
-  const onSubmitButtonClick = () => {
-    handleFormSubmit({ preventDefault: () => {} } as React.FormEvent);
-  };
-  
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
       <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 animate-in fade-in-50 zoom-in-95">

@@ -44,14 +44,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Check auth status on app load
     const token = localStorage.getItem('access_token');
-    const userData = localStorage.getItem('user_id');
+    const userId = localStorage.getItem('user_id');
     const userEmail = localStorage.getItem('user_email');
     const userName = localStorage.getItem('user_name');
    
-    if (token && userData && userEmail) {
+    if (token && userId && userEmail) {
       setIsAuthenticated(true);
       setUser({
-        id: userData,
+        id: userId,
         email: userEmail,
         name: userName || '',
       });

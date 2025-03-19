@@ -499,7 +499,7 @@ const Dashboard: React.FC = () => {
           handleSubmit={handleAddTask}
           closeModal={resetTaskForm}
           projects={projects}
-          userData={user?.id || ''} 
+          userId={user?.id || ''} 
         />
       )}
     </div>

@@ -16,13 +16,13 @@ export const useAuth = () => {
   
   // Initialize user data from localStorage on hook mount
   useEffect(() => {
-    const userData = localStorage.getItem("user_id");
+    const userId = localStorage.getItem("user_id");
     const userEmail = localStorage.getItem("user_email");
     const userName = localStorage.getItem("user_name");
     
-    if (userData && userEmail) {
+    if (userId && userEmail) {
       setUser({
-        id: userData,
+        id: userId,
         email: userEmail,
         name: userName || '',
       });
