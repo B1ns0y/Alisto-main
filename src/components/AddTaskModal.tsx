@@ -47,44 +47,18 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   projects,
   userId
 }) => {
-  const { user, isAuthenticated, isLoading, getAuthHeaders } = useAuth();
+  const { user, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
 
   // Wait for authentication to be ready before setting userId
   useEffect(() => {
-    if (!isLoading) { // Only proceed if auth loading is complete
-      // First try to get the user ID from the same source the dashboard uses
-      const dashboardUserId = localStorage.getItem("user_id");
-      
-      if (dashboardUserId && dashboardUserId !== "undefined" && dashboardUserId !== "null") {
-        console.log("Using dashboard userId from localStorage:", dashboardUserId);
-        setTaskData(prev => ({
-          ...prev,
-          userId: dashboardUserId
-        }));
-      } else if (isAuthenticated && user?.id) {
-        console.log("Setting user ID in task data:", user.id);
-        setTaskData(prev => ({
-          ...prev,
-          userId: user.id
-        }));
-      } else if (userId) {
-        // Fallback to prop if passed but auth is not ready
-        console.log("Using provided userId prop:", userId);
-        setTaskData(prev => ({
-          ...prev,
-          userId: userId
-        }));
-      } else {
-        console.error("User not properly authenticated", { 
-          isAuthenticated, 
-          userIdFromAuth: user?.id,
-          userIdFromProps: userId,
-          userIdFromStorage: dashboardUserId
-        });
-      }
+    if (user?.id) {
+      setTaskData(prev => ({
+        ...prev,
+        userId: user.id
+      }));
     }
-  }, [user, isAuthenticated, isLoading, setTaskData, userId]);
+  }, [user]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
