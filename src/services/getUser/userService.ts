@@ -9,14 +9,27 @@ export interface UserData {
   profile_picture?: string;
 }
 
-export const fetchUserData = () => {
+
+export const fetchUserData = async () => {
   try {
-    const res = axiosClient.get("/users/user/")
-    return res
+      const token = localStorage.getItem("access_token");
+      console.log("Fetching todos with token:", token ? "Token exists" : "No token");
+      
+      const response = await axiosClient.get(`/users/user/`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+      });
+      
+      console.log("User API response:", response.status, response.data);
+      return response.data;
   } catch (error) {
-    throw error
+      console.error("Error fetching user:", error.response?.status, error.response?.data || error.message);
+      throw new Error("Failed to fetch user");
   }
-}
+};
+
 
 export const refreshToken = async (): Promise<string> => {
   const refreshToken = localStorage.getItem('refresh_token');
