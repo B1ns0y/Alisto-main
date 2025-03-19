@@ -142,7 +142,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: projectId, // Send as number instead of string
+        project: typeof projectId === 'string' ? parseInt(projectId, 10) : projectId,// Send as number instead of string
         deadline: deadline,
         is_important: Boolean(taskData.important),
         user_id: userId
