@@ -8,6 +8,7 @@ interface AuthContextType {
   user: UserData | null;
   login: (tokens: TokenResponse) => void;
   logout: () => void;
+  getAuthHeaders: () => { Authorization: string };
 }
 
 interface UserData {
@@ -34,6 +35,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<UserData | null>(null);
   const navigate = useNavigate();
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('access_token');
+    return { Authorization: `Bearer ${token}` };
+  };
+  
   
   useEffect(() => {
     // Check auth status on app load
@@ -41,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const userId = localStorage.getItem('user_id');
     const userEmail = localStorage.getItem('user_email');
     const userName = localStorage.getItem('user_name');
-    
+   
     if (token && userId && userEmail) {
       setIsAuthenticated(true);
       setUser({
@@ -73,15 +79,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = (): void => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user_data');
-    // Reset any state
-    setUser(null); // If you have a user state
-    setIsAuthenticated(false); // If you have an auth state
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_name');
+    
+    setUser(null);
+    setIsAuthenticated(false);
     navigate('/login');
   };
   
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      login, 
+      logout,
+      getAuthHeaders 
+    }}>
       {children}
     </AuthContext.Provider>
   );

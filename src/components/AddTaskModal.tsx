@@ -51,16 +51,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
   // In your AddTaskModal component, make sure user ID is properly set
   useEffect(() => {
-    if (isAuthenticated && user?.id && user.id !== "undefined") {
+    if (isAuthenticated && user?.id) {
+      console.log("Setting user ID in task data:", user.id);
       setTaskData(prev => ({
         ...prev,
         userId: user.id
       }));
     } else {
-      // Handle authentication issue
-      console.error("User not properly authenticated");
+      console.error("User not properly authenticated", { isAuthenticated, userId: user?.id });
     }
-  }, [isAuthenticated, user]);
+  }, [user, isAuthenticated, setTaskData]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -154,7 +154,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           method,
           url,
           data: apiData,
-          headers: getAuthHeaders ? getAuthHeaders() : {}
+          headers: getAuthHeaders()
         });
         
         return response.data;
