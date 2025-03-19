@@ -76,7 +76,7 @@ export const updateTodo = async (todoData) => {
     }
     
     try {
-      const response = await axios.patch(
+      const response = await axios.put(
         `${API_BASE_URL}/todos/update_task/${id}/`,
         updateData,
         {
