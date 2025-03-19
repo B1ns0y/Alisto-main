@@ -56,7 +56,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         userId: user.id
       }));
     }
-  }, [user]);
+  }, [user, setTaskData]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -107,7 +107,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       
       const method = isEditMode ? 'PUT' : 'POST';
       
-      
       let deadline = null;
       if (taskData.dueDate) {
         const date = new Date(taskData.dueDate);
@@ -133,15 +132,22 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         deadline = date.toISOString();
       }
       
+      // Ensure user_id is set properly
+      const userId = user?.id || taskData.userId || '';
+      
+      // Ensure project is formatted correctly - might need to be a number
+      const projectId = taskData.project ? parseInt(String(taskData.project)) : null;
+      
       // Send the formatted data to the API with more explicit type checking
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: taskData.project ? String(taskData.project) : null,
+        project: projectId, // Send as number instead of string
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        user_id: taskData.userId
+        user_id: userId
       };
+      
       console.log("Full API request data:", JSON.stringify(apiData));
       console.log("Sending to API:", apiData);
       
@@ -166,8 +172,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       navigate('/dashboard');
       // Close the modal
       closeModal();
+    },
+    onError: (error: any) => {
+      // Set error message for user feedback
+      setApiError(error.response?.data?.message || "Failed to save task. Please try again.");
+      console.error("Task mutation error:", error);
     }
   });
+  
   
   useEffect(() => {
     setSelectedDate(taskData.dueDate);
