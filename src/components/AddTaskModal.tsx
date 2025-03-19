@@ -49,24 +49,18 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const { user, isAuthenticated, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
   
+  // In your AddTaskModal component, make sure user ID is properly set
   useEffect(() => {
-    console.log("User authentication state:", { 
-      isAuthenticated, 
-      userId: user?.id, 
-      headers: getAuthHeaders ? getAuthHeaders() : "No headers function" 
-    });
-    
-    // Don't update if user is not properly authenticated
     if (isAuthenticated && user?.id && user.id !== "undefined") {
-      console.log("Setting user ID in task data:", user.id);
       setTaskData(prev => ({
         ...prev,
         userId: user.id
       }));
     } else {
-      console.log("Authentication issue - not setting user ID");
+      // Handle authentication issue
+      console.error("User not properly authenticated");
     }
-  }, [user, isAuthenticated, setTaskData]);
+  }, [isAuthenticated, user]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -147,7 +141,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: projectId, 
+        project: taskData.project ? Number(taskData.project) : null, 
         deadline: deadline,
         is_important: Boolean(taskData.important),
       };
@@ -372,16 +366,15 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     return foundProject ? foundProject.name : "Unknown";
   };
  
+  // Ensure project exists in the user's projects
   const handleProjectSelect = (id: string) => {
-    console.log("Raw Project ID/name:", id);
+    // Make sure the selected project is one of the available projects
+    const numericId = Number(id);
+    const projectExists = projects.some(p => Number(p.id) === numericId);
     
-    // Convert project name to numeric ID
-    const numericId = getProjectIdFromName(id);
-    console.log("Mapped to numeric ID:", numericId);
-    
-    if (numericId === 0) {
-      console.error("Invalid project name:", id);
-      return; // Don't set invalid data
+    if (!projectExists) {
+      console.error("Selected project not found in user's projects:", id);
+      return;
     }
     
     setTaskData(prev => ({
