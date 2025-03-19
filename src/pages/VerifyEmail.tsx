@@ -13,15 +13,21 @@ const VerifyEmail = () => {
       setError("Invalid verification link.");
       return;
     }
+    
+    const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/users/verify-email/${uid}/${token}/`;
+    console.log("Making verification request to:", apiUrl);
+    
     axios
-      .get(`${import.meta.env.VITE_API_BASE_URL}/users/verify-email/${uid}/${token}/`)
+      .get(apiUrl)
       .then((response) => {
+        console.log("Verification response:", response.data);
         setMessage(
-            "✅ Email verified successfully! Redirecting to login in a second..."
-          );
-          setTimeout(() => navigate("/login"), 3000); // Redirect to login after 3 sec
+          "✅ Email verified successfully! Redirecting to login in a second..."
+        );
+        setTimeout(() => navigate("/login"), 3000);
       })
       .catch((err) => {
+        console.error("Verification error:", err.response?.data);
         setError(err.response?.data?.error || "Email verification failed.");
       });
   }, [uid, token, navigate]);
