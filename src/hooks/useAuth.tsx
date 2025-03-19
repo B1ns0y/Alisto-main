@@ -1,4 +1,3 @@
-// src/hooks/useAuth.tsx
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
@@ -13,6 +12,7 @@ export const useAuth = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Add loading state
   
   // Initialize user data from localStorage on hook mount
   useEffect(() => {
@@ -31,6 +31,7 @@ export const useAuth = () => {
       setUser(null);
       setIsAuthenticated(false);
     }
+    setIsLoading(false); // Set loading to false when done
   }, []);
   
   const logout = (): void => {
@@ -79,6 +80,7 @@ export const useAuth = () => {
   return { 
     user,
     isAuthenticated,
+    isLoading, // Add this to the return object
     logout,
     getAuthHeaders,
     refreshToken

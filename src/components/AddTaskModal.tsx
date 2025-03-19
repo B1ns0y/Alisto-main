@@ -49,6 +49,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
 }) => {
   const { user, isAuthenticated, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
+  
 
   useEffect(() => {
     if (isAuthenticated && user?.id) {
