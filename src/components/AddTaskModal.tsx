@@ -47,35 +47,30 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   projects,
   userId
 }) => {
-  const { user, isAuthenticated, getAuthHeaders } = useAuth();
+  const { user, isAuthenticated, isLoading, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
-  
 
+  // Wait for authentication to be ready before setting userId
   useEffect(() => {
-    if (isAuthenticated && user?.id) {
-      console.log("Setting user ID in task data:", user.id);
-      setTaskData(prev => {
-        // Only update if the userId isn't already set
-        if (prev.userId !== user.id) {
-          const updated = { ...prev, userId: user.id };
-          console.log("Updated task data with user ID:", updated);
-          return updated;
-        }
-        return prev; 
-      });
-    } else if (userId) {
-      setTaskData(prev => {
-        if (prev.userId !== userId) {
-          console.log("Using provided userId prop:", userId);
-          return { ...prev, userId };
-        }
-        return prev;
-      });
+    if (!isLoading) { // Only proceed if auth loading is complete
+      if (isAuthenticated && user?.id) {
+        console.log("Setting user ID in task data:", user.id);
+        setTaskData(prev => ({
+          ...prev,
+          userId: user.id
+        }));
+      } else if (userId) {
+        // Fallback to prop if passed but auth is not ready
+        console.log("Using provided userId prop:", userId);
+        setTaskData(prev => ({
+          ...prev,
+          userId: userId
+        }));
+      } else {
+        console.error("User not properly authenticated", { isAuthenticated, userId: user?.id });
+      }
     }
-    else if (!userId) {
-      console.error("User not properly authenticated", { isAuthenticated, userId: user?.id });
-    }
-  }, [user, isAuthenticated, setTaskData, userId]);
+  }, [user, isAuthenticated, isLoading, setTaskData, userId]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
