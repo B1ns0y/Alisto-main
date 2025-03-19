@@ -137,7 +137,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: taskData.project ? parseInt(taskData.project.toString(), 10) : null,
+        project: taskData.project || null,
         deadline: deadline,
         is_important: Boolean(taskData.important),
         user_id: taskData.userId
