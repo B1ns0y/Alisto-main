@@ -68,7 +68,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-      const response = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/users/user/`, data, {
+      interface UserResponse {
+        username: string;
+        profile_picture: string | null;
+      }
+
+      const response = await axios.patch<UserResponse>(`${import.meta.env.VITE_API_BASE_URL}/users/user/`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

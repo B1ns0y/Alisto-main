@@ -26,7 +26,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     
     if (data) {
-      const formattedTasks = data.map((task: any) => {
+      const formattedTasks = (data as Task[]).map((task: any) => {
         let projectValue = task.project;
         
         if (typeof task.project === 'string' && !projectMapping[task.project]) {
@@ -177,7 +177,7 @@ const Dashboard: React.FC = () => {
           return;
         }
         
-        const response = await axiosClient.get(`/users/user`, {
+        const response = await axiosClient.get<{ username: string; profilePicture?: string }>(`/users/user`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

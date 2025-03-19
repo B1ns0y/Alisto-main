@@ -26,7 +26,11 @@ export const refreshToken = async (): Promise<string> => {
   }
   
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+    interface RefreshTokenResponse {
+      access_token: string;
+    }
+
+    const response = await axios.post<RefreshTokenResponse>(`${API_BASE_URL}/auth/refresh/`, {
       refresh_token: refreshToken
     });
     

@@ -44,7 +44,15 @@ const Login: React.FC = () => {
   
     try {
       // Include withCredentials if your server expects cookies
-      const response = await axios.post(
+      interface GoogleLoginResponse {
+        access: string;
+        refresh: string;
+        user_id: string;
+        email: string;
+        name: string;
+      }
+
+      const response = await axios.post<GoogleLoginResponse>(
         `${import.meta.env.VITE_API_BASE_URL}/users/google/`,
         { credential: credentialResponse.credential },
         { 
@@ -88,7 +96,15 @@ const Login: React.FC = () => {
     setError("");
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/token/`, {
+      interface LoginResponse {
+        access: string;
+        refresh: string;
+        id: string;
+        email: string;
+        username: string;
+      }
+
+      const response = await axios.post<LoginResponse>(`${import.meta.env.VITE_API_BASE_URL}/token/`, {
         username,
         password,
       });

@@ -62,7 +62,11 @@ export const useAuth = () => {
       const refreshToken = localStorage.getItem("refresh_token");
       if (!refreshToken) return false;
       
-      const response = await axios.post('/api/auth/refresh', { refreshToken });
+      interface RefreshResponse {
+        accessToken: string;
+      }
+
+      const response = await axios.post<RefreshResponse>('/api/auth/refresh', { refreshToken });
       
       if (response.data && response.data.accessToken) {
         localStorage.setItem("access_token", response.data.accessToken);
