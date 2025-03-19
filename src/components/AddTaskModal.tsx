@@ -50,7 +50,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const navigate = useNavigate();
   
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && user.id !== "undefined") {
       setTaskData(prev => ({
         ...prev,
         userId: user.id
@@ -131,23 +131,19 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         // Use ISO string format
         deadline = date.toISOString();
       }
-      
-      // Ensure user_id is set properly
-      const userId = user?.id || taskData.userId || '';
-      
-      // Ensure project is formatted correctly - might need to be a number
       const projectId = taskData.project ? Number(taskData.project) : null;
-      
-      // Send the formatted data to the API with more explicit type checking
+
+      const userId = user?.id || (taskData.userId && taskData.userId !== "undefined" ? taskData.userId : null);
+
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: projectId,// Send as number instead of string
+        project: projectId, 
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        user_id: userId
+        ...(userId ? { user_id: userId } : {})
       };
-      
+            
       console.log("Full API request data:", JSON.stringify(apiData));
       console.log("Sending to API:", apiData);
       
