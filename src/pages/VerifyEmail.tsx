@@ -24,7 +24,7 @@ const VerifyEmail = () => {
         setMessage(
           "✅ Email verified successfully! Redirecting to login in a second..."
         );
-        setTimeout(() => navigate("/login"), 3000);
+        setTimeout(() => navigate("/login"), 10000);
       })
       .catch((err) => {
         console.error("Verification error:", err.response?.data);
