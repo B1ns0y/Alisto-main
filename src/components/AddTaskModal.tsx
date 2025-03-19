@@ -50,13 +50,15 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const navigate = useNavigate();
   
   // In your AddTaskModal component, make sure user ID is properly set
+  // In your useEffect that sets the user ID
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       console.log("Setting user ID in task data:", user.id);
-      setTaskData(prev => ({
-        ...prev,
-        userId: user.id
-      }));
+      setTaskData(prev => {
+        const updated = { ...prev, userId: user.id };
+        console.log("Updated task data with user ID:", updated);
+        return updated;
+      });
     } else {
       console.error("User not properly authenticated", { isAuthenticated, userId: user?.id });
     }
