@@ -136,13 +136,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       const userId = user?.id || taskData.userId || '';
       
       // Ensure project is formatted correctly - might need to be a number
-      const projectId = taskData.project ? parseInt(String(taskData.project)) : null;
+      const projectId = taskData.project ? Number(taskData.project) : null;
       
       // Send the formatted data to the API with more explicit type checking
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: typeof projectId === 'string' ? parseInt(projectId, 10) : projectId,// Send as number instead of string
+        project: projectId,// Send as number instead of string
         deadline: deadline,
         is_important: Boolean(taskData.important),
         user_id: userId
