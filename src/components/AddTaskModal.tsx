@@ -144,6 +144,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         project: taskData.project ? Number(taskData.project) : null, 
         deadline: deadline,
         is_important: Boolean(taskData.important),
+        user: userId
       };
       
       console.log("Full API request data:", JSON.stringify(apiData));
