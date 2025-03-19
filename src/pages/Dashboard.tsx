@@ -10,6 +10,7 @@ import axios from 'axios';
 import { useTodos,useDeleteTodo, useUpdateTodo } from '@/hooks/tanstack/todos/useQueryTodos';
 import { useNavigate } from 'react-router-dom';
 import { axiosClient } from '@/services/axiosClient';
+import { useAuth } from '@/hooks/useAuth';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -151,7 +152,7 @@ const Dashboard: React.FC = () => {
     const savedTab = localStorage.getItem('activeTab');
     return savedTab || 'today';
   });
-  
+  const { user, isAuthenticated } = useAuth();
   const [taskData, setTaskData] = useState<any>({
     title: '',
     description: '',
@@ -159,7 +160,8 @@ const Dashboard: React.FC = () => {
     dueDate: null as Date | null,
     dueTime: '',
     important: false,
-    priority: 1
+    priority: 1,
+    userId: user?.id || ''
   });
   
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -294,7 +296,7 @@ const Dashboard: React.FC = () => {
       dueDate: null, 
       dueTime: '',
       important: false,
-      priority: 1
+      priority: 1,
     });
     
     setIsEditMode(false);
@@ -497,7 +499,7 @@ const Dashboard: React.FC = () => {
           handleSubmit={handleAddTask}
           closeModal={resetTaskForm}
           projects={projects}
-          userId={userData.id} 
+          userId={user?.id || ''} 
         />
       )}
     </div>
