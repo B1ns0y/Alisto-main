@@ -29,6 +29,7 @@ interface AddTaskModalProps {
     dueTime: string;
     important?: boolean;
     completed?: boolean;
+    userId: string; 
   }>>;
   handleSubmit: () => void;
   closeModal: () => void;
@@ -53,14 +54,27 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     if (isAuthenticated && user?.id) {
       console.log("Setting user ID in task data:", user.id);
       setTaskData(prev => {
-        const updated = { ...prev, userId: user.id };
-        console.log("Updated task data with user ID:", updated);
-        return updated;
+        // Only update if the userId isn't already set
+        if (prev.userId !== user.id) {
+          const updated = { ...prev, userId: user.id };
+          console.log("Updated task data with user ID:", updated);
+          return updated;
+        }
+        return prev; 
       });
-    } else {
+    } else if (userId) {
+      setTaskData(prev => {
+        if (prev.userId !== userId) {
+          console.log("Using provided userId prop:", userId);
+          return { ...prev, userId };
+        }
+        return prev;
+      });
+    }
+    else if (!userId) {
       console.error("User not properly authenticated", { isAuthenticated, userId: user?.id });
     }
-  }, [user, isAuthenticated, setTaskData]);
+  }, [user, isAuthenticated, setTaskData, userId]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
