@@ -42,7 +42,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   isEditMode,
   taskData, 
   setTaskData, 
-  handleSubmit, 
+  handleSubmit: parentHandleSubmit, // Rename to avoid confusion
   closeModal,
   projects,
   userId
@@ -461,6 +461,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     return projectMap[normalizedName] || 0;
   };
 
+  // New handleFormSubmit that fixes the issue with the add task button
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
   
@@ -506,6 +507,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       return;
     }
   
+    // Update the taskData one last time to ensure it has the right user ID
+    setTaskData(prev => ({
+      ...prev,
+      userId: effectiveUserId
+    }));
+  
     // Prepare task data for submission with safety checks
     const newTask: Task = {
       ...taskData,
@@ -520,6 +527,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
     // Use mutation to submit the task
     taskMutation.mutate(newTask);
+    
+    // Also call the parent's handleSubmit if provided
+    if (typeof parentHandleSubmit === 'function') {
+      parentHandleSubmit();
+    }
   };
   
   const getProjectNameFromId = (projectId: number): string => {
@@ -537,6 +549,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const isFormValid = taskData.title.trim() !== '' && !dateError;
   // Check if the due date is valid
   const isDateValid = !dateError && taskData.title.trim() !== '';
+  
+  // This function serves as a wrapper for the handleSubmit prop
+  const onSubmitButtonClick = () => {
+    handleFormSubmit({ preventDefault: () => {} } as React.FormEvent);
+  };
   
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
