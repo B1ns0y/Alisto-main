@@ -1,4 +1,4 @@
-import axiosClient from "./axiosClient";
+import axiosClient from "@/services/axiosClient";
 
 
 // Fetch all todos
