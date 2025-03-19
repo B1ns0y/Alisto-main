@@ -383,7 +383,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     }));
   };
 
-  const getProjectIdFromName = (projectName: string): number => {
+  const getProjectIdFromName = (projectNameOrId: string): number => {
+    if (/^\d+$/.test(projectNameOrId)) {
+      return parseInt(projectNameOrId, 10);
+    }
+    
+    // If it's a name, use the mapping
     const projectMap: Record<string, number> = {
       'school': 1,
       'home': 2,
@@ -392,7 +397,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     };
     
     // Convert to lowercase for case-insensitive matching
-    const normalizedName = projectName.toLowerCase();
+    const normalizedName = projectNameOrId.toLowerCase();
     return projectMap[normalizedName] || 0; // Return 0 or another default if not found
   };
 
