@@ -53,10 +53,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   // Wait for authentication to be ready before setting userId
   useEffect(() => {
     if (!isLoading) { // Only proceed if auth loading is complete
-      // Get stored user ID from localStorage as a fallback
-      const storedUserId = localStorage.getItem("user_id");
+      // First try to get the user ID from the same source the dashboard uses
+      const dashboardUserId = localStorage.getItem("user_id");
       
-      if (isAuthenticated && user?.id) {
+      if (dashboardUserId && dashboardUserId !== "undefined" && dashboardUserId !== "null") {
+        console.log("Using dashboard userId from localStorage:", dashboardUserId);
+        setTaskData(prev => ({
+          ...prev,
+          userId: dashboardUserId
+        }));
+      } else if (isAuthenticated && user?.id) {
         console.log("Setting user ID in task data:", user.id);
         setTaskData(prev => ({
           ...prev,
@@ -69,19 +75,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           ...prev,
           userId: userId
         }));
-      } else if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-        // Third fallback - use localStorage
-        console.log("Using stored userId from localStorage:", storedUserId);
-        setTaskData(prev => ({
-          ...prev,
-          userId: storedUserId
-        }));
       } else {
         console.error("User not properly authenticated", { 
           isAuthenticated, 
           userIdFromAuth: user?.id,
           userIdFromProps: userId,
-          userIdFromStorage: storedUserId
+          userIdFromStorage: dashboardUserId
         });
       }
     }
