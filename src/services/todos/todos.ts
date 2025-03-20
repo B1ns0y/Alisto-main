@@ -1,4 +1,7 @@
-import axiosClient from "./axiosClient";
+import axiosClient from "../axiosClient";
+import axios from "axios"; // Ensure axios is imported if used in other functions
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Define API Base URL
 
 // Fetch all todos
 export const fetchTodos = async () => {
@@ -28,7 +31,14 @@ export const addTodo = async (todoData: any) => {
 export const deleteTodo = async (id: string) => {
   try {
     console.log(`Attempting to delete task with ID: ${id}`);
-    const response = await axiosClient.delete(`/todos/delete_task/${id}/`);
+    const token = localStorage.getItem("access_token");
+
+    const response = await axiosClient.delete(`/todos/delete_task/${id}/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     console.log("Delete response status:", response.status);
     return response.data;
   } catch (error: any) {
@@ -36,34 +46,13 @@ export const deleteTodo = async (id: string) => {
     throw error;
   }
 };
-};
-  
-export const deleteTodo = async (id) => {
-    try {
-      console.log("deleteTodo function called with ID:", id);
-      const token = localStorage.getItem('access_token');
-      console.log(`Attempting to delete task with ID: ${id}`);
-      
-      // Check if this URL structure matches your backend
-      const response = await axios.delete(`${API_BASE_URL}/todos/delete_task/${id}/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      console.log("Delete response status:", response.status);
-      return response.data;
-    } catch (error) {
-      console.error("Delete error:", error.response?.status, error.response?.data);
-      throw error;
-    }
-};
 
 // Update a todo
 export const updateTodo = async (todoData: any) => {
   try {
     const { id, ...updateData } = todoData;
-    
+    const token = localStorage.getItem("access_token");
+
     // Ensure project is correctly formatted
     if (updateData.project) {
       if (Array.isArray(updateData.project)) {
@@ -74,28 +63,16 @@ export const updateTodo = async (todoData: any) => {
       }
     }
 
-    const response = await axiosClient.patch(`/todos/update_task/${id}/`, updateData);
+    const response = await axios.patch(`${API_BASE_URL}/todos/update_task/${id}/`, updateData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
     return response.data;
   } catch (error: any) {
     console.error("Update API error details:", error.response?.data);
     throw error;
   }
-};
-
-    try {
-      const response = await axios.put(
-        `${API_BASE_URL}/todos/update_task/${id}/`,
-        updateData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Update API error details:", error.response?.data);
-      throw error;
-    }
 };

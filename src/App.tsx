@@ -7,7 +7,7 @@ import Home from "./pages/Home";
 import Index from "./app/(authentication)/login/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./app/(authentication)/login/Login";
-import Register from "./app/(authentication)/register/Register";
+import Register from "./app/(authentication)/Register/Register";
 import SetPassword from "./app/(authentication)/password/SetPassword";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./components/settings/Settings";

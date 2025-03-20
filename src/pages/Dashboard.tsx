@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Task } from '../types';
 import Sidebar from '../components/Sidebar';
-import AddTaskModal from '../components/AddTaskModal';
+import AddTaskModal from '../components/modals/AddTaskModal';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TaskList from '../components/dashboard/TaskList';
 import { useToast } from '@/hooks/use-toast';
