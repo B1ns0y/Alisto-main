@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axiosClient from "@/services/axiosClient";
-import { useRouter } from "next/navigation";
+import axios from "axios";
+import { axiosClient } from "@/services/axiosClient";
+import { useRouter } from "next/router";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import AuthTerms from "./AuthTerms";
