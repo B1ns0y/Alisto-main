@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { Search, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-
 
 interface DashboardHeaderProps {
   searchQuery: string;
@@ -30,10 +28,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       case 'completed':
         return 'Completed Tasks';
       default:
-        if (activeTab.startsWith('project-')) {
-          // This would be better with a context or prop that includes the project name
-          return 'Project Tasks';
-        }
         return 'All Tasks';
     }
   };

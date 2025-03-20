@@ -9,17 +9,11 @@ export interface Task {
   category?: string;
   tag?: string;
   completed: boolean;
-  project?: string;
   dueDate?: Date | null;
   dueTime?: string;
   important?: boolean;
 }
 
-export interface Project {
-  id: string;
-  name: string;
-  count: number;
-}
 
 export interface UserProfile {
   username: string;

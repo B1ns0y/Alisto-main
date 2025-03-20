@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Hash, Star, AlertCircle } from 'lucide-react';
-import { Project, Task } from '../types';
+import { X, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star, AlertCircle } from 'lucide-react';
+import { Task } from '../types';
 import { cn } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios'; 
@@ -13,7 +13,6 @@ interface AddTaskModalProps {
     id?: string;
     title: string;
     description: string;
-    project: number;
     dueDate: Date | null;
     dueTime: string;
     important?: boolean;
@@ -24,7 +23,6 @@ interface AddTaskModalProps {
     id?: string;
     title: string;
     description: string;
-    project: number;
     dueDate: Date | null;
     dueTime: string;
     important?: boolean;
@@ -33,7 +31,6 @@ interface AddTaskModalProps {
   }>>;
   handleSubmit: () => void;
   closeModal: () => void;
-  projects: Project[];
   userId: string;
 }
 
@@ -44,7 +41,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   setTaskData, 
   handleSubmit: parentHandleSubmit, // Rename to avoid confusion
   closeModal,
-  projects,
   userId
 }) => {
   const { user, getAuthHeaders } = useAuth();
@@ -112,7 +108,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   const [showYearDropdown, setShowYearDropdown] = useState(false);
-  const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
   
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -181,25 +176,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       
       const userIdToUse = getUserId();
       
-      // Extract and convert project value safely
-      let projectValue = null;
-      if (taskData.project !== undefined && taskData.project !== null) {
-        projectValue = typeof taskData.project === 'number' 
-                      ? taskData.project 
-                      : Number(taskData.project);
-                      
-        // If conversion resulted in NaN or 0, set to null
-        if (isNaN(projectValue) || projectValue <= 0) {
-          projectValue = null;
-        }
-      }
-      
       console.log("Auth headers:", getAuthHeaders());
       // In your React code
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: projectValue,
         deadline: deadline,
         is_important: Boolean(taskData.important),
         user: userIdToUse  
@@ -429,58 +410,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     return `${hour}:${minute.toString().padStart(2, '0')} ${period}`;
   };
   
-  const getDisplayName = (projectId: string | number) => {
-    const id = typeof projectId === 'number' ? projectId.toString() : projectId;
-    const foundProject = projects?.find((p) => p.id === id);
-    return foundProject ? foundProject.name : "Unknown";
-  };
- 
-  // Ensure project exists in the user's projects
-  const handleProjectSelect = (id: string) => {
-    // Make sure the selected project is one of the available projects
-    const numericId = Number(id);
-    const projectExists = projects.some(p => Number(p.id) === numericId);
-    
-    if (!projectExists) {
-      console.error("Selected project not found in user's projects:", id);
-      return;
-    }
-    
-    setTaskData(prev => ({
-      ...prev,
-      project: numericId
-    }));
-    
-    setShowProjectSelector(false);
-  };
-
   const toggleImportant = () => {
     setTaskData(prev => ({
       ...prev,
       important: !prev.important
     }));
   };
-  
-  const getProjectIdFromName = (projectNameOrId: string): number => {
-    // First, check if it's already a number (as a string)
-    if (/^\d+$/.test(projectNameOrId)) {
-      return parseInt(projectNameOrId, 10);
-    }
-    
-    // If it's a name, use the mapping
-    const projectMap: Record<string, number> = {
-      'school': 1,
-      'home': 2,
-      'random': 3,
-      'friends': 4
-    };
-    
-    // Convert to lowercase for case-insensitive matching
-    const normalizedName = projectNameOrId.toLowerCase();
-    return projectMap[normalizedName] || 0;
-  };
 
-  // New handleFormSubmit that fixes the issue with the add task button
   // New handleFormSubmit that fixes the issue with the add task button
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -541,12 +477,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       id: updatedTaskData.id ?? '', // Ensure id is set
       completed: updatedTaskData.completed ?? false, // Ensure completed is set
       dueDate: updatedTaskData.dueDate, // Keep as Date object
-
-      // Fix for project field type - handle all possible types of project value
-      project: updatedTaskData.project !== undefined && updatedTaskData.project !== null 
-        ? String(updatedTaskData.project)
-        : null,
-        
       userId: effectiveUserId, // Use the effective user ID
       deadline: undefined,
       userData: {} // Add userData property
@@ -559,17 +489,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     if (typeof parentHandleSubmit === 'function') {
       parentHandleSubmit();
     }
-  };
-  
-  const getProjectNameFromId = (projectId: number): string => {
-    const projectMap: Record<number, string> = {
-      1: 'School',
-      2: 'Home',
-      3: 'Random',
-      4: 'Friends'
-    };
-    
-    return projectMap[projectId] || 'Unknown';
   };
   
   // Don't require project for validation
@@ -617,27 +536,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             <button 
               type="button"
               className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${selectedDate ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
-              onClick={() => {
-                setShowCalendar(prev => !prev);
-                setShowProjectSelector(false); // Close project selector if it's open
-              }}
+              onClick={() => setShowCalendar(prev => !prev)}
             >
               <CalendarIcon size={16} />
               {selectedDate ? selectedDate.toLocaleDateString() : 'Set date & time'}
-            </button>
-            <button 
-              type="button"
-              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 
-                ${taskData.project ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
-                onClick={() => {
-                  setShowProjectSelector(prev => !prev);
-                  setShowCalendar(false); // Close calendar if it's open
-                }}
-            >
-              <Hash size={16} />
-              {taskData.project && taskData.project > 0
-                ? getProjectNameFromId(taskData.project)
-                : 'Project'}
             </button>
             <button 
               type="button"
@@ -653,51 +555,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             <div className="text-red-500 text-sm flex items-center gap-1">
               <AlertCircle size={16} />
               {dateError}
-            </div>
-          )}
-          
-          {showProjectSelector && (
-            <div className="mt-4 border border-gray-200 rounded-lg shadow-sm animate-in fade-in-50 zoom-in-95">
-              <div className="p-4 bg-white rounded-lg">
-                <h3 className="text-sm font-medium mb-2">My Projects</h3>
-                
-                <div className="space-y-1 max-h-48 overflow-y-auto">
-                {projects?.length > 0 ? (
-                  <>
-                    {/* Add option to clear project selection */}
-                    <div
-                      className="flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() => {
-                        setTaskData(prev => ({
-                          ...prev,
-                          project: undefined
-                        }));
-                        setShowProjectSelector(false);
-                      }}
-                    >
-                      <X size={16} className="mr-2 text-gray-500" />
-                      <span>No Project</span>
-                    </div>
-                    
-                    {/* Existing project options */}
-                    {projects.map((project) => (
-                      <div
-                        key={project.id}
-                        className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${
-                          taskData.project === getProjectIdFromName(project.id) ? "bg-blue-50 text-blue-600" : "text-gray-600"
-                        }`}
-                        onClick={() => handleProjectSelect(project.id)}
-                      >
-                        <Hash size={16} className="mr-2 text-gray-500" />
-                        <span>{project.name || project.id}</span>
-                      </div>
-                    ))}
-                  </>
-                ) : (
-                  <p className="text-gray-400">Cancel Project</p>
-                )}
-                </div>
-              </div>
             </div>
           )}
           

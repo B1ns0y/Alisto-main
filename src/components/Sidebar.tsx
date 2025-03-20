@@ -5,7 +5,6 @@ import {
   Calendar, 
   Star, 
   CheckSquare, 
-  Hash, 
   Menu, 
   Plus, 
   ChevronDown,
@@ -17,14 +16,13 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Project, Task } from '../types';
+import { Task } from '../types';
 import { useToast } from '../hooks/use-toast';
 import { useTodos } from '@/hooks/tanstack/todos/useQueryTodos';
 import { fetchUserData } from '@/services/getUser/userService';
 
 
 interface SidebarProps {
-  projects: Project[];
   activeTab: string;
   setActiveTab: (tab: string) => void;
   setShowAddTaskModal: (show: boolean) => void;
@@ -38,7 +36,6 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-  projects, 
   activeTab, 
   setActiveTab, 
   setShowAddTaskModal,
@@ -275,32 +272,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               </span>
             )}
           </li>
-        </ul>
-
-        {!collapsed && (
-          <div className="px-2 pt-6 pb-2">
-            <h3 className="text-xs font-semibold text-blue-500 uppercase tracking-wider">MY PROJECTS</h3>
-          </div>
-        )}
-        {collapsed && <div className="my-4 border-t border-gray-200"></div>}
-
-        <ul className="space-y-1">
-          {projects.map(project => (
-            <li 
-              key={project.id} 
-              className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors ${activeTab === `project-${project.id}` ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
-              onClick={() => setActiveTab(`project-${project.id}`)}
-              title={collapsed ? project.name : undefined}
-            >
-              <Hash size={18} className={collapsed ? 'mx-auto' : 'mr-3'} />
-              {!collapsed && <span>{project.name}</span>}
-              {!collapsed && (
-                <span className={`ml-auto bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-md ${activeTab === `project-${project.id}` ? 'bg-blue-100 text-blue-600' : ''}`}>
-                  {project.count}
-                </span>
-              )}
-            </li>
-          ))}
         </ul>
       </nav>
       

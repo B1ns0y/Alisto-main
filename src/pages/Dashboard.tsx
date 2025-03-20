@@ -1,13 +1,11 @@
-// Dashboard.tsx
 import React, { useState, useEffect } from 'react';
-import { Task, Project } from '../types';
+import { Task } from '../types';
 import Sidebar from '../components/Sidebar';
 import AddTaskModal from '../components/AddTaskModal';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TaskList from '../components/dashboard/TaskList';
 import { useToast } from '@/hooks/use-toast';
-import axios from 'axios';
-import { useTodos,useDeleteTodo, useUpdateTodo } from '@/hooks/tanstack/todos/useQueryTodos';
+import { useTodos, useDeleteTodo, useUpdateTodo } from '@/hooks/tanstack/todos/useQueryTodos';
 import { useNavigate } from 'react-router-dom';
 import { axiosClient } from '@/services/axiosClient';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,27 +15,10 @@ const Dashboard: React.FC = () => {
   const { data, isLoading, isError } = useTodos();
   const updateTaskMutation = useUpdateTodo(); 
   const deleteTaskMutation = useDeleteTodo();
-  const projectMapping = {
-    '1': 'school',  
-    '2': 'home',
-    '3': 'random',
-    '4': 'friends'
-  };
 
   useEffect(() => {
-    
     if (data) {
       const formattedTasks = data.map((task: any) => {
-        let projectValue = task.project;
-        
-        if (typeof task.project === 'string' && !projectMapping[task.project]) {
-          projectValue = getBackendProjectId(task.project);
-        }
-        else if (projectMapping[String(task.project)]) {
-          projectValue = projectMapping[String(task.project)];
-        }
-        
-   
         let dueDate = null;
         let dueTime = '';
         
@@ -61,8 +42,7 @@ const Dashboard: React.FC = () => {
           dueDate: dueDate,
           dueTime: dueTime,
           completed: task.is_completed,
-          important: task.is_important,
-          project: projectValue
+          important: task.is_important
         };
       });
       
@@ -129,23 +109,13 @@ const Dashboard: React.FC = () => {
     };
   });
 
-  // Get tasks and projects from localStorage 
+  // Get tasks from localStorage 
   const [tasks, setTasks] = useState<Task[]>(() => {
     const savedTasks = localStorage.getItem('tasks');
     return savedTasks ? JSON.parse(savedTasks).map((task: any) => ({
       ...task,
       dueDate: task.dueDate ? new Date(task.dueDate) : null
     })) : [];
-  });
-  
-  const [projects, setProjects] = useState<Project[]>(() => {
-    const savedProjects = localStorage.getItem('projects');
-    return savedProjects ? JSON.parse(savedProjects) : [
-      { id: '1', name: 'School', count: 0 },  
-      { id: '2', name: 'Home', count: 0 },   
-      { id: '3', name: 'Random', count: 0 }, 
-      { id: '4', name: 'Friends', count: 0 },  
-    ];
   });
   
   const [activeTab, setActiveTab] = useState<string>(() => {
@@ -156,7 +126,6 @@ const Dashboard: React.FC = () => {
   const [taskData, setTaskData] = useState<any>({
     title: '',
     description: '',
-    project: '',
     dueDate: null as Date | null,
     dueTime: '',
     important: false,
@@ -228,30 +197,8 @@ const Dashboard: React.FC = () => {
   // Save to localStorage whenever data changes
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
-    localStorage.setItem('projects', JSON.stringify(projects));
     localStorage.setItem('activeTab', activeTab);
-  }, [tasks, projects, activeTab]);
-
-  // Update project counts whenever tasks change
-  useEffect(() => {
-    updateProjectCounts(tasks);
-  }, [tasks]);
-
-  const updateProjectCounts = (updatedTasks: Task[]) => {
-    const projectCounts: { [key: string]: number } = {};
-    updatedTasks.forEach(task => {
-      if (task.project && !task.completed) {
-        // Convert task.project to string
-        const projectKey = String(task.project);
-        projectCounts[projectKey] = (projectCounts[projectKey] || 0) + 1;
-      }
-    });
-    
-    setProjects(prev => prev.map(project => ({
-      ...project,
-      count: projectCounts[project.id] || 0
-    })));
-  };
+  }, [tasks, activeTab]);
 
   const handleAddTask = () => {
     if (taskData.title.trim() === '') return;
@@ -292,7 +239,6 @@ const Dashboard: React.FC = () => {
     setTaskData({ 
       title: '', 
       description: '', 
-      project: '', 
       dueDate: null, 
       dueTime: '',
       important: false,
@@ -314,7 +260,6 @@ const Dashboard: React.FC = () => {
       id: task.id,
       title: task.title,
       description: task.description || '',
-      project: task.project || '',
       dueDate: task.dueDate || null,
       dueTime: task.dueTime || '',
       important: task.important || false,
@@ -328,12 +273,6 @@ const Dashboard: React.FC = () => {
     const taskToUpdate = tasks.find(task => task.id === id);
     if (!taskToUpdate) return;
   
-    // Convert project to the correct format
-    let projectId = taskToUpdate.project;
-    if (typeof projectId === 'string') {
-      projectId = getBackendProjectId(projectId) || projectId;
-    }
-  
     // Make sure to include the deadline in the update data
     const updateData = {
       id: id,
@@ -341,15 +280,13 @@ const Dashboard: React.FC = () => {
       title: taskToUpdate.title,
       description: taskToUpdate.description || "",
       deadline: taskToUpdate.dueDate ? new Date(taskToUpdate.dueDate).toISOString() : null,
-      is_important: taskToUpdate.important || false,
-      project: projectId ? parseInt(projectId, 10) : null// Convert to integer if not null
+      is_important: taskToUpdate.important || false
     };
   
     console.log("Sending update data:", updateData);
   
     updateTaskMutation.mutate(updateData, {
       onSuccess: (data) => {
-        // Rest of your code remains the same
         const updatedTasks = tasks.map(task => 
           task.id === id ? { ...task, completed: !task.completed } : task
         );
@@ -369,7 +306,6 @@ const Dashboard: React.FC = () => {
         }
       },
       onError: (error) => {
-        // Error handling remains the same
         toast({
           title: "Update failed",
           description: "Failed to update task status. Please try again.",
@@ -388,7 +324,6 @@ const Dashboard: React.FC = () => {
     setTasks(updatedTasks);
   };
 
-
   // Filter tasks based on active tab and search query
   const getFilteredTasks = () => {
     let filtered = tasks;
@@ -402,7 +337,6 @@ const Dashboard: React.FC = () => {
       );
     }
     
-    
     // For debugging
     console.log("Active Tab:", activeTab);
     console.log("Tasks before filtering:", filtered);
@@ -415,16 +349,6 @@ const Dashboard: React.FC = () => {
       const taskDate = task.dueDate ? new Date(task.dueDate) : null;
       if (taskDate) {
         taskDate.setHours(0, 0, 0, 0);
-      }
-      
-      // For debugging project-specific tasks
-      if (activeTab.startsWith('project-')) {
-        const projectId = activeTab.replace('project-', '');
-        console.log(`Looking for tasks with project ID: ${projectId}`);
-        console.log(`Current task project ID: ${task.project} (${typeof task.project})`);
-        
-        // Convert both to the same type (string) for comparison
-        return String(task.project) === String(projectId) && !task.completed;
       }
       
       switch (activeTab) {
@@ -442,21 +366,9 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  const getBackendProjectId = (frontendProjectId) => {
-    // Convert frontend project ID to backend ID
-    for (const [backendId, frontendId] of Object.entries(projectMapping)) {
-      if (frontendId === frontendProjectId) {
-        return backendId;
-      }
-    }
-    return null;
-  };
-  
-
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar 
-        projects={projects}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         setShowAddTaskModal={startAddTask}
@@ -480,7 +392,6 @@ const Dashboard: React.FC = () => {
         <TaskList 
           activeTab={activeTab}
           filteredTasks={getFilteredTasks()}
-          projects={projects}
           showTaskMenu={showTaskMenu}
           setShowTaskMenu={setShowTaskMenu}
           toggleTaskCompletion={toggleTaskCompletion}
@@ -498,7 +409,6 @@ const Dashboard: React.FC = () => {
           setTaskData={setTaskData}
           handleSubmit={handleAddTask}
           closeModal={resetTaskForm}
-          projects={projects}
           userId={user?.id || ''} 
         />
       )}

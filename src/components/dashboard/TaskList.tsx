@@ -1,13 +1,11 @@
-
 import React from 'react';
-import { Task, Project } from '../../types';
+import { Task } from '../../types';
 import TaskItem from '../TaskItem';
 import { ClipboardList } from 'lucide-react';
 
 interface TaskListProps {
   activeTab: string;
   filteredTasks: Task[];
-  projects: Project[];
   showTaskMenu: string | null;
   setShowTaskMenu: (id: string | null) => void;
   toggleTaskCompletion: (id: string) => void;
@@ -19,7 +17,6 @@ interface TaskListProps {
 const TaskList: React.FC<TaskListProps> = ({ 
   activeTab,
   filteredTasks,
-  projects,
   showTaskMenu,
   setShowTaskMenu,
   toggleTaskCompletion,
@@ -47,25 +44,6 @@ const TaskList: React.FC<TaskListProps> = ({
   };
   
   const groupedTasks = getGroupedTasks();
-  
-  const getProjectName = (projectId?: string) => {
-    if (projectId === undefined || projectId === '') {
-      return null; 
-    }
-  
-    switch (projectId) {
-      case 'school':
-        return 'School';
-      case 'home':
-        return 'Home';
-      case 'random':
-        return 'Random';
-      case 'friends':
-        return 'Friends';
-      default:
-        return 'Unknown Project';
-    }
-  };
   
   const formatDeadline = (dueDate: Date | null, dueTime: string | undefined) => {
     if (!dueDate) return '';
@@ -165,7 +143,6 @@ const TaskList: React.FC<TaskListProps> = ({
                     editTask={editTask}
                     showTaskMenu={showTaskMenu}
                     setShowTaskMenu={setShowTaskMenu}
-                    projectName={task.project ? getProjectName(task.project) : undefined}
                     deadline={formatDeadline(task.dueDate, task.dueTime)} 
                   />
                 ))}
@@ -174,7 +151,6 @@ const TaskList: React.FC<TaskListProps> = ({
           ))
       ) : (
         // Regular list
-        
         <div className="space-y-3">
           {filteredTasks.map(task => (
             <TaskItem
@@ -186,7 +162,6 @@ const TaskList: React.FC<TaskListProps> = ({
               editTask={editTask}
               showTaskMenu={showTaskMenu}
               setShowTaskMenu={setShowTaskMenu}
-              projectName={task.project ? getProjectName(task.project) : undefined}
               deadline={formatDeadline(task.dueDate, task.dueTime)} 
             />
           ))}
@@ -197,4 +172,3 @@ const TaskList: React.FC<TaskListProps> = ({
 };
 
 export default TaskList;
-
