@@ -194,15 +194,15 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         }
       }
       
-      // Fixed API data structure to match what the backend expects
+      
+      // In your React code
       const apiData = {
         title: taskData.title,
         description: taskData.description,
         project: projectValue,
         deadline: deadline,
-        is_important: Boolean(taskData.important),
-        // Make sure this field matches what the Django serializer expects exactly
-        user: userIdToUse
+        is_important: Boolean(taskData.important)
+        // Remove the user field since the backend gets it from authentication
       };
       
       console.log("Full API request data:", JSON.stringify(apiData));
