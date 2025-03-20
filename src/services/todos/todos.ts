@@ -1,10 +1,5 @@
 import axiosClient from "./axiosClient";
 
-import axios from "axios";
-import { api } from "../../api/axios";
-import { API_BASE_URL } from "../getUser/userService";
-import { axiosClient } from "../axiosClient";
-
 // Fetch all todos
 export const fetchTodos = async () => {
   try {
