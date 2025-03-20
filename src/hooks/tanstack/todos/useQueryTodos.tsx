@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchTodos, addTodo, deleteTodo, fetchProjects, updateTodo } from "../../../services/todos/todos";
+import { fetchTodos, addTodo, deleteTodo, updateTodo } from "../../../services/todos/todos";
 
 // Fetch todos hook
 export const useTodos = () => {
@@ -21,12 +21,6 @@ export const useAddTodo = () => {
   });
 };
 
-export const useProjects = () => {
-  return useQuery({
-    queryKey: ["projects"],
-    queryFn: fetchProjects,
-  });
-};
 
 // Delete todo mutation hook
 export const useDeleteTodo = () => {
