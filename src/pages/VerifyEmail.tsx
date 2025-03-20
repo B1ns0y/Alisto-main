@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "@/services/axiosClient"; // Make sure this import is correct
+import axios from "@/api/axios";
 
-const VerifyEmail = () => {  // Function name added here
+  const VerifyEmail  = () => {
   const { uid, token } = useParams(); 
   const navigate = useNavigate();
   const [message, setMessage] = useState<string | null>(null);
@@ -13,13 +13,21 @@ const VerifyEmail = () => {  // Function name added here
       setError("Invalid verification link.");
       return;
     }
+    
+    const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/users/verify-email/${uid}/${token}/`;
+    console.log("Making verification request to:", apiUrl);
+    
     axios
-      .get(`${import.meta.env.VITE_API_BASE_URL}/users/verify-email/${uid}/${token}/`)
+      .get(apiUrl)
       .then((response) => {
-        setMessage("✅ Email verified successfully! Redirecting to login in a second...");
-        setTimeout(() => navigate("/login"), 3000);
+        console.log("Verification response:", response.data);
+        setMessage(
+          "✅ Email verified successfully! Redirecting to login in a second..."
+        );
+        setTimeout(() => navigate("/login"), 10000);
       })
       .catch((err) => {
+        console.error("Verification error:", err.response?.data);
         setError(err.response?.data?.error || "Email verification failed.");
       });
   }, [uid, token, navigate]);

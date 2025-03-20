@@ -20,7 +20,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
-    VITE_GOOGLE_CLIENT_ID: JSON.stringify(process.env.VITE_GOOGLE_CLIENT_ID),
+    "process.env": {}, // 👈 This prevents "process is not defined" errors
   },
-
 }));

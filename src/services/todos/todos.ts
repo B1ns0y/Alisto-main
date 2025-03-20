@@ -1,4 +1,4 @@
-import axiosClient from "../axiosClient";
+import { axiosClient } from "../axiosClient";
 import axios from "axios"; // Ensure axios is imported if used in other functions
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Define API Base URL
