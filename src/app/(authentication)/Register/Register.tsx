@@ -83,7 +83,7 @@ const Register: React.FC = () => {
         return;
       }
 
-      setBackendMessage("Registration successful! Please verify your email.");
+      setBackendMessage("Registration successful!");
       setErrors([]);
       setTimeout(() => navigate("/login"), 1000);
     } catch (error) {
