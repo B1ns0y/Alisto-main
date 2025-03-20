@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosClient from "@/services/axiosClient";
 
-const VerifyEmail = () => {
+const   = () => {
   const { uid, token } = useParams(); 
   const navigate = useNavigate();
   const [message, setMessage] = useState<string | null>(null);

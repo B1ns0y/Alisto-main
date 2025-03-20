@@ -1,35 +1,18 @@
-import axios from 'axios';
-import { axiosClient } from '../axiosClient';
-
-// Update this to match your API base URL
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import axiosClient from "@/services/axiosClient";
 
 export interface UserData {
   username: string;
   profile_picture?: string;
 }
 
-
-export const fetchUserData = async () => {
+export const fetchUserData = () => {
   try {
-      const token = localStorage.getItem("access_token");
-      console.log("Fetching todos with token:", token ? "Token exists" : "No token");
-      
-      const response = await axiosClient.get(`/users/user/`, {
-          headers: {
-              Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-      });
-      
-      console.log("User API response:", response.status, response.data);
-      return response.data;
+    const res = axiosClient.get("/users/user/")
+    return res
   } catch (error) {
-      console.error("Error fetching user:", error.response?.status, error.response?.data || error.message);
-      throw new Error("Failed to fetch user");
+    throw error
   }
-};
-
+}
 
 export const refreshToken = async (): Promise<string> => {
   const refreshToken = localStorage.getItem('refresh_token');
@@ -52,32 +35,3 @@ export const refreshToken = async (): Promise<string> => {
     throw error;
   }
 };
-
-axios.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        const newToken = await refreshToken();
-        
-        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-        
-        return axios(originalRequest);
-      } catch (refreshError) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_data');
-        
-        window.dispatchEvent(new CustomEvent('auth:logout'));
-        
-        return Promise.reject(refreshError);
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);

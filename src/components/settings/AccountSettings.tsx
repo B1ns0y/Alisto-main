@@ -3,8 +3,8 @@ import { Pencil, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import UploadImageModal from "./UploadImageModal";
 import DeleteAccountModal from "./DeleteAccountModal";
-import EditUsernameModal from "../EditUsernameModal";
-import EditPasswordModal from "../EditPasswordModal";
+import EditUsernameModal from "../modals/EditUsernameModal";
+import EditPasswordModal from "../modals/EditPasswordModal";
 import { useUser } from "@/contexts/UserContext";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/settings/`;
