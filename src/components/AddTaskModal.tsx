@@ -194,15 +194,15 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         }
       }
       
-      
+      console.log("Auth headers:", getAuthHeaders());
       // In your React code
       const apiData = {
         title: taskData.title,
         description: taskData.description,
         project: projectValue,
         deadline: deadline,
-        is_important: Boolean(taskData.important)
-        // Remove the user field since the backend gets it from authentication
+        is_important: Boolean(taskData.important),
+        user: userIdToUse  
       };
       
       console.log("Full API request data:", JSON.stringify(apiData));
