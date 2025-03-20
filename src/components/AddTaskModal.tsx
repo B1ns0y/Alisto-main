@@ -181,12 +181,27 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       
       const userIdToUse = getUserId();
       
+      // Extract and convert project value safely
+      let projectValue = null;
+      if (taskData.project !== undefined && taskData.project !== null) {
+        projectValue = typeof taskData.project === 'number' 
+                      ? taskData.project 
+                      : Number(taskData.project);
+                      
+        // If conversion resulted in NaN or 0, set to null
+        if (isNaN(projectValue) || projectValue <= 0) {
+          projectValue = null;
+        }
+      }
+      
+      // Fixed API data structure to match what the backend expects
       const apiData = {
         title: taskData.title,
         description: taskData.description,
-        project: typeof taskData.project === 'number' && taskData.project > 0 ? taskData.project : null, 
+        project: projectValue,
         deadline: deadline,
         is_important: Boolean(taskData.important),
+        // Make sure this field matches what the Django serializer expects exactly
         user: userIdToUse
       };
       
@@ -216,12 +231,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       closeModal();
     },
     onError: (error: any) => {
-      // Set error message for user feedback
-      setApiError(error.response?.data?.message || error.response?.data?.user?.[0] || "Failed to save task. Please try again.");
+      // Enhanced error handling to show more specific messages
+      const errorMessage = error.response?.data?.detail ||
+                          error.response?.data?.message || 
+                          error.response?.data?.user?.[0] || 
+                          "Failed to save task. Please try again.";
+      setApiError(errorMessage);
       console.error("Task mutation error:", error);
     }
   });
-  
+    
   useEffect(() => {
     setSelectedDate(taskData.dueDate);
   }, [taskData.dueDate]);
@@ -462,17 +481,18 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   };
 
   // New handleFormSubmit that fixes the issue with the add task button
+  // New handleFormSubmit that fixes the issue with the add task button
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     // Validate date before submitting
     if (taskData.dueDate) {
       validateDate(taskData.dueDate);
       if (dateError) return;
     }
-  
+
     setApiError(null); // Clear previous errors before attempting submission
-  
+
     // Get the most reliable user ID from multiple sources
     const getUserId = () => {
       // First try from taskData
@@ -506,27 +526,32 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       setApiError("User ID is required but not available. Please log in again.");
       return;
     }
-  
+
     // Update the taskData one last time to ensure it has the right user ID
-    setTaskData(prev => ({
-      ...prev,
+    const updatedTaskData = {
+      ...taskData,
       userId: effectiveUserId
-    }));
-  
+    };
+    
+    setTaskData(updatedTaskData);
+
     // Prepare task data for submission with safety checks
     const newTask: Task = {
-      ...taskData,
-      id: taskData.id ?? '', // Ensure id is set
-      completed: taskData.completed ?? false, // Ensure completed is set
-      dueDate: taskData.dueDate, // Keep as Date object
+      ...updatedTaskData,
+      id: updatedTaskData.id ?? '', // Ensure id is set
+      completed: updatedTaskData.completed ?? false, // Ensure completed is set
+      dueDate: updatedTaskData.dueDate, // Keep as Date object
 
-      // Safely handle project conversion
-      project: taskData.project != null ? taskData.project.toString() : "0",
+      // Fix for project field type - handle all possible types of project value
+      project: updatedTaskData.project !== undefined && updatedTaskData.project !== null 
+        ? String(updatedTaskData.project)
+        : null,
+        
       userId: effectiveUserId, // Use the effective user ID
       deadline: undefined,
       userData: {} // Add userData property
     };
-  
+
     // Use mutation to submit the task
     taskMutation.mutate(newTask);
     
