@@ -40,68 +40,98 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   taskData, 
   setTaskData, 
   handleSubmit: parentHandleSubmit, 
-  closeModal
+  closeModal,
+  userId
 }) => {
   const { user, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
-  const [userId, setUserId] = useState<string | null>(null);
+  const [effectiveUserId, setEffectiveUserId] = useState<string | null>(null);
   
-  // Add this at the beginning of your component
   useEffect(() => {
-    // First, check if we're logged in at all
-    const token = localStorage.getItem("token") || localStorage.getItem("access_token");
-    if (!token) {
-      console.log("No auth token found, redirecting to login");
-      navigate('/login');
-      return;
-    }
-    
-    // Attempt to get user ID directly from API if needed
-    const fetchUserData = async () => {
-      try {
-        // If we already have user info, use it
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          if (userData.id) {
-            console.log("Using stored user ID:", userData.id);
-            setTaskData(prev => ({
-              ...prev,
-              userId: userData.id
-            }));
-            return;
+    const findUserId = () => {
+      // Check all possible sources of user ID
+      console.log("Looking for user ID from all sources");
+      
+      // From localStorage - check all possible keys
+      const possibleKeys = ["user_id", "userId", "id", "user"];
+      for (const key of possibleKeys) {
+        const value = localStorage.getItem(key);
+        console.log(`Checking localStorage.${key}:`, value);
+        
+        if (value && value !== "undefined" && value !== "null") {
+          // If it's a JSON object (like "user"), try to parse and get ID
+          if (key === "user") {
+            try {
+              const userData = JSON.parse(value);
+              if (userData.id) {
+                console.log("Found userId in localStorage.user:", userData.id);
+                setEffectiveUserId(userData.id);
+                return userData.id;
+              }
+            } catch (e) {
+              console.log("Failed to parse user JSON");
+            }
+          } else {
+            // Direct ID value
+            console.log(`Found userId in localStorage.${key}:`, value);
+            setEffectiveUserId(value);
+            return value;
           }
         }
-        
-        // Otherwise make an API call to get user info
-        const response = await api({
-          method: 'GET',
-          url: `${import.meta.env.VITE_API_BASE_URL}/auth/me/`,
-          headers: getAuthHeaders()
-        });
-        
-        if (response.data && response.data.id) {
-          console.log("Got user ID from API:", response.data.id);
-          // Store user info for future use
-          localStorage.setItem("user", JSON.stringify(response.data));
-          localStorage.setItem("user_id", response.data.id);
-          
-          setTaskData(prev => ({
-            ...prev,
-            userId: response.data.id
-          }));
-        } else {
-          throw new Error("API returned invalid user data");
-        }
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        setApiError("Authentication error. Please log in again.");
-        setTimeout(() => navigate('/login'), 2000);
       }
+      
+      // From auth context if available
+      if (user) {
+        console.log("Checking user from auth context:", user);
+        if (user.id && user.id !== "undefined" && user.id !== "null") {
+          console.log("Found userId in auth context:", user.id);
+          setEffectiveUserId(user.id);
+          return user.id;
+        }
+      }
+      
+      // From props
+      if (userId && userId !== "undefined" && userId !== "null") {
+        console.log("Found userId in props:", userId);
+        setEffectiveUserId(userId);
+        return userId;
+      }
+      
+      // If we can't find a user ID, check if we have auth tokens
+      // that might contain user info
+      const token = localStorage.getItem("token") || 
+                   localStorage.getItem("access_token") || 
+                   localStorage.getItem("jwt");
+                   
+      if (token) {
+        try {
+          // JWT tokens have three parts split by periods
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            // The middle part is the payload, base64 encoded
+            const payload = JSON.parse(atob(parts[1]));
+            console.log("JWT payload:", payload);
+            
+            // Check if payload contains user ID (common fields)
+            const id = payload.user_id || payload.sub || payload.id;
+            if (id) {
+              console.log("Found userId in JWT token:", id);
+              setEffectiveUserId(id);
+              return id;
+            }
+          }
+        } catch (e) {
+          console.log("Failed to extract user ID from token");
+        }
+      }
+      
+      console.log("NO VALID USER ID FOUND ANYWHERE");
+      return null;
     };
     
-    fetchUserData();
-  }, []);
+    findUserId();
+  }, [user, userId]);
+  
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -446,8 +476,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     
     setApiError(null);
     
-    // Use the userId state we've set
-    if (!userId) {
+    if (!effectiveUserId) {
       setApiError("User ID is required but not available. Please log in again.");
       return;
     }
@@ -455,7 +484,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     // Update the taskData with our verified userId
     const updatedTaskData = {
       ...taskData,
-      userId: userId
+      userId: effectiveUserId
     };
     
     setTaskData(updatedTaskData);
