@@ -46,29 +46,62 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
   
-  // Wait for authentication to be ready before setting userId
+  // Add this at the beginning of your component
   useEffect(() => {
-    const fetchAndSetUserId = async () => {
-      try {        
-        // Then try from localStorage
-        const storedUserId = localStorage.getItem("user_id");
-        if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-          console.log("Setting userId from localStorage:", storedUserId);
-          setUserId(storedUserId);
-          return;
+    // First, check if we're logged in at all
+    const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+    if (!token) {
+      console.log("No auth token found, redirecting to login");
+      navigate('/login');
+      return;
+    }
+    
+    // Attempt to get user ID directly from API if needed
+    const fetchUserData = async () => {
+      try {
+        // If we already have user info, use it
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          if (userData.id) {
+            console.log("Using stored user ID:", userData.id);
+            setTaskData(prev => ({
+              ...prev,
+              userId: userData.id
+            }));
+            return;
+          }
         }
         
-        // If we get here, no valid ID was found
-        console.error("No valid user ID found from any source");
-        setApiError("User ID is required but not available. Please log in again.");
+        // Otherwise make an API call to get user info
+        const response = await api({
+          method: 'GET',
+          url: `${import.meta.env.VITE_API_BASE_URL}/auth/me/`,
+          headers: getAuthHeaders()
+        });
+        
+        if (response.data && response.data.id) {
+          console.log("Got user ID from API:", response.data.id);
+          // Store user info for future use
+          localStorage.setItem("user", JSON.stringify(response.data));
+          localStorage.setItem("user_id", response.data.id);
+          
+          setTaskData(prev => ({
+            ...prev,
+            userId: response.data.id
+          }));
+        } else {
+          throw new Error("API returned invalid user data");
+        }
       } catch (error) {
-        console.error("Error fetching user ID:", error);
-        setApiError("Error retrieving user information. Please log in again.");
+        console.error("Failed to fetch user data:", error);
+        setApiError("Authentication error. Please log in again.");
+        setTimeout(() => navigate('/login'), 2000);
       }
     };
-  
-    fetchAndSetUserId();
-  }, [user]);
+    
+    fetchUserData();
+  }, []);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -111,84 +144,64 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
   // Fix the mutation function to handle dates properly
   const taskMutation = useMutation({
+    // In your task mutation function
     mutationFn: async (taskData: ITask) => {
+      // Get token from localStorage
+      const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+      
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+      
       const url = isEditMode 
         ? `${import.meta.env.VITE_API_BASE_URL}/todos/update_task/${taskData.id}` 
         : `${import.meta.env.VITE_API_BASE_URL}/todos/create_task/`;
       
       const method = isEditMode ? 'PUT' : 'POST';
       
+      // Prepare deadline
       let deadline = null;
       if (taskData.dueDate) {
-        const date = new Date(taskData.dueDate);
-        
-        if (taskData.dueTime) {
-          const [timeStr, period] = taskData.dueTime.split(' ');
-          const [hourStr, minuteStr] = timeStr.split(':');
-          let hours = parseInt(hourStr);
-          const minutes = parseInt(minuteStr);
-          
-          if (period === 'PM' && hours < 12) {
-            hours += 12;
-          } else if (period === 'AM' && hours === 12) {
-            hours = 0;
-          }
-          
-          date.setHours(hours, minutes, 0, 0);
-        } else {
-          date.setHours(0, 0, 0, 0);
-        }
-        
-        deadline = date.toISOString();
+        // Your existing deadline logic
       }
       
-      // Improved user ID handling
-      const getUserId = () => {
-        // First try from taskData
-        if (taskData.userId && taskData.userId !== "undefined") {
-          return taskData.userId;
-        }
-        
-        // Then try from auth context
-        if (user?.id && user.id !== "undefined") {
-          return user.id;
-        }
-        
-        // Then try from localStorage
-        const storedUserId = localStorage.getItem("user_id");
-        if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-          return storedUserId;
-        }
-        
-        // If all else fails, throw an error
-        throw new Error("Valid user ID is required but not available");
+      // Add authorization to headers explicitly
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       };
       
-      const userIdToUse = getUserId();
+      console.log("Using token for auth:", token);
       
-      console.log("Auth headers:", getAuthHeaders());
-      // In your React code
       const apiData = {
         title: taskData.title,
         description: taskData.description,
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        user: userIdToUse  
+        // Either don't send user ID or get it from a reliable source
+        ...(taskData.userId && { user: taskData.userId })
       };
-      
-      console.log("Full API request data:", JSON.stringify(apiData));
-      console.log("Sending to API:", apiData);
       
       try {
         const response = await api({
           method,
           url,
           data: apiData,
-          headers: getAuthHeaders()
+          headers
         });
         
         return response.data;
       } catch (error: any) {
+        // Handle 401 Unauthorized errors by redirecting to login
+        if (error.response && error.response.status === 401) {
+          // Clear invalid auth data
+          localStorage.removeItem("token");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("user_id");
+          localStorage.removeItem("user");
+          
+          throw new Error("Authentication expired. Please log in again.");
+        }
         console.error("API Error Details:", error.response?.data || error.message);
         throw error;
       }
