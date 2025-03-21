@@ -30,7 +30,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.get(`/users/user/`)
+    api.get(`/user/`)
       .then((response) => {
         console.log("User settings response:", response);
         // Don't check status here as it seems to be causing issues
@@ -73,7 +73,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.put(`/users/user/`, {
+    api.put(`/user/`, {
       username: newUsername
     })
       .then((response) => {
@@ -109,7 +109,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.put(`/users/user/`, {
+    api.put(`/user/`, {
       password: newPassword
     })
       .then((response) => {

@@ -4,7 +4,7 @@ import { IUserProfile } from "@/types";
 
 export const fetchUserData = async (username:string) => {
   try {
-    const res = await api.get(`/users/user/`);
+    const res = await api.get(`/user/`);
     console.log(res.data);
     const data = res.data
     const user: IUserProfile = {
