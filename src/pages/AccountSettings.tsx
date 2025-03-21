@@ -73,7 +73,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.patch(`/users/user/`, {
+    api.put(`/users/user/`, {
       username: newUsername
     })
       .then((response) => {
@@ -109,7 +109,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.patch(`/users/user/`, {
+    api.put(`/users/user/`, {
       password: newPassword
     })
       .then((response) => {
