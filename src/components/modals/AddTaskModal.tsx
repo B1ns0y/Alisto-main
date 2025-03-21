@@ -48,9 +48,45 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const [effectiveUserId, setEffectiveUserId] = useState<string | null>(null);
   
   useEffect(() => {
-    const findUserId = () => {
+    // Fetch user data directly from the API similar to AccountSettings component
+    const fetchUserData = async () => {
+      try {
+        console.log("Fetching user data for task modal...");
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        
+        if (!token) {
+          console.log("No authentication token found");
+          return;
+        }
+        
+        // Use the same endpoint as in AccountSettings
+        const response = await api.get(`/users/user/`);
+        const userData = response.data;
+        
+        console.log("User data fetched:", userData);
+        
+        if (userData && userData.id) {
+          console.log("Setting effective user ID from API:", userData.id);
+          setEffectiveUserId(userData.id);
+          localStorage.setItem("user_id", userData.id);
+          
+          // Update task data with the fetched user ID
+          setTaskData(prev => ({
+            ...prev,
+            userId: userData.id
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        
+        // Fallback to the existing user ID finding logic
+        findUserIdFromLocalSources();
+      }
+    };
+    
+    const findUserIdFromLocalSources = () => {
       // Check all possible sources of user ID
-      console.log("Looking for user ID from all sources");
+      console.log("Looking for user ID from local sources");
       
       // From localStorage - check all possible keys
       const possibleKeys = ["user_id", "userId", "id", "user"];
@@ -129,9 +165,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       return null;
     };
     
-    findUserId();
-  }, [user, userId]);
-  
+    // First try to fetch from API, then fall back to local sources
+    fetchUserData();
+  }, [user, userId, setTaskData]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -174,7 +210,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
   // Fix the mutation function to handle dates properly
   const taskMutation = useMutation({
-    // In your task mutation function
     mutationFn: async (taskData: ITask) => {
       // Get token from localStorage
       const token = localStorage.getItem("token") || localStorage.getItem("access_token");
@@ -189,10 +224,30 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       
       const method = isEditMode ? 'PUT' : 'POST';
       
-      // Prepare deadline
+      // Prepare deadline - properly format the date and time
       let deadline = null;
       if (taskData.dueDate) {
-        // Your existing deadline logic
+        const dateObj = new Date(taskData.dueDate);
+        
+        // Parse time from dueTime
+        if (taskData.dueTime) {
+          const [timeStr, period] = taskData.dueTime.split(' ');
+          const [hourStr, minuteStr] = timeStr.split(':');
+          let hour = parseInt(hourStr);
+          const minute = parseInt(minuteStr);
+          
+          // Convert to 24 hour format
+          if (period === 'PM' && hour < 12) {
+            hour += 12;
+          } else if (period === 'AM' && hour === 12) {
+            hour = 0;
+          }
+          
+          dateObj.setHours(hour, minute, 0, 0);
+        }
+        
+        // Format as ISO string
+        deadline = dateObj.toISOString();
       }
       
       // Add authorization to headers explicitly
@@ -208,9 +263,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         description: taskData.description,
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        // Either don't send user ID or get it from a reliable source
-        ...(taskData.userId && { user: taskData.userId })
+        // Use the user ID from the task data
+        user: taskData.userId
       };
+      
+      console.log("Sending task data:", apiData);
       
       try {
         const response = await api({
@@ -261,17 +318,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
   useEffect(() => {
     if (selectedDate) {
-      // Get the most reliable user ID
-      const effectiveUserId = 
-        taskData.userId !== "undefined" ? taskData.userId : 
-        userId !== "undefined" ? userId : 
-        user?.id || 
-        localStorage.getItem("user_id") || 
-        "";
-      
+      // Use the most reliable user ID
       setTaskData(prev => ({
         ...prev,
-        userId: effectiveUserId,
+        userId: effectiveUserId || prev.userId,
         dueDate: selectedDate instanceof Date ? selectedDate : null,
         dueTime: formatTime()
       }));
@@ -279,7 +329,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       // Check if selected date is valid (not in the past)
       validateDate(selectedDate);
     }
-  }, [selectedDate, selectedTime, userId, user]);
+  }, [selectedDate, selectedTime, effectiveUserId]);
   
   const validateDate = (date: Date | null) => {
     if (!date) {
@@ -495,7 +545,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       id: updatedTaskData.id ?? '',
       completed: updatedTaskData.completed ?? false,
       dueDate: updatedTaskData.dueDate,
-      userId: userId,
+      userId: effectiveUserId,
       deadline: undefined,
       userData: {}
     };
