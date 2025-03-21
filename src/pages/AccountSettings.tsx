@@ -79,7 +79,7 @@ const AccountSettings: React.FC = () => {
       username: newUsername
     };
     
-    api.put(`/users/user/`, updatedUserData)
+    api.patch(`/users/user/`, updatedUserData)
       .then((response) => {
         console.log("Username settings response:", response);
         return response.data;
@@ -121,7 +121,7 @@ const AccountSettings: React.FC = () => {
       password: newPassword
     };
     
-    api.put(`/users/user/`, updatedUserData)
+    api.patch(`/users/user/`, updatedUserData)
       .then((response) => {
         console.log("Password settings response:", response);
         return response.data;
