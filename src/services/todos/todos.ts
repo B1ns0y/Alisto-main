@@ -1,3 +1,4 @@
+import { IAddTaskModalProps } from "@/interface/interfaces";
 import api from "@/middleware/api";
 
 // Fetch all todos
@@ -14,7 +15,7 @@ export const fetchTodos = async () => {
 };
 
 // Add a new todo
-export const addTodo = async (todoData: any) => {
+export const addTodo = async (todoData: IAddTaskModalProps) => {
   try {
     const response = await api.post(`/todos/create_task/`, todoData);
     return response.data;
