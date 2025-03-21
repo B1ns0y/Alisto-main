@@ -47,127 +47,15 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const navigate = useNavigate();
   const [effectiveUserId, setEffectiveUserId] = useState<string | null>(null);
   
-  useEffect(() => {
-    // Fetch user data directly from the API similar to AccountSettings component
-    const fetchUserData = async () => {
-      try {
-        console.log("Fetching user data for task modal...");
-        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-        
-        if (!token) {
-          console.log("No authentication token found");
-          return;
-        }
-        
-        // Use the same endpoint as in AccountSettings
-        const response = await api.get(`/users/user/`);
-        const userData = response.data;
-        
-        console.log("User data fetched:", userData);
-        
-        if (userData && userData.id) {
-          console.log("Setting effective user ID from API:", userData.id);
-          setEffectiveUserId(userData.id);
-          localStorage.setItem("user_id", userData.id);
-          
-          // Update task data with the fetched user ID
-          setTaskData(prev => ({
-            ...prev,
-            userId: userData.id
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        
-        // Fallback to the existing user ID finding logic
-        findUserIdFromLocalSources();
-      }
-    };
-    
-    const findUserIdFromLocalSources = () => {
-      // Check all possible sources of user ID
-      console.log("Looking for user ID from local sources");
-      
-      // From localStorage - check all possible keys
-      const possibleKeys = ["user_id", "userId", "id", "user"];
-      for (const key of possibleKeys) {
-        const value = localStorage.getItem(key);
-        console.log(`Checking localStorage.${key}:`, value);
-        
-        if (value && value !== "undefined" && value !== "null") {
-          // If it's a JSON object (like "user"), try to parse and get ID
-          if (key === "user") {
-            try {
-              const userData = JSON.parse(value);
-              if (userData.id) {
-                console.log("Found userId in localStorage.user:", userData.id);
-                setEffectiveUserId(userData.id);
-                return userData.id;
-              }
-            } catch (e) {
-              console.log("Failed to parse user JSON");
-            }
-          } else {
-            // Direct ID value
-            console.log(`Found userId in localStorage.${key}:`, value);
-            setEffectiveUserId(value);
-            return value;
-          }
-        }
-      }
-      
-      // From auth context if available
-      if (user) {
-        console.log("Checking user from auth context:", user);
-        if (user.id && user.id !== "undefined" && user.id !== "null") {
-          console.log("Found userId in auth context:", user.id);
-          setEffectiveUserId(user.id);
-          return user.id;
-        }
-      }
-      
-      // From props
-      if (userId && userId !== "undefined" && userId !== "null") {
-        console.log("Found userId in props:", userId);
-        setEffectiveUserId(userId);
-        return userId;
-      }
-      
-      // If we can't find a user ID, check if we have auth tokens
-      // that might contain user info
-      const token = localStorage.getItem("token") || 
-                   localStorage.getItem("access_token") || 
-                   localStorage.getItem("jwt");
-                   
-      if (token) {
-        try {
-          // JWT tokens have three parts split by periods
-          const parts = token.split('.');
-          if (parts.length === 3) {
-            // The middle part is the payload, base64 encoded
-            const payload = JSON.parse(atob(parts[1]));
-            console.log("JWT payload:", payload);
-            
-            // Check if payload contains user ID (common fields)
-            const id = payload.user_id || payload.sub || payload.id;
-            if (id) {
-              console.log("Found userId in JWT token:", id);
-              setEffectiveUserId(id);
-              return id;
-            }
-          }
-        } catch (e) {
-          console.log("Failed to extract user ID from token");
-        }
-      }
-      
-      console.log("NO VALID USER ID FOUND ANYWHERE");
-      return null;
-    };
-    
-    // First try to fetch from API, then fall back to local sources
-    fetchUserData();
-  }, [user, userId, setTaskData]);
+    useEffect(() => {
+    if (userId) {
+      setTaskData(prev => ({
+        ...prev,
+        userId: userId
+      }));
+    }
+  }, [userId, setTaskData]);
+  
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -210,6 +98,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
   // Fix the mutation function to handle dates properly
   const taskMutation = useMutation({
+    // In your task mutation function
     mutationFn: async (taskData: ITask) => {
       // Get token from localStorage
       const token = localStorage.getItem("token") || localStorage.getItem("access_token");
@@ -224,30 +113,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       
       const method = isEditMode ? 'PUT' : 'POST';
       
-      // Prepare deadline - properly format the date and time
+      // Prepare deadline
       let deadline = null;
       if (taskData.dueDate) {
-        const dateObj = new Date(taskData.dueDate);
-        
-        // Parse time from dueTime
-        if (taskData.dueTime) {
-          const [timeStr, period] = taskData.dueTime.split(' ');
-          const [hourStr, minuteStr] = timeStr.split(':');
-          let hour = parseInt(hourStr);
-          const minute = parseInt(minuteStr);
-          
-          // Convert to 24 hour format
-          if (period === 'PM' && hour < 12) {
-            hour += 12;
-          } else if (period === 'AM' && hour === 12) {
-            hour = 0;
-          }
-          
-          dateObj.setHours(hour, minute, 0, 0);
-        }
-        
-        // Format as ISO string
-        deadline = dateObj.toISOString();
+        // Your existing deadline logic
       }
       
       // Add authorization to headers explicitly
@@ -263,11 +132,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         description: taskData.description,
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        // Use the user ID from the task data
-        user: taskData.userId
+        // Either don't send user ID or get it from a reliable source
+        ...(taskData.userId && { user: taskData.userId })
       };
-      
-      console.log("Sending task data:", apiData);
       
       try {
         const response = await api({
@@ -318,10 +185,17 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
   useEffect(() => {
     if (selectedDate) {
-      // Use the most reliable user ID
+      // Get the most reliable user ID
+      const effectiveUserId = 
+        taskData.userId !== "undefined" ? taskData.userId : 
+        userId !== "undefined" ? userId : 
+        user?.id || 
+        localStorage.getItem("user_id") || 
+        "";
+      
       setTaskData(prev => ({
         ...prev,
-        userId: effectiveUserId || prev.userId,
+        userId: effectiveUserId,
         dueDate: selectedDate instanceof Date ? selectedDate : null,
         dueTime: formatTime()
       }));
@@ -329,7 +203,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       // Check if selected date is valid (not in the past)
       validateDate(selectedDate);
     }
-  }, [selectedDate, selectedTime, effectiveUserId]);
+  }, [selectedDate, selectedTime, userId, user]);
   
   const validateDate = (date: Date | null) => {
     if (!date) {
@@ -545,7 +419,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       id: updatedTaskData.id ?? '',
       completed: updatedTaskData.completed ?? false,
       dueDate: updatedTaskData.dueDate,
-      userId: effectiveUserId,
+      userId: userId,
       deadline: undefined,
       userData: {}
     };
