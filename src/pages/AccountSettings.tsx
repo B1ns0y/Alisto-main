@@ -109,7 +109,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.put(`/users/update/`, {
+    api.patch(`/users/update/`, {
       password: newPassword
     })
       .then((response) => {
