@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Task } from '../types';
+import { ITask } from '../types';
 import Sidebar from '../components/Sidebar';
 import AddTaskModal from '../components/modals/AddTaskModal';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
@@ -7,8 +7,8 @@ import TaskList from '../components/dashboard/TaskList';
 import { useToast } from '@/hooks/use-toast';
 import { useTodos, useDeleteTodo, useUpdateTodo } from '@/hooks/tanstack/todos/useQueryTodos';
 import { useNavigate } from 'react-router-dom';
-import { axiosClient } from '@/services/axiosClient';
 import { useAuth } from '@/hooks/useAuth';
+import api from '@/api/axios';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -110,7 +110,7 @@ const Dashboard: React.FC = () => {
   });
 
   // Get tasks from localStorage 
-  const [tasks, setTasks] = useState<Task[]>(() => {
+  const [tasks, setTasks] = useState<ITask[]>(() => {
     const savedTasks = localStorage.getItem('tasks');
     return savedTasks ? JSON.parse(savedTasks).map((task: any) => ({
       ...task,
@@ -148,11 +148,7 @@ const Dashboard: React.FC = () => {
           return;
         }
         
-        const response = await axiosClient.get(`/users/user`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await api.get(`/users/user/`);
         
         const user = {
           username: response.data.username,
@@ -216,7 +212,7 @@ const Dashboard: React.FC = () => {
       });
     } else {
       // Add new task
-      const newTaskItem: Task = { 
+      const newTaskItem: ITask = { 
         ...taskData, 
         id: Date.now().toString(), 
         completed: false 
@@ -255,7 +251,7 @@ const Dashboard: React.FC = () => {
     setShowTaskModal(true);
   };
 
-  const startEditTask = (task: Task) => {
+  const startEditTask = (task: ITask) => {
     setTaskData({
       id: task.id,
       title: task.title,

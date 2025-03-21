@@ -1,11 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axiosClient from "@/services/axiosClient";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import AuthTerms from "./AuthTerms";
-import GoogleSignIn from "./GoogleSignIn";
+import AuthTerms from "../app/(authentication)/login/AuthTerms";
+import GoogleSignIn from "../app/(authentication)/login/GoogleSignIn";
+import api from "@/api/axios";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -19,10 +19,8 @@ const Login: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
-      axios
-        .get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+      api
+        .get(`/user/`)
         .then(() => router.push("/dashboard"))
         .catch(() => localStorage.removeItem("access_token"));
     }
@@ -40,7 +38,7 @@ const Login: React.FC = () => {
     setError("");
 
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/token/`, { username, password });
+      const response = await api.post(`/token/`, { username, password });
 
       if (response.status === 200) {
         localStorage.setItem("access_token", response.data.access);
@@ -75,10 +73,8 @@ const Login: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/google/`,
-        { credential: credentialResponse.credential },
-        { headers: { "Content-Type": "application/json" } }
+      const response = await api.post(`/users/google/`,
+        { credential: credentialResponse.credential }
       );
 
       if (response.status === 200) {

@@ -6,8 +6,8 @@ import DeleteAccountModal from "./DeleteAccountModal";
 import EditUsernameModal from "../modals/EditUsernameModal";
 import EditPasswordModal from "../modals/EditPasswordModal";
 import { useUser } from "@/contexts/UserContext";
+import api from "@/api/axios";
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/settings/`;
 
 const AccountSettings: React.FC = () => {
   const { username, setUsername, profilePicture, setProfilePicture } = useUser();
@@ -31,12 +31,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/users/user/`, {
-      method: "GET",
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    })
+    api.get(`/users/user/`)
       .then((response) => {
         console.log("User settings response:", response);
         if (!response.ok) throw new Error("Failed to fetch user settings");
@@ -81,14 +76,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    fetch(API_URL, {
-      method: "PATCH",
-      headers: { 
-        "Content-Type": "application/json",
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ username: newUsername }),
-    })
+    api.patch(`/`)
       .then((response) => {
         console.log("Username update response:", response);
         if (!response.ok) throw new Error("Failed to update username");
@@ -123,12 +111,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    fetch(API_URL, {
-      method: "PATCH",
-      headers: { 
-        "Content-Type": "application/json",
-        'Authorization': `Bearer ${token}`
-      },
+    api.patch(`/`, {
       body: JSON.stringify({ password: newPassword }),
     })
       .then((response) => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Eye, EyeOff } from 'lucide-react';
+import api from '@/api/axios';
 
 const SetPassword3: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -33,7 +34,7 @@ const SetPassword3: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/password-reset-confirm/${uidb64}/${token}/`, {
+      await api.post(`/password-reset-confirm/${uidb64}/${token}/`, {
         new_password: password,
         confirm_password: confirmPassword,
       });

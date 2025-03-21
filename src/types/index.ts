@@ -1,5 +1,5 @@
 
-export interface Task {
+export interface ITask {
   userId: any;
   deadline: Date;
   userData: any;
@@ -15,13 +15,8 @@ export interface Task {
 }
 
 
-export interface UserProfile {
+export interface IUserProfile {
   username: string;
   email: string;
-  avatar?: string;
-  preferences: {
-    darkMode: boolean;
-    emailNotifications: boolean;
-    soundEffects: boolean;
-  }
+  password?: string;
 }

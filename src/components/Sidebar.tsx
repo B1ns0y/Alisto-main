@@ -16,7 +16,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Task } from '../types';
+import { ITask } from '../types';
 import { useToast } from '../hooks/use-toast';
 import { useTodos } from '@/hooks/tanstack/todos/useQueryTodos';
 import { fetchUserData } from '@/services/getUser/userService';
@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const [collapsed, setCollapsed] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<ITask[]>([]);
   const { data, isLoading, isError } = useTodos();
   useEffect(() => {
     if (data) {

@@ -1,6 +1,7 @@
 // UserContext.tsx
+import api from "@/api/axios";
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
-import axiosClient from "@/services/axiosClient";
+
 
 interface UserContextType {
   username: string;
@@ -36,11 +37,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/user/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.get(`/users/user/`);
 
         // Use initializeUser instead of setting values directly
         initializeUser(response.data);
@@ -68,12 +65,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-      const response = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/users/user/`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await api.patch(`/users/user/`, data);
 
       if (data.username) setUsername(response.data.username);
       if (data.profilePicture) setProfilePicture(response.data.profile_picture || "https://i.imgur.com/VzvjjDg.jpeg");

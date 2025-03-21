@@ -1,6 +1,7 @@
+import api from "@/api/axios";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "@/api/axios";
+
 
   const VerifyEmail  = () => {
   const { uid, token } = useParams(); 
@@ -13,12 +14,10 @@ import axios from "@/api/axios";
       setError("Invalid verification link.");
       return;
     }
+
     
-    const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/users/verify-email/${uid}/${token}/`;
-    console.log("Making verification request to:", apiUrl);
-    
-    axios
-      .get(apiUrl)
+    api
+      .get(`/users/verify-email/${uid}/${token}/`)
       .then((response) => {
         console.log("Verification response:", response.data);
         setMessage(

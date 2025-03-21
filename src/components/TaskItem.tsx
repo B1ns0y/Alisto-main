@@ -1,15 +1,15 @@
 import Portal from '../components/Portal'; // Ensure the file exists at this path or update the path to the correct location
 import React from 'react';
 import { MoreHorizontal, Trash2, Star, Clock, Calendar, Edit } from 'lucide-react';
-import { Task } from '../types';
+import { ITask } from '../types';
 import { cn } from '@/lib/utils';
 
 interface TaskItemProps {
-  task: Task;
+  task: ITask;
   toggleTaskCompletion: (id: string) => void;
   toggleTaskImportance: (id: string) => void;
   deleteTask: (id: string) => void;
-  editTask: (task: Task) => void;
+  editTask: (task: ITask) => void;
   showTaskMenu: string | null;
   setShowTaskMenu: (id: string | null) => void;
   projectName?: string;

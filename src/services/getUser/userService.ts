@@ -1,13 +1,16 @@
-import axiosClient from "@/services/axiosClient";
+import api from "@/api/axios";
+import { IUserProfile } from "@/types";
 
-export interface UserData {
-  username: string;
-  profile_picture?: string;
-}
 
-export const fetchUserData = () => {
+export const fetchUserData = async (username:string) => {
   try {
-    const res = axiosClient.get("/users/user/")
+    const res = await api.get(`/users/user/`);
+    console.log(res.data);
+    const data = res.data
+    const user: IUserProfile = {
+      username: data.username,
+      email: data.email,
+    }
     return res
   } catch (error) {
     throw error
@@ -22,7 +25,7 @@ export const refreshToken = async (): Promise<string> => {
   }
   
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+    const response = await api.post(`/auth/refresh/`, {
       refresh_token: refreshToken
     });
     
@@ -35,3 +38,15 @@ export const refreshToken = async (): Promise<string> => {
     throw error;
   }
 };
+
+
+export const updateUser = async (data: IUserProfile) =>{
+  try {
+    const response = await api.patch(`/users/${data.username}/`, data);
+    return response.data;
+  } catch (error) {
+    throw error
+  }
+}
+
+

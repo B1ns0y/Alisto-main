@@ -1,13 +1,10 @@
-import { axiosClient } from "../axiosClient";
-import axios from "axios"; // Ensure axios is imported if used in other functions
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Define API Base URL
+import api from "@/api/axios";
 
 // Fetch all todos
 export const fetchTodos = async () => {
   try {
     console.log("Fetching todos...");
-    const response = await axiosClient.get(`/todos/`);
+    const response = await api.get(`/todos/`);
     console.log("Todos API response:", response.status, response.data);
     return response.data;
   } catch (error: any) {
@@ -19,7 +16,7 @@ export const fetchTodos = async () => {
 // Add a new todo
 export const addTodo = async (todoData: any) => {
   try {
-    const response = await axiosClient.post(`/todos/create_task/`, todoData);
+    const response = await api.post(`/todos/create_task/`, todoData);
     return response.data;
   } catch (error: any) {
     console.error("Error adding todo:", error.response?.data);
@@ -33,11 +30,7 @@ export const deleteTodo = async (id: string) => {
     console.log(`Attempting to delete task with ID: ${id}`);
     const token = localStorage.getItem("access_token");
 
-    const response = await axiosClient.delete(`/todos/delete_task/${id}/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.delete(`/todos/delete_task/${id}/`);
 
     console.log("Delete response status:", response.status);
     return response.data;
@@ -63,12 +56,7 @@ export const updateTodo = async (todoData: any) => {
       }
     }
 
-    const response = await axios.patch(`${API_BASE_URL}/todos/update_task/${id}/`, updateData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await api.patch(`/todos/update_task/${id}/`, updateData);
 
     return response.data;
   } catch (error: any) {

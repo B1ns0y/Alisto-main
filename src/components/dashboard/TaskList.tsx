@@ -1,17 +1,17 @@
 import React from 'react';
-import { Task } from '../../types';
+import { ITask } from '../../types';
 import TaskItem from '../TaskItem';
 import { ClipboardList } from 'lucide-react';
 
 interface TaskListProps {
   activeTab: string;
-  filteredTasks: Task[];
+  filteredTasks: ITask[];
   showTaskMenu: string | null;
   setShowTaskMenu: (id: string | null) => void;
   toggleTaskCompletion: (id: string) => void;
   toggleTaskImportance: (id: string) => void;
   deleteTask: (id: string) => void;
-  editTask: (task: Task) => void;
+  editTask: (task: ITask) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({ 
@@ -28,7 +28,7 @@ const TaskList: React.FC<TaskListProps> = ({
   const getGroupedTasks = () => {
     if (activeTab !== 'upcoming') return null;
     
-    const grouped: { [key: string]: Task[] } = {};
+    const grouped: { [key: string]: ITask[] } = {};
     
     filteredTasks.forEach(task => {
       if (task.dueDate) {

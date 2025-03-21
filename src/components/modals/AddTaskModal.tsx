@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star, AlertCircle } from 'lucide-react';
-import { Task } from '../types';
+import { ITask } from '@/types';
 import { cn } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios'; 
@@ -121,7 +121,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   
   // Fix the mutation function to handle dates properly
   const taskMutation = useMutation({
-    mutationFn: async (taskData: Task) => {
+    mutationFn: async (taskData: ITask) => {
       const url = isEditMode 
         ? `${import.meta.env.VITE_API_BASE_URL}/todos/update_task/${taskData.id}` 
         : `${import.meta.env.VITE_API_BASE_URL}/todos/create_task/`;
@@ -472,7 +472,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     setTaskData(updatedTaskData);
 
     // Prepare task data for submission with safety checks
-    const newTask: Task = {
+    const newTask: ITask = {
       ...updatedTaskData,
       id: updatedTaskData.id ?? '', // Ensure id is set
       completed: updatedTaskData.completed ?? false, // Ensure completed is set
