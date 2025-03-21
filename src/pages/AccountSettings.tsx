@@ -109,7 +109,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.patch(`/users/update-password/`, {
+    api.patch(`/users/update/`, {
       new_password: newPassword,
       confirm_password: confirmPassword
     })
@@ -125,6 +125,7 @@ const AccountSettings: React.FC = () => {
         console.error("Error updating password:", error);
         let errorMessage = "Failed to update password";
         
+        // Try to extract specific validation errors from the response
         if (error.response && error.response.data) {
           if (error.response.data.new_password) {
             errorMessage = error.response.data.new_password;
