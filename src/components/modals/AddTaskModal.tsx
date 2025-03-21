@@ -206,10 +206,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      // Navigate to dashboard
-      navigate('/dashboard');
       // Close the modal
       closeModal();
+      // Navigate to dashboard
+      navigate('/dashboard');
     },
     onError: (error: any) => {
       // Enhanced error handling to show more specific messages
@@ -249,7 +249,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   }, [selectedDate, selectedTime, userId, user]);
   
   const validateDate = (date: Date | null) => {
-    if (!date) return;
+    if (!date) {
+      setDateError(null); // No error for no date
+      return;
+    }
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -416,12 +419,23 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       important: !prev.important
     }));
   };
+  
+  // Add function to clear deadline
+  const clearDeadline = () => {
+    setSelectedDate(null);
+    setTaskData(prev => ({
+      ...prev,
+      dueDate: null,
+      dueTime: ""
+    }));
+    setDateError(null);
+  };
 
   // New handleFormSubmit that fixes the issue with the add task button
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate date before submitting
+    // Validate date if present
     if (taskData.dueDate) {
       validateDate(taskData.dueDate);
       if (dateError) return;
@@ -491,16 +505,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     }
   };
   
-  // Don't require project for validation
+  // Modify validation to only check title, not date error
   const isFormValid = taskData.title.trim() !== '' && !dateError;
-  // Check if the due date is valid
-  const isDateValid = !dateError && taskData.title.trim() !== '';
   
-  // This function serves as a wrapper for the handleSubmit prop
-  const onSubmitButtonClick = () => {
-    handleFormSubmit({ preventDefault: () => {} } as React.FormEvent);
-  };
-
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
       <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 animate-in fade-in-50 zoom-in-95">
@@ -533,14 +540,35 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           />
           
           <div className="flex flex-wrap gap-2 mt-4">
-            <button 
-              type="button"
-              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${selectedDate ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
-              onClick={() => setShowCalendar(prev => !prev)}
-            >
-              <CalendarIcon size={16} />
-              {selectedDate ? selectedDate.toLocaleDateString() : 'Set date & time'}
-            </button>
+            {selectedDate ? (
+              <div className="flex gap-1">
+                <button 
+                  type="button"
+                  className="px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 border-blue-300 bg-blue-50 text-blue-700"
+                  onClick={() => setShowCalendar(prev => !prev)}
+                >
+                  <CalendarIcon size={16} />
+                  {selectedDate.toLocaleDateString()}
+                </button>
+                <button 
+                  type="button"
+                  className="px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-100"
+                  onClick={clearDeadline}
+                >
+                  <X size={16} />
+                  Clear
+                </button>
+              </div>
+            ) : (
+              <button 
+                type="button"
+                className="px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-100"
+                onClick={() => setShowCalendar(prev => !prev)}
+              >
+                <CalendarIcon size={16} />
+                Set date & time
+              </button>
+            )}
             <button 
               type="button"
               className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${taskData.important ? 'border-yellow-300 bg-yellow-50 text-yellow-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
@@ -555,6 +583,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             <div className="text-red-500 text-sm flex items-center gap-1">
               <AlertCircle size={16} />
               {dateError}
+            </div>
+          )}
+          
+          {apiError && (
+            <div className="text-red-500 text-sm flex items-center gap-1">
+              <AlertCircle size={16} />
+              {apiError}
             </div>
           )}
           
@@ -740,9 +775,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={!isDateValid || taskMutation.isPending}
+              disabled={!isFormValid || taskMutation.isPending}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                isDateValid && !taskMutation.isPending
+                isFormValid && !taskMutation.isPending
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
                   : 'bg-blue-300 text-white cursor-not-allowed'
               }`}
