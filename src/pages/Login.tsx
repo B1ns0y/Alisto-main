@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import AuthTerms from "./AuthTerms";
-import GoogleSignIn from "@/pages/GoogleSignIn";
-import api from "@/middleware/api";
-import { Link, useNavigate } from "react-router-dom";
+import AuthTerms from "../app/(authentication)/login/AuthTerms";
+import GoogleSignIn from "../app/(authentication)/login/GoogleSignIn";
+import api from "@/api/axios";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -26,6 +25,7 @@ const Login: React.FC = () => {
 
     const savedUsername = localStorage.getItem("saved_username");
     if (savedUsername) setUsername(savedUsername);
+  }, [navigate]);
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -99,7 +99,7 @@ const Login: React.FC = () => {
           
           <div className="mt-4">
             <p className="text-black text-sm">Don't have an account?</p>
-            <Link to="/signup">
+            <Link to="/authentication/signup">
               <button className="text-base mt-2 w-60 py-2 border-2 border-blue-300 text-[#007AFF] rounded hover:bg-blue-50 transition-all">Register</button>
             </Link>
           </div>
@@ -117,8 +117,57 @@ const Login: React.FC = () => {
           <h2 className="text-4xl font-bold text-[#007AFF] mb-6 text-center">Login</h2>
           {error && <p className="text-red-500 mb-3">{error}</p>}
           <form className="w-full" onSubmit={handleLogin}>
-            <input className="w-full px-4 py-2 mb-4 border-gray-300 border rounded" placeholder="Username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
-            <button type="submit" className="w-full px-4 py-2 bg-[#007AFF] text-white rounded hover:bg-blue-600 transition-all" disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
+            <input 
+              className="w-full px-4 py-2 mb-4 border-gray-300 border rounded" 
+              placeholder="Username" 
+              type="text" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)} 
+              required 
+            />
+            
+            <div className="relative mb-4">
+              <input 
+                className="w-full px-4 py-2 border-gray-300 border rounded" 
+                placeholder="Password" 
+                type={showPassword ? "text" : "password"} 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+              />
+              <button 
+                type="button"
+                className="absolute right-3 top-2.5 text-gray-500" 
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="rememberMe" className="text-sm text-gray-600">Remember me</label>
+              </div>
+              <Link to="/forgot-password" className="text-sm text-[#007AFF]">
+                Forgot Password?
+              </Link>
+            </div>
+            
+            <button 
+              type="submit" 
+              className="w-full px-4 py-2 bg-[#007AFF] text-white rounded hover:bg-blue-600 transition-all" 
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Login"}
+            </button>
+            
             <hr className="my-5 w-full border-gray-300" />
             
             <p className="text-sm text-center mb-4">
