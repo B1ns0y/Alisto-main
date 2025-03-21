@@ -42,7 +42,7 @@ export const refreshToken = async (): Promise<string> => {
 
 export const updateUser = async (data: IUserProfile) =>{
   try {
-    const response = await api.patch(`/users/${data.username}/`, data);
+    const response = await api.put(`/users/${data.username}/`, data);
     return response.data;
   } catch (error) {
     throw error

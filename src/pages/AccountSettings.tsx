@@ -73,7 +73,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.patch(`/users/user/`, {
+    api.put(`/users/user/`, {
       username: newUsername
     })
       .then((response) => {
