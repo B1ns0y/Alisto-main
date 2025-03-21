@@ -12,6 +12,7 @@ export interface ITask {
   dueDate?: Date | null;
   dueTime?: string;
   important?: boolean;
+  priority?: number;
 }
 
 

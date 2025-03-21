@@ -7,7 +7,7 @@ import { useTaskActions } from './hooks/useTaskActions';
 import { useTaskFilters } from './hooks/useTaskFilters';
 import { useUserData } from './hooks/useUserData';
 import { TaskStats } from '../dashboard/types';
-
+import { ITask } from '@/interface/interfaces';
 import Sidebar from '@/components/ui/sidebar';
 import AddTaskModal from '../AddTaskModal/AddTaskModal';
 import DashboardHeader from './DashboardHeader';
@@ -40,6 +40,7 @@ const Dashboard: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
   const [taskData, setTaskData] = useState({
+    id: '',
     title: '',
     description: '',
     dueDate: null as Date | null,
@@ -69,6 +70,7 @@ const Dashboard: React.FC = () => {
   // Task form handlers
   const resetTaskForm = () => {
     setTaskData({ 
+      id: '',
       title: '', 
       description: '', 
       dueDate: null, 
@@ -88,14 +90,15 @@ const Dashboard: React.FC = () => {
 
   const startEditTask = (task: ITask) => {
     setTaskData({
-      id: task.id,
-      title: task.title,
-      description: task.description || '',
-      dueDate: task.dueDate || null,
-      dueTime: task.dueTime || '',
-      important: task.important || false,
-      userId: user?.id || ''
-    });
+          id: task.id,
+          title: task.title,
+          description: task.description || '',
+          dueDate: task.dueDate || null,
+          dueTime: task.dueTime || '',
+          important: task.important || false,
+          priority: task.priority || 1,
+          userId: user?.id || ''
+        });
     setIsEditMode(true);
     setShowTaskModal(true);
     setShowTaskMenu(null);
