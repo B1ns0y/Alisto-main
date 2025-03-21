@@ -9,7 +9,7 @@ import NotFound from "./pages/NotFound";
 import Login from "@/pages/Login";
 import Register from "./pages/Register";
 import SetPassword from "./pages/SetPassword";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./components/dashboard/Dashboard";
 import Settings from "./pages/Settings";
 import Terms from "./pages/Terms";
 import '@fortawesome/fontawesome-free/css/all.min.css';
