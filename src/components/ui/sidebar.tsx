@@ -18,7 +18,7 @@ import {
 import { Link } from 'react-router-dom';
 import { ITask } from '../../interface/interfaces';
 import { useToast } from '../../hooks/use-toast';
-import { useTodos } from '@/hooks/tanstack/todos/useQueryTodos';
+import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos';
 import { fetchUserData } from '@/services/getUser/userService';
 
 
@@ -34,6 +34,9 @@ interface SidebarProps {
   todayTasksCount: number;
   userData: { username: string; profilePicture: string };
 }
+
+const { useTodos } = useMutationTodo();
+
 
 const Sidebar: React.FC<SidebarProps> = ({ 
   activeTab, 

@@ -5,16 +5,23 @@ import AddTaskModal from '../components/modals/AddTaskModal';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TaskList from '../components/dashboard/TaskList';
 import { useToast } from '@/hooks/use-toast';
-import { useTodos, useDeleteTodo, useUpdateTodo } from '@/hooks/tanstack/todos/useQueryTodos';
+import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/middleware/api';
 
 const Dashboard: React.FC = () => {
+
   const navigate = useNavigate();
+
+  const { useTodos } = useMutationTodo();
   const { data, isLoading, isError } = useTodos();
-  const updateTaskMutation = useUpdateTodo(); 
-  const deleteTaskMutation = useDeleteTodo();
+
+  const { useUpdateTodo } = useMutationTodo();
+  const {mutate: updateTaskMutation} = useUpdateTodo(); 
+
+  const { useDeleteTodo } = useMutationTodo();
+  const {mutate: deleteTaskMutation} = useDeleteTodo();
 
   useEffect(() => {
     if (data) {
@@ -76,7 +83,7 @@ const Dashboard: React.FC = () => {
     });
   
     // Call the delete mutation
-    deleteTaskMutation.mutate(id, {
+    deleteTaskMutation(id, {
       onSuccess: () => {
         console.log("Task successfully deleted from backend");
   
@@ -281,7 +288,7 @@ const Dashboard: React.FC = () => {
   
     console.log("Sending update data:", updateData);
   
-    updateTaskMutation.mutate(updateData, {
+    updateTaskMutation(updateData, {
       onSuccess: (data) => {
         const updatedTasks = tasks.map(task => 
           task.id === id ? { ...task, completed: !task.completed } : task

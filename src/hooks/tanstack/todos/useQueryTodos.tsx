@@ -1,46 +1,51 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchTodos, addTodo, deleteTodo, updateTodo } from "../../../services/todos/todos";
 
-// Fetch todos hook
-export const useTodos = () => {
-  return useQuery({
-    queryKey: ["todos"],
-    queryFn: fetchTodos,
-  });
-};
+const useMutationTodo = () => {
 
-// Add todo mutation hook
-export const useAddTodo = () => {
-  const queryClient = useQueryClient();
+  // Fetch todos hook
+  const useTodos = () => {
+    return useQuery({
+      queryKey: ["todos"],
+      queryFn: fetchTodos,
+    });
+  };
 
-  return useMutation({
-    mutationFn: addTodo,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
-  });
-};
+  // Add todo mutation hook
+  const useMutationAddTodo = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+      mutationFn: addTodo,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["todos"] });
+      },
+    });
+  };
 
 
-// Delete todo mutation hook
-export const useDeleteTodo = () => {
-  const queryClient = useQueryClient();
+  // Delete todo mutation hook
+  const useDeleteTodo = () => {
+    const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: deleteTodo,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
-  });
-};
+    return useMutation({
+      mutationFn: deleteTodo,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["todos"] });
+      },
+    });
+  };
 
-export const useUpdateTodo = () => {
-  const queryClient = useQueryClient();
+  const useUpdateTodo = () => {
+    const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: updateTodo,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
-  });
-};
+    return useMutation({
+      mutationFn: updateTodo,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["todos"] });
+      },
+    });
+  };
+  return { useTodos, useMutationAddTodo, useDeleteTodo, useUpdateTodo };
+}
+export default useMutationTodo;

@@ -6,6 +6,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/middleware/api'; 
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos';
+import { add } from 'date-fns';
 
 interface AddTaskModalProps {
   isEditMode: boolean;
@@ -34,8 +36,11 @@ interface AddTaskModalProps {
   userId: string;
 }
 
+const { useMutationAddTodo } = useMutationTodo();
+const { mutate: addTodo } = useMutationAddTodo();
 
-const AddTaskModal: React.FC<AddTaskModalProps> = ({ 
+
+/*const AddTaskModal: React.FC<AddTaskModalProps> = ({ 
   isEditMode,
   taskData, 
   setTaskData, 
@@ -78,10 +83,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         userId: effectiveUserId
       }));
     }
-  }, [user, userId]);
-  
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
+  }, [user, userId]);*/
+
+  const [TaskTitle, setTaskTitle] = useState("");
+  const [TaskDescription, setTaskDescription] = useState("");
+  const [TaskImportance, toggleImportant] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>
   const [selectedTime, setSelectedTime] = useState<{hour: number, minute: number, period: 'AM' | 'PM'}>(() => {
     if (taskData.dueTime) {
       const [timeStr, period] = taskData.dueTime.split(' ');
@@ -98,6 +105,23 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       period: 'AM'
     };
   });
+
+  const handleAddTask = async () => {
+    addTodo({
+      title: TaskTitle,
+      description: TaskDescription,
+      dueDate: selectedDate,
+      dueTime: selectedTime,
+      important: TaskImportance,
+      completed: taskData.completed,
+      userId: taskData.userId
+    });
+  
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  
+  
+
   
   const [currentMonth, setCurrentMonth] = useState(
     taskData.dueDate ? taskData.dueDate.getMonth() : new Date().getMonth()
@@ -524,16 +548,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <input
             type="text"
-            value={taskData.title}
-            onChange={(e) => setTaskData({...taskData, title: e.target.value})}
+            value={TaskTitle}
+            onChange={(e) => setTaskTitle(e.target.value)}
             className="w-full p-2 text-xl font-medium placeholder-gray-400 border-none focus:outline-none"
             placeholder="Task name"
             autoFocus
           />
           
           <textarea
-            value={taskData.description}
-            onChange={(e) => setTaskData({...taskData, description: e.target.value})}
+            value={TaskDescription}
+            onChange={(e) => setTaskDescription(e.target.value)}
             className="w-full p-2 text-sm text-gray-700 border-none focus:outline-none resize-none"
             placeholder="Description"
             rows={2}
