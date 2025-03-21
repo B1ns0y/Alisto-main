@@ -33,31 +33,19 @@ const AccountSettings: React.FC = () => {
     api.get(`/users/user/`)
       .then((response) => {
         console.log("User settings response:", response);
-        if (!response.ok) throw new Error("Failed to fetch user settings");
-        return response.json();
+        if (response.status !== 200) {
+          throw new Error("Failed to fetch user settings");
+        }
+        return response.data;
       })
       .then((data) => {
-        console.log("User settings data:", data);
-        setUsername(data.username);
-        setProfilePicture(data.profile_picture);
+        console.log("User data:", data);
+        if (data && data.id) {
+          localStorage.setItem("user_id", data.id);
+        }
       })
       .catch((error) => {
         console.error("Error fetching user settings:", error);
-        
-        // Handle token expiration
-        if (error.message.includes("401")) {
-          toast({
-            title: "Session Expired",
-            description: "Your session has expired. Please log in again.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to load account settings",
-            variant: "destructive",
-          });
-        }
       });
   }, []);
 
@@ -77,9 +65,11 @@ const AccountSettings: React.FC = () => {
     
     api.patch(`/`)
       .then((response) => {
-        console.log("Username update response:", response);
-        if (!response.ok) throw new Error("Failed to update username");
-        return response.json();
+        console.log("Username settings response:", response);
+        if (response.status !== 200) {
+          throw new Error("Failed to update username");
+        }
+        return response.data;
       })
       .then((data) => {
         console.log("Username updated successfully:", data);
@@ -114,9 +104,11 @@ const AccountSettings: React.FC = () => {
       body: JSON.stringify({ password: newPassword }),
     })
       .then((response) => {
-        console.log("Password update response:", response);
-        if (!response.ok) throw new Error("Failed to update password");
-        return response.json();
+        console.log("Password settings response:", response);
+        if (response.status !== 200) {
+          throw new Error("Failed to update password");
+        }
+        return response.data;
       })
       .then((data) => {
         console.log("Password updated successfully:", data);
