@@ -1,5 +1,5 @@
 import React from 'react';
-import { ITask } from '../../types';
+import { ITask } from '../../interface/interfaces';
 import TaskItem from '../TaskItem';
 import { ClipboardList } from 'lucide-react';
 

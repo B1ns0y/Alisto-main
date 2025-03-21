@@ -1,7 +1,7 @@
-import Portal from '../components/Portal'; // Ensure the file exists at this path or update the path to the correct location
+import Portal from './ui/Portal'; // Ensure the file exists at this path or update the path to the correct location
 import React from 'react';
 import { MoreHorizontal, Trash2, Star, Clock, Calendar, Edit } from 'lucide-react';
-import { ITask } from '../types';
+import { ITask } from '../interface/interfaces';
 import { cn } from '@/lib/utils';
 
 interface TaskItemProps {

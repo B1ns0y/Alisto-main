@@ -1,5 +1,5 @@
 import api from "@/middleware/api";
-import { IUserProfile } from "@/types";
+import { IUserProfile } from "@/interface/interfaces";
 
 
 export const fetchUserData = async (username:string) => {

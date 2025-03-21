@@ -18,7 +18,7 @@ const Login: React.FC = () => {
     const token = localStorage.getItem("access_token");
     if (token) {
       api
-        .get(`/user/`)
+        .get("/user/")
         .then(() => navigate("/dashboard"))
         .catch(() => localStorage.removeItem("access_token"));
     }
@@ -99,7 +99,7 @@ const Login: React.FC = () => {
           
           <div className="mt-4">
             <p className="text-black text-sm">Don't have an account?</p>
-            <Link to="/authentication/signup">
+            <Link to="/register">
               <button className="text-base mt-2 w-60 py-2 border-2 border-blue-300 text-[#007AFF] rounded hover:bg-blue-50 transition-all">Register</button>
             </Link>
           </div>
@@ -155,7 +155,7 @@ const Login: React.FC = () => {
                 />
                 <label htmlFor="rememberMe" className="text-sm text-gray-600">Remember me</label>
               </div>
-              <Link to="/forgot-password" className="text-sm text-[#007AFF]">
+              <Link to="/set-password" className="text-sm text-[#007AFF]">
                 Forgot Password?
               </Link>
             </div>

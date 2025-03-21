@@ -30,11 +30,11 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.get(`/users/user/`)
+    api.get(`/user/`)
       .then((response) => {
         console.log("User settings response:", response);
-        if (!response.ok) throw new Error("Failed to fetch user settings");
-        return response.json();
+        if (!response.status) throw new Error("Failed to fetch user settings");
+        return response.data();
       })
       .then((data) => {
         console.log("User settings data:", data);
@@ -78,8 +78,8 @@ const AccountSettings: React.FC = () => {
     api.patch(`/`)
       .then((response) => {
         console.log("Username update response:", response);
-        if (!response.ok) throw new Error("Failed to update username");
-        return response.json();
+        if (!response.status) throw new Error("Failed to update username");
+        return response.data();
       })
       .then((data) => {
         console.log("Username updated successfully:", data);
@@ -115,8 +115,8 @@ const AccountSettings: React.FC = () => {
     })
       .then((response) => {
         console.log("Password update response:", response);
-        if (!response.ok) throw new Error("Failed to update password");
-        return response.json();
+        if (!response.status) throw new Error("Failed to update password");
+        return response.data();
       })
       .then((data) => {
         console.log("Password updated successfully:", data);

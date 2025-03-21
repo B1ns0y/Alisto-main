@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star, AlertCircle } from 'lucide-react';
-import { ITask } from '@/types';
+import { ITask } from '@/interface/interfaces';
 import { cn } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/middleware/api'; 
