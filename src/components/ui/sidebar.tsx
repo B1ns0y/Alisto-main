@@ -16,9 +16,15 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
+import { ITask } from '../../interface/interfaces';
+import { useToast } from '../../hooks/use-toast';
+import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos';
+=======
 import { ITask } from '../../types';
 import { useToast } from '../../hooks/use-toast';
 import { useTodos } from '@/hooks/tanstack/todos/useQueryTodos';
+>>>>>>> 7d13150d5455460ad56346d9bf38874aa8936148
 import { fetchUserData } from '@/services/getUser/userService';
 
 
@@ -35,79 +41,12 @@ interface SidebarProps {
   userData: { username: string; profilePicture: string };
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
-  activeTab, 
-  setActiveTab, 
-  setShowAddTaskModal,
-  completedTasksCount,
-  totalTasksCount,
-  uncompletedTasksCount,
-  upcomingTasksCount,
-  importantTasksCount,
-  todayTasksCount,
-  userData
-}) => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
-  const [collapsed, setCollapsed] = useState(false);
-  const [tasks, setTasks] = useState<ITask[]>([]);
-  const { data, isLoading, isError } = useTodos();
-  useEffect(() => {
-    if (data) {
-      setTasks(data);
-    }
-  }, [data]); // Runs only when `data` changes
-  
-  console.log(tasks);
-  
-  
-  // Handle clicking outside of dropdown
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // Load collapsed state from localStorage
-  useEffect(() => {
-    const savedState = localStorage.getItem('sidebar-collapsed');
-    if (savedState !== null) {
-      setCollapsed(savedState === 'true');
-    }
-  }, []);
-
-  useEffect(() => {
-    console.log(userData);
-  }, [userData]
-);
-  // Save collapsed state to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem('sidebar-collapsed', collapsed.toString());
-  }, [collapsed]);
-
-  const toggleSidebar = () => {
-    setCollapsed(!collapsed);
-  };
-
-  const handleLogout = (): void => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user_data');
-        
-    navigate('/Home');
-  };
+<<<<<<< HEAD
 const { useTodos } = useMutationTodo();
 
 
+=======
+>>>>>>> 7d13150d5455460ad56346d9bf38874aa8936148
 const Sidebar: React.FC<SidebarProps> = ({ 
   activeTab, 
   setActiveTab, 
