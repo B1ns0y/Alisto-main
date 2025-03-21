@@ -96,7 +96,7 @@ const AccountSettings: React.FC = () => {
   };
 
   // 🔒 Update password
-  const handlePasswordUpdate = (newPassword: string) => {
+  const handlePasswordUpdate = (newPassword, confirmPassword) => {
     console.log("Updating password...");
     const token = localStorage.getItem('access_token');
     
@@ -109,8 +109,9 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.patch(`/users/update/`, {
-      password: newPassword
+    api.patch(`/users/update-password/`, {
+      new_password: newPassword,
+      confirm_password: confirmPassword
     })
       .then((response) => {
         console.log("Password settings response:", response);
@@ -122,13 +123,26 @@ const AccountSettings: React.FC = () => {
       })
       .catch((error) => {
         console.error("Error updating password:", error);
+        let errorMessage = "Failed to update password";
+        
+        if (error.response && error.response.data) {
+          if (error.response.data.new_password) {
+            errorMessage = error.response.data.new_password;
+          } else if (error.response.data.confirm_password) {
+            errorMessage = error.response.data.confirm_password;
+          } else if (error.response.data.non_field_errors) {
+            errorMessage = error.response.data.non_field_errors[0];
+          }
+        }
+        
         toast({
           title: "Error",
-          description: "Failed to update password",
+          description: errorMessage,
           variant: "destructive",
         });
       });
   };
+
 
   return (
     <>
