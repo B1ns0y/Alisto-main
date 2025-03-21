@@ -30,7 +30,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.get(`/user/`)
+    api.get(`/users/user/`)
       .then((response) => {
         console.log("User settings response:", response);
         // Don't check status here as it seems to be causing issues
