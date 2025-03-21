@@ -118,7 +118,25 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       // Prepare deadline
       let deadline = null;
       if (taskData.dueDate) {
-        // Your existing deadline logic
+        const date = new Date(taskData.dueDate);
+        
+        // Parse the time string
+        if (taskData.dueTime) {
+          const [timeStr, period] = taskData.dueTime.split(' ');
+          const [hours, minutes] = timeStr.split(':').map(Number);
+          
+          // Convert to 24-hour format if PM
+          let hour = hours;
+          if (period === 'PM' && hours < 12) {
+            hour += 12;
+          } else if (period === 'AM' && hours === 12) {
+            hour = 0;
+          }
+          
+          date.setHours(hour, minutes, 0, 0);
+        }
+        
+        deadline = date.toISOString();
       }
       
       // Add authorization to headers explicitly
