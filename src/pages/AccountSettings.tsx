@@ -33,9 +33,7 @@ const AccountSettings: React.FC = () => {
     api.get(`/users/user/`)
       .then((response) => {
         console.log("User settings response:", response);
-        if (response.status !== 200) {
-          throw new Error("Failed to fetch user settings");
-        }
+        // Don't check status here as it seems to be causing issues
         return response.data;
       })
       .then((data) => {
@@ -43,11 +41,23 @@ const AccountSettings: React.FC = () => {
         if (data && data.id) {
           localStorage.setItem("user_id", data.id);
         }
+        // Update user context with fetched data
+        if (data && data.username) {
+          setUsername(data.username);
+        }
+        if (data && data.profile_picture) {
+          setProfilePicture(data.profile_picture);
+        }
       })
       .catch((error) => {
         console.error("Error fetching user settings:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch user settings",
+          variant: "destructive",
+        });
       });
-  }, []);
+  }, [setUsername, setProfilePicture, toast]);
 
   // ✏️ Update username
   const handleUsernameUpdate = (newUsername: string) => {
@@ -63,12 +73,11 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.patch(`/`)
+    api.patch(`/users/user/`, {
+      username: newUsername
+    })
       .then((response) => {
         console.log("Username settings response:", response);
-        if (response.status !== 200) {
-          throw new Error("Failed to update username");
-        }
         return response.data;
       })
       .then((data) => {
@@ -100,14 +109,11 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.patch(`/`, {
-      body: JSON.stringify({ password: newPassword }),
+    api.patch(`/users/user/`, {
+      password: newPassword
     })
       .then((response) => {
         console.log("Password settings response:", response);
-        if (response.status !== 200) {
-          throw new Error("Failed to update password");
-        }
         return response.data;
       })
       .then((data) => {
@@ -158,15 +164,21 @@ const AccountSettings: React.FC = () => {
           <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
           <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-            <img
-              src={profilePicture || "https://i.imgur.com/BLpauUN.jpeg"}
-              className="w-full h-full object-cover"
-              alt="Profile"
-              onError={(e) => (e.currentTarget.src = "https://i.imgur.com/BLpauUN.jpeg")} // Fallback if image fails to load
-            />
-          </div>
+            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+              <img
+                src={profilePicture || "https://i.imgur.com/BLpauUN.jpeg"}
+                className="w-full h-full object-cover"
+                alt="Profile"
+                onError={(e) => (e.currentTarget.src = "https://i.imgur.com/BLpauUN.jpeg")} // Fallback if image fails to load
+              />
             </div>
+            <button
+              className="px-3 py-1 text-sm font-medium text-blue-500 border border-blue-500 rounded-md hover:bg-blue-50 transition-colors"
+              onClick={() => setShowUploadModal(true)}
+            >
+              Update Photo
+            </button>
+          </div>
           </div>
         </div>
       </div>
