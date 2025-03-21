@@ -88,7 +88,7 @@ const { mutate: addTodo } = useMutationAddTodo();
   const [TaskTitle, setTaskTitle] = useState("");
   const [TaskDescription, setTaskDescription] = useState("");
   const [TaskImportance, toggleImportant] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>
+  const [selectedDate, setSelectedDate] = useState<Date | null>(deadline || null);
   const [selectedTime, setSelectedTime] = useState<{hour: number, minute: number, period: 'AM' | 'PM'}>(() => {
     if (taskData.dueTime) {
       const [timeStr, period] = taskData.dueTime.split(' ');
@@ -118,10 +118,6 @@ const { mutate: addTodo } = useMutationAddTodo();
     });
   
   const [showCalendar, setShowCalendar] = useState(false);
-
-  
-  
-
   
   const [currentMonth, setCurrentMonth] = useState(
     taskData.dueDate ? taskData.dueDate.getMonth() : new Date().getMonth()
@@ -445,7 +441,7 @@ const { mutate: addTodo } = useMutationAddTodo();
   };
   
   // Add function to clear deadline
-  const clearDeadline = () => {
+  const  clearDeadline = () => {
     setSelectedDate(null);
     setTaskData(prev => ({
       ...prev,
@@ -598,10 +594,10 @@ const { mutate: addTodo } = useMutationAddTodo();
             )}
             <button 
               type="button"
-              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${taskData.important ? 'border-yellow-300 bg-yellow-50 text-yellow-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${TaskImportance ? 'border-yellow-300 bg-yellow-50 text-yellow-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
               onClick={toggleImportant}
             >
-              <Star size={16} fill={taskData.important ? "currentColor" : "none"} />
+              <Star size={16} fill={TaskImportance ? "currentColor" : "none"} />
               Important
             </button>
           </div>
