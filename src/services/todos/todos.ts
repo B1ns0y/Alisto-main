@@ -56,7 +56,7 @@ export const updateTodo = async (todoData: any) => {
       }
     }
 
-    const response = await api.patch(`/todos/update_task/${id}/`, updateData);
+    const response = await api.put(`/todos/update_task/${id}/`, updateData);
 
     return response.data;
   } catch (error: any) {
