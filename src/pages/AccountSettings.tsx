@@ -95,7 +95,7 @@ const AccountSettings: React.FC = () => {
       });
   };
 
-  // Password update function
+  // 🔒 Update password
   const handlePasswordUpdate = (newPassword, confirmPassword) => {
     console.log("Updating password...");
     const token = localStorage.getItem('access_token');
