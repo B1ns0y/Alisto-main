@@ -1,4 +1,4 @@
-import api from "@/api/axios";
+import api from "@/middleware/api";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 

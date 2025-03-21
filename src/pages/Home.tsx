@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+
+
 const Hero: React.FC = () => {
   return (
     <div className="min-h-screen bg-[url('/background.png')] bg-cover bg-center flex flex-col items-center">

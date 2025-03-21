@@ -3,7 +3,7 @@ import { X, Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, Chev
 import { ITask } from '@/types';
 import { cn } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/api/axios'; 
+import api from '@/middleware/api'; 
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 

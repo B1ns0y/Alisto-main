@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTodos, useDeleteTodo, useUpdateTodo } from '@/hooks/tanstack/todos/useQueryTodos';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import api from '@/api/axios';
+import api from '@/middleware/api';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();

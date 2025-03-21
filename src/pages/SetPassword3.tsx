@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Eye, EyeOff } from 'lucide-react';
-import api from '@/api/axios';
+import api from '@/middleware/api';
 
 const SetPassword3: React.FC = () => {
   const [password, setPassword] = useState('');

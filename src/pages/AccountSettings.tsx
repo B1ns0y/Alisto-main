@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Pencil, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import UploadImageModal from "./UploadImageModal";
-import DeleteAccountModal from "./DeleteAccountModal";
-import EditUsernameModal from "../modals/EditUsernameModal";
-import EditPasswordModal from "../modals/EditPasswordModal";
+import UploadImageModal from "../components/settings/UploadImageModal";
+import DeleteAccountModal from "../components/settings/DeleteAccountModal";
+import EditUsernameModal from "../components/modals/EditUsernameModal";
+import EditPasswordModal from "../components/modals/EditPasswordModal";
 import { useUser } from "@/contexts/UserContext";
-import api from "@/api/axios";
-
+import api from "@/middleware/api";
 
 const AccountSettings: React.FC = () => {
   const { username, setUsername, profilePicture, setProfilePicture } = useUser();

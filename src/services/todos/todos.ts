@@ -1,4 +1,4 @@
-import api from "@/api/axios";
+import api from "@/middleware/api";
 
 // Fetch all todos
 export const fetchTodos = async () => {

@@ -1,11 +1,9 @@
-"use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import AuthTerms from "../app/(authentication)/login/AuthTerms";
-import GoogleSignIn from "../app/(authentication)/login/GoogleSignIn";
-import api from "@/api/axios";
+import AuthTerms from "./AuthTerms";
+import GoogleSignIn from "./GoogleSignIn";
+import api from "@/middleware/api";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -19,8 +17,7 @@ const Login: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
-      api
-        .get(`/user/`)
+      api.get("/user/")
         .then(() => router.push("/dashboard"))
         .catch(() => localStorage.removeItem("access_token"));
     }
@@ -38,7 +35,7 @@ const Login: React.FC = () => {
     setError("");
 
     try {
-      const response = await api.post(`/token/`, { username, password });
+      const response = await api.post("/token/", { username, password });
 
       if (response.status === 200) {
         localStorage.setItem("access_token", response.data.access);
@@ -73,9 +70,7 @@ const Login: React.FC = () => {
     }
 
     try {
-      const response = await api.post(`/users/google/`,
-        { credential: credentialResponse.credential }
-      );
+      const response = await api.post("users/google/", { credential: credentialResponse.credential });
 
       if (response.status === 200) {
         localStorage.setItem("access_token", response.data.access);
@@ -112,6 +107,7 @@ const Login: React.FC = () => {
           {error && <p className="text-red-500 mb-3">{error}</p>}
           <form className="w-full" onSubmit={handleLogin}>
             <input className="w-full px-4 py-2 mb-4 border-gray-300 border rounded" placeholder="Username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+            <input className="w-full px-4 py-2 mb-4 border-gray-300 border rounded" placeholder="Password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required />
             <button type="submit" className="w-full px-4 py-2 bg-[#007AFF] text-white rounded hover:bg-blue-600 transition-all" disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
             <hr className="my-5 w-full border-gray-300" />
             <AuthTerms />
