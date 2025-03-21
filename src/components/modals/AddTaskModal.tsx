@@ -446,27 +446,25 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     // Get the most reliable user ID from multiple sources
     const getUserId = () => {
       // First try from taskData
-      if (taskData.userId && taskData.userId !== "undefined") {
+      if (taskData.userId && taskData.userId !== "undefined" && taskData.userId !== "null") {
+        console.log("Using taskData userId:", taskData.userId);
         return taskData.userId;
       }
       
       // Then try from auth context
-      if (user?.id && user.id !== "undefined") {
+      if (user?.id && user.id !== "undefined" && user.id !== "null") {
+        console.log("Using auth context userId:", user.id);
         return user.id;
-      }
-      
-      // Then try from props
-      if (userId && userId !== "undefined") {
-        return userId;
       }
       
       // Then try from localStorage
       const storedUserId = localStorage.getItem("user_id");
       if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
+        console.log("Using localStorage userId:", storedUserId);
         return storedUserId;
       }
       
-      // If all else fails, return null
+      console.log("No valid user ID found");
       return null;
     };
     
