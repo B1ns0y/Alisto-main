@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import AuthTerms from "../app/(authentication)/login/AuthTerms";
-import GoogleSignIn from "../app/(authentication)/login/GoogleSignIn";
-import api from "@/api/axios";
+import AuthTerms from "./AuthTerms";
+import GoogleSignIn from "./GoogleSignIn";
+import api from "@/middleware/api";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -26,7 +26,7 @@ const Login: React.FC = () => {
     const savedUsername = localStorage.getItem("saved_username");
     if (savedUsername) setUsername(savedUsername);
   }, [navigate]);
-  }, [navigate]);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
