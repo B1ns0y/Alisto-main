@@ -39,46 +39,36 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   isEditMode,
   taskData, 
   setTaskData, 
-  handleSubmit: parentHandleSubmit, // Rename to avoid confusion
-  closeModal,
-  userId
+  handleSubmit: parentHandleSubmit, 
+  closeModal
 }) => {
   const { user, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
+  const [userId, setUserId] = useState<string | null>(null);
   
   // Wait for authentication to be ready before setting userId
   useEffect(() => {
-    // Get the most reliable user ID from multiple sources
-    const getUserId = () => {
-      // First try from auth context
-      if (user?.id && user.id !== "undefined") {
-        return user.id;
+    const fetchAndSetUserId = async () => {
+      try {        
+        // Then try from localStorage
+        const storedUserId = localStorage.getItem("user_id");
+        if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
+          console.log("Setting userId from localStorage:", storedUserId);
+          setUserId(storedUserId);
+          return;
+        }
+        
+        // If we get here, no valid ID was found
+        console.error("No valid user ID found from any source");
+        setApiError("User ID is required but not available. Please log in again.");
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+        setApiError("Error retrieving user information. Please log in again.");
       }
-      
-      // Then try from props
-      if (userId && userId !== "undefined") {
-        return userId;
-      }
-      
-      // Then try from localStorage
-      const storedUserId = localStorage.getItem("user_id");
-      if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-        return storedUserId;
-      }
-      
-      // If all else fails, return null
-      return null;
     };
-    
-    const effectiveUserId = getUserId();
-    
-    if (effectiveUserId) {
-      setTaskData(prev => ({
-        ...prev,
-        userId: effectiveUserId
-      }));
-    }
-  }, [user, userId]);
+  
+    fetchAndSetUserId();
+  }, [user]);
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
@@ -434,71 +424,40 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   // New handleFormSubmit that fixes the issue with the add task button
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // Validate date if present
     if (taskData.dueDate) {
       validateDate(taskData.dueDate);
       if (dateError) return;
     }
-
-    setApiError(null); // Clear previous errors before attempting submission
-
-    // Get the most reliable user ID from multiple sources
-    const getUserId = () => {
-      // First try from taskData
-      if (taskData.userId && taskData.userId !== "undefined" && taskData.userId !== "null") {
-        console.log("Using taskData userId:", taskData.userId);
-        return taskData.userId;
-      }
-      
-      // Then try from auth context
-      if (user?.id && user.id !== "undefined" && user.id !== "null") {
-        console.log("Using auth context userId:", user.id);
-        return user.id;
-      }
-      
-      // Then try from localStorage
-      const storedUserId = localStorage.getItem("user_id");
-      if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-        console.log("Using localStorage userId:", storedUserId);
-        return storedUserId;
-      }
-      
-      console.log("No valid user ID found");
-      return null;
-    };
     
-    const effectiveUserId = getUserId();
+    setApiError(null);
     
-    if (!effectiveUserId) {
+    // Use the userId state we've set
+    if (!userId) {
       setApiError("User ID is required but not available. Please log in again.");
       return;
     }
-
-    // Update the taskData one last time to ensure it has the right user ID
+    
+    // Update the taskData with our verified userId
     const updatedTaskData = {
       ...taskData,
-      userId: effectiveUserId
+      userId: userId
     };
     
     setTaskData(updatedTaskData);
-
-    // Prepare task data for submission with safety checks
+    
+    // Prepare task data for submission
     const newTask: ITask = {
       ...updatedTaskData,
-      id: updatedTaskData.id ?? '', // Ensure id is set
-      completed: updatedTaskData.completed ?? false, // Ensure completed is set
-      dueDate: updatedTaskData.dueDate, // Keep as Date object
-      userId: effectiveUserId, // Use the effective user ID
+      id: updatedTaskData.id ?? '',
+      completed: updatedTaskData.completed ?? false,
+      dueDate: updatedTaskData.dueDate,
+      userId: userId,
       deadline: undefined,
-      userData: {} // Add userData property
+      userData: {}
     };
-    // Add console logs to check each source
-    console.log("Auth user ID:", user?.id);
-    console.log("Props user ID:", userId);
-    console.log("Local storage user ID:", localStorage.getItem("user_id"));
-    console.log("Task data user ID:", taskData.userId);
-
+    
     // Use mutation to submit the task
     taskMutation.mutate(newTask);
     
