@@ -60,7 +60,6 @@ const AccountSettings: React.FC = () => {
       });
   }, [setUsername, setProfilePicture, toast]);
 
-  // ✏️ Update username with PUT instead of PATCH
   const handleUsernameUpdate = (newUsername: string) => {
     console.log("Updating username to:", newUsername);
     const token = localStorage.getItem('access_token');
@@ -103,7 +102,6 @@ const AccountSettings: React.FC = () => {
       });
   };
 
-  // 🔒 Update password with PUT instead of PATCH
   const handlePasswordUpdate = (newPassword: string) => {
     console.log("Updating password...");
     const token = localStorage.getItem('access_token');

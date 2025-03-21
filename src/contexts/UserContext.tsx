@@ -22,7 +22,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const initializeUser = (userData: any) => {
     // If no profile picture is provided, use the default
     setUsername(userData.username);
-    setProfilePicture(userData.profile_picture || "https://i.imgur.com/VzvjjDg.jpeg");
+    setProfilePicture(userData.profile_picture || "https://i.imgur.com/BLpauUN.jpeg");
   };
 
   // Fetch user data from Django when the app loads
@@ -65,10 +65,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-      const response = await api.patch(`/users/user/`, data);
+      const response = await api.put(`/users/user/`, data);
 
       if (data.username) setUsername(response.data.username);
-      if (data.profilePicture) setProfilePicture(response.data.profile_picture || "https://i.imgur.com/VzvjjDg.jpeg");
+      if (data.profilePicture) setProfilePicture(response.data.profile_picture || "https://i.imgur.com/BLpauUN.jpeg");
     } catch (error) {
       console.error("Error updating user:", error);
     }
