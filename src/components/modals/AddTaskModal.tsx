@@ -145,7 +145,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         'Content-Type': 'application/json'
       };
       
-      console.log("Using token for auth:", token);
       
       const apiData = {
         title: taskData.title,
