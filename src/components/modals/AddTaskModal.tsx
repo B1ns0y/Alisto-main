@@ -9,32 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos';
 import { add } from 'date-fns';
 
-interface AddTaskModalProps {
-  isEditMode: boolean;
-  taskData: {
-    id?: string;
-    title: string;
-    description: string;
-    dueDate: Date | null;
-    dueTime: string;
-    important?: boolean;
-    completed?: boolean;
-    userId: string; 
-  };
-  setTaskData: React.Dispatch<React.SetStateAction<{
-    id?: string;
-    title: string;
-    description: string;
-    dueDate: Date | null;
-    dueTime: string;
-    important?: boolean;
-    completed?: boolean;
-    userId: string; 
-  }>>;
-  handleSubmit: () => void;
-  closeModal: () => void;
-  userId: string;
-}
 
 const { useMutationAddTodo } = useMutationTodo();
 const { mutate: addTodo } = useMutationAddTodo();
@@ -88,7 +62,7 @@ const { mutate: addTodo } = useMutationAddTodo();
   const [TaskTitle, setTaskTitle] = useState("");
   const [TaskDescription, setTaskDescription] = useState("");
   const [TaskImportance, toggleImportant] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(deadline || null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<{hour: number, minute: number, period: 'AM' | 'PM'}>(() => {
     if (taskData.dueTime) {
       const [timeStr, period] = taskData.dueTime.split(' ');
@@ -136,6 +110,12 @@ const { mutate: addTodo } = useMutationAddTodo();
   
   const queryClient = useQueryClient();
   
+  const handleDeadlineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const deadline = e.target.value;
+    
+    setSelectedDate(deadline);
+  }
+
   // Add error state
   const [apiError, setApiError] = useState<string | null>(null);
   
@@ -717,7 +697,7 @@ const { mutate: addTodo } = useMutationAddTodo();
                         !day.currentMonth && "text-gray-300",
                         isPastDate(day.day, day.currentMonth) && "text-gray-400 line-through"
                       )}
-                      onClick={() => handleDayClick(day.day, day.currentMonth)}
+                      onClick={() => setSelectedDate(new Date(day.day, day.currentMonth))}
                     >
                       {day.day}
                     </button>
