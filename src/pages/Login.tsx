@@ -84,7 +84,6 @@ const Login: React.FC = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
   return (
     <div className="flex w-screen h-screen overflow-hidden">
       {/* Left panel with clouds and computer image */}
@@ -104,15 +103,13 @@ const Login: React.FC = () => {
             </Link>
           </div>
           
-          {/* Computer graphic - you'll need to add your own image */}
-          <div className="mt-8">
+          <div className="mt-8">      {/* Computer graphic - you'll need to add your own image */}
             <img src="/cat.png" alt="Computer" className="w-64" />
           </div>
         </div>
       </div>
 
-      {/* Right panel with login form */}
-      <div className="flex-1 bg-white flex flex-col justify-center items-center">
+      <div className="flex-1 bg-white flex flex-col justify-center items-center">       {/* Right panel with login form */}
         <div className="w-2/3 max-w-md flex flex-col items-center">
           <h2 className="text-4xl font-bold text-[#007AFF] mb-6 text-center">Login</h2>
           {error && <p className="text-red-500 mb-3">{error}</p>}
@@ -190,9 +187,8 @@ const Login: React.FC = () => {
               <img src="/Google.png" alt="Google" className="w-5 h-5 mr-2" />
               Or sign in with Google
             </button>
-            
-            {/* Hidden GoogleSignIn component for functionality */}
-            <div className="hidden">
+
+            <div className="hidden">        {/* Hidden GoogleSignIn component for functionality */}
               <GoogleSignIn onSuccess={handleGoogleSuccess} />
             </div>
           </form>
@@ -201,5 +197,4 @@ const Login: React.FC = () => {
     </div>
   );
 };
-
 export default Login;

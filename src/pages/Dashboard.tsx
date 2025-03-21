@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ITask } from '../types';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/sidebar/Sidebar';
 import AddTaskModal from '../components/modals/AddTaskModal';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TaskList from '../components/dashboard/TaskList';

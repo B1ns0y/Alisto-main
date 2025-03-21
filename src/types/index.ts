@@ -20,3 +20,19 @@ export interface IUserProfile {
   email: string;
   password?: string;
 }
+
+
+export interface UserData {
+  username: string;
+  profilePicture: string;
+}
+
+export interface NavItemProps {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  count: number;
+  isActive: boolean;
+  collapsed: boolean;
+  onClick: () => void;
+}
