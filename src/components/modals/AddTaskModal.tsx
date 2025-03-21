@@ -47,14 +47,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const navigate = useNavigate();
   const [effectiveUserId, setEffectiveUserId] = useState<string | null>(null);
   
-    useEffect(() => {
-    if (userId) {
+  useEffect(() => {
+    const effectiveUserId = userId || user?.id || localStorage.getItem("user_id");
+    if (effectiveUserId) {
       setTaskData(prev => ({
         ...prev,
-        userId: userId
+        userId: effectiveUserId
       }));
+      setEffectiveUserId(effectiveUserId);
     }
-  }, [userId, setTaskData]);
+  }, [userId, user, setTaskData]);
   
   
   const [showCalendar, setShowCalendar] = useState(false);
@@ -419,7 +421,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       id: updatedTaskData.id ?? '',
       completed: updatedTaskData.completed ?? false,
       dueDate: updatedTaskData.dueDate,
-      userId: userId,
+      userId: effectiveUserId,
       deadline: undefined,
       userData: {}
     };
