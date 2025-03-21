@@ -73,7 +73,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.put(`/user/`, {
+    api.put(`/users/update/`, {
       username: newUsername
     })
       .then((response) => {
@@ -109,7 +109,7 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    api.put(`/user/`, {
+    api.put(`/users/update/`, {
       password: newPassword
     })
       .then((response) => {
