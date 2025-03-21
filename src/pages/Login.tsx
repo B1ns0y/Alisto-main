@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
-import AuthTerms from "../app/(authentication)/login/AuthTerms";
-import GoogleSignIn from "../app/(authentication)/login/GoogleSignIn";
-import api from "@/api/axios";
+import AuthTerms from "./AuthTerms";
+import GoogleSignIn from "@/pages/GoogleSignIn";
+import api from "@/middleware/api";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -20,7 +20,7 @@ const Login: React.FC = () => {
     if (token) {
       api
         .get(`/user/`)
-        .then(() => router.push("/dashboard"))
+        .then(() => navigate("/dashboard"))
         .catch(() => localStorage.removeItem("access_token"));
     }
 
@@ -99,7 +99,7 @@ const Login: React.FC = () => {
           
           <div className="mt-4">
             <p className="text-black text-sm">Don't have an account?</p>
-            <Link to="/authentication/signup">
+            <Link to="/signup">
               <button className="text-base mt-2 w-60 py-2 border-2 border-blue-300 text-[#007AFF] rounded hover:bg-blue-50 transition-all">Register</button>
             </Link>
           </div>
