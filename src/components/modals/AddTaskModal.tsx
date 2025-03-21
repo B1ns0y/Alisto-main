@@ -495,6 +495,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       deadline: undefined,
       userData: {} // Add userData property
     };
+    // Add console logs to check each source
+    console.log("Auth user ID:", user?.id);
+    console.log("Props user ID:", userId);
+    console.log("Local storage user ID:", localStorage.getItem("user_id"));
+    console.log("Task data user ID:", taskData.userId);
 
     // Use mutation to submit the task
     taskMutation.mutate(newTask);
