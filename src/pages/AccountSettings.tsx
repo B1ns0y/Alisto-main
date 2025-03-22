@@ -15,7 +15,6 @@ const AccountSettings: React.FC = () => {
   const [showEditUsernameModal, setShowEditUsernameModal] = useState(false);
   const [showEditPasswordModal, setShowEditPasswordModal] = useState(false);
   const { toast } = useToast();
-  const [userData, setUserData] = useState(null);
 
   // 🚀 Fetch user settings on load
   useEffect(() => {
@@ -34,11 +33,11 @@ const AccountSettings: React.FC = () => {
     api.get(`/user/`)
       .then((response) => {
         console.log("User settings response:", response);
+        // Don't check status here as it seems to be causing issues
         return response.data;
       })
       .then((data) => {
         console.log("User data:", data);
-        setUserData(data);
         if (data && data.id) {
           localStorage.setItem("user_id", data.id);
         }
@@ -60,6 +59,7 @@ const AccountSettings: React.FC = () => {
       });
   }, [setUsername, setProfilePicture, toast]);
 
+  // ✏️ Update username
   const handleUsernameUpdate = (newUsername: string) => {
     console.log("Updating username to:", newUsername);
     const token = localStorage.getItem('access_token');
@@ -73,13 +73,9 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    // Create a complete user object to send with PUT
-    const updatedUserData = {
-      ...userData,
+    api.put(`/users/update/`, {
       username: newUsername
-    };
-    
-    api.patch(`/users/user/`, updatedUserData)
+    })
       .then((response) => {
         console.log("Username settings response:", response);
         return response.data;
@@ -96,13 +92,11 @@ const AccountSettings: React.FC = () => {
           description: "Failed to update username",
           variant: "destructive",
         });
-        
-        // Fall back to the simulated approach if the API call fails
-        setUsername(newUsername);
       });
   };
 
-  const handlePasswordUpdate = (newPassword: string) => {
+  // 🔒 Update password
+  const handlePasswordUpdate = (newPassword, confirmPassword) => {
     console.log("Updating password...");
     const token = localStorage.getItem('access_token');
     
@@ -115,13 +109,10 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    // Create a complete user object to send with PUT
-    const updatedUserData = {
-      ...userData,
-      password: newPassword
-    };
-    
-    api.patch(`/users/user/`, updatedUserData)
+    api.put(`/users/update/`, {
+      new_password: newPassword,
+      confirm_password: confirmPassword
+    })
       .then((response) => {
         console.log("Password settings response:", response);
         return response.data;
@@ -132,16 +123,27 @@ const AccountSettings: React.FC = () => {
       })
       .catch((error) => {
         console.error("Error updating password:", error);
+        let errorMessage = "Failed to update password";
+        
+        // Try to extract specific validation errors from the response
+        if (error.response && error.response.data) {
+          if (error.response.data.new_password) {
+            errorMessage = error.response.data.new_password;
+          } else if (error.response.data.confirm_password) {
+            errorMessage = error.response.data.confirm_password;
+          } else if (error.response.data.non_field_errors) {
+            errorMessage = error.response.data.non_field_errors[0];
+          }
+        }
+        
         toast({
           title: "Error",
-          description: "Failed to update password",
+          description: errorMessage,
           variant: "destructive",
         });
-        
-        // Show success toast anyway to maintain UI flow if using simulated approach
-        toast({ title: "Success", description: "Password updated successfully" });
       });
   };
+
 
   return (
     <>

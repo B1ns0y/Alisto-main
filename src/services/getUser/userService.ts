@@ -4,7 +4,7 @@ import { IUserProfile } from "@/interface/interfaces";
 
 export const fetchUserData = async (username:string) => {
   try {
-    const res = await api.get(`/users/user/`);
+    const res = await api.get(`/user/`);
     console.log(res.data);
     const data = res.data
     const user: IUserProfile = {
@@ -42,7 +42,7 @@ export const refreshToken = async (): Promise<string> => {
 
 export const updateUser = async (data: IUserProfile) =>{
   try {
-    const response = await api.patch(`/users/${data.username}/`, data);
+    const response = await api.put(`/users/${data.username}/`, data);
     return response.data;
   } catch (error) {
     throw error

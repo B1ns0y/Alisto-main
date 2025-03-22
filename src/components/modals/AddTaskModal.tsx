@@ -18,44 +18,22 @@ const { mutate: addTodo } = useMutationAddTodo();
   isEditMode,
   taskData, 
   setTaskData, 
-  handleSubmit: parentHandleSubmit, // Rename to avoid confusion
+  handleSubmit: parentHandleSubmit, 
   closeModal,
   userId
 }) => {
   const { user, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
+  const [effectiveUserId, setEffectiveUserId] = useState<string | null>(null);
   
-  // Wait for authentication to be ready before setting userId
   useEffect(() => {
-    // Get the most reliable user ID from multiple sources
-    const getUserId = () => {
-      // First try from auth context
-      if (user?.id && user.id !== "undefined") {
-        return user.id;
-      }
-      
-      // Then try from props
-      if (userId && userId !== "undefined") {
-        return userId;
-      }
-      
-      // Then try from localStorage
-      const storedUserId = localStorage.getItem("user_id");
-      if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-        return storedUserId;
-      }
-      
-      // If all else fails, return null
-      return null;
-    };
-    
-    const effectiveUserId = getUserId();
-    
+    const effectiveUserId = userId || user?.id || localStorage.getItem("user_id");
     if (effectiveUserId) {
       setTaskData(prev => ({
         ...prev,
         userId: effectiveUserId
       }));
+      setEffectiveUserId(effectiveUserId);
     }
   }, [user, userId]);*/
 
@@ -63,6 +41,11 @@ const { mutate: addTodo } = useMutationAddTodo();
   const [TaskDescription, setTaskDescription] = useState("");
   const [TaskImportance, toggleImportant] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  }, [userId, user, setTaskData]);
+  
+  
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(taskData.dueDate);
   const [selectedTime, setSelectedTime] = useState<{hour: number, minute: number, period: 'AM' | 'PM'}>(() => {
     if (taskData.dueTime) {
       const [timeStr, period] = taskData.dueTime.split(' ');
@@ -121,84 +104,81 @@ const { mutate: addTodo } = useMutationAddTodo();
   
   // Fix the mutation function to handle dates properly
   const taskMutation = useMutation({
+    // In your task mutation function
     mutationFn: async (taskData: ITask) => {
+      // Get token from localStorage
+      const token = localStorage.getItem("token") || localStorage.getItem("access_token");
+      
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+      
       const url = isEditMode 
         ? `${import.meta.env.VITE_API_BASE_URL}/todos/update_task/${taskData.id}` 
         : `${import.meta.env.VITE_API_BASE_URL}/todos/create_task/`;
       
       const method = isEditMode ? 'PUT' : 'POST';
       
+      // Prepare deadline
       let deadline = null;
       if (taskData.dueDate) {
         const date = new Date(taskData.dueDate);
         
+        // Parse the time string
         if (taskData.dueTime) {
           const [timeStr, period] = taskData.dueTime.split(' ');
-          const [hourStr, minuteStr] = timeStr.split(':');
-          let hours = parseInt(hourStr);
-          const minutes = parseInt(minuteStr);
+          const [hours, minutes] = timeStr.split(':').map(Number);
           
+          // Convert to 24-hour format if PM
+          let hour = hours;
           if (period === 'PM' && hours < 12) {
-            hours += 12;
+            hour += 12;
           } else if (period === 'AM' && hours === 12) {
-            hours = 0;
+            hour = 0;
           }
           
-          date.setHours(hours, minutes, 0, 0);
-        } else {
-          date.setHours(0, 0, 0, 0);
+          date.setHours(hour, minutes, 0, 0);
         }
         
         deadline = date.toISOString();
       }
       
-      // Improved user ID handling
-      const getUserId = () => {
-        // First try from taskData
-        if (taskData.userId && taskData.userId !== "undefined") {
-          return taskData.userId;
-        }
-        
-        // Then try from auth context
-        if (user?.id && user.id !== "undefined") {
-          return user.id;
-        }
-        
-        // Then try from localStorage
-        const storedUserId = localStorage.getItem("user_id");
-        if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-          return storedUserId;
-        }
-        
-        // If all else fails, throw an error
-        throw new Error("Valid user ID is required but not available");
+      // Add authorization to headers explicitly
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       };
       
-      const userIdToUse = getUserId();
       
-      console.log("Auth headers:", getAuthHeaders());
-      // In your React code
       const apiData = {
         title: taskData.title,
         description: taskData.description,
         deadline: deadline,
         is_important: Boolean(taskData.important),
-        user: userIdToUse  
+        // Either don't send user ID or get it from a reliable source
+        ...(taskData.userId && { user: taskData.userId })
       };
-      
-      console.log("Full API request data:", JSON.stringify(apiData));
-      console.log("Sending to API:", apiData);
       
       try {
         const response = await api({
           method,
           url,
           data: apiData,
-          headers: getAuthHeaders()
+          headers
         });
         
         return response.data;
       } catch (error: any) {
+        // Handle 401 Unauthorized errors by redirecting to login
+        if (error.response && error.response.status === 401) {
+          // Clear invalid auth data
+          localStorage.removeItem("token");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("user_id");
+          localStorage.removeItem("user");
+          
+          throw new Error("Authentication expired. Please log in again.");
+        }
         console.error("API Error Details:", error.response?.data || error.message);
         throw error;
       }
@@ -434,71 +414,39 @@ const { mutate: addTodo } = useMutationAddTodo();
   // New handleFormSubmit that fixes the issue with the add task button
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // Validate date if present
     if (taskData.dueDate) {
       validateDate(taskData.dueDate);
       if (dateError) return;
     }
-
-    setApiError(null); // Clear previous errors before attempting submission
-
-    // Get the most reliable user ID from multiple sources
-    const getUserId = () => {
-      // First try from taskData
-      if (taskData.userId && taskData.userId !== "undefined" && taskData.userId !== "null") {
-        console.log("Using taskData userId:", taskData.userId);
-        return taskData.userId;
-      }
-      
-      // Then try from auth context
-      if (user?.id && user.id !== "undefined" && user.id !== "null") {
-        console.log("Using auth context userId:", user.id);
-        return user.id;
-      }
-      
-      // Then try from localStorage
-      const storedUserId = localStorage.getItem("user_id");
-      if (storedUserId && storedUserId !== "undefined" && storedUserId !== "null") {
-        console.log("Using localStorage userId:", storedUserId);
-        return storedUserId;
-      }
-      
-      console.log("No valid user ID found");
-      return null;
-    };
     
-    const effectiveUserId = getUserId();
+    setApiError(null);
     
     if (!effectiveUserId) {
       setApiError("User ID is required but not available. Please log in again.");
       return;
     }
-
-    // Update the taskData one last time to ensure it has the right user ID
+    
+    // Update the taskData with our verified userId
     const updatedTaskData = {
       ...taskData,
       userId: effectiveUserId
     };
     
     setTaskData(updatedTaskData);
-
-    // Prepare task data for submission with safety checks
+    
+    // Prepare task data for submission
     const newTask: ITask = {
       ...updatedTaskData,
-      id: updatedTaskData.id ?? '', // Ensure id is set
-      completed: updatedTaskData.completed ?? false, // Ensure completed is set
-      dueDate: updatedTaskData.dueDate, // Keep as Date object
-      userId: effectiveUserId, // Use the effective user ID
+      id: updatedTaskData.id ?? '',
+      completed: updatedTaskData.completed ?? false,
+      dueDate: updatedTaskData.dueDate,
+      userId: effectiveUserId,
       deadline: undefined,
-      userData: {} // Add userData property
+      userData: {}
     };
-    // Add console logs to check each source
-    console.log("Auth user ID:", user?.id);
-    console.log("Props user ID:", userId);
-    console.log("Local storage user ID:", localStorage.getItem("user_id"));
-    console.log("Task data user ID:", taskData.userId);
-
+    
     // Use mutation to submit the task
     taskMutation.mutate(newTask);
     
