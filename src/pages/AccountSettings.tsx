@@ -97,7 +97,7 @@ const AccountSettings: React.FC = () => {
   };
 
   // 🔒 Update password
-  const handlePasswordUpdate = (newPassword, confirmPassword) => {
+  const handlePasswordUpdate = (currentPassword, newPassword, confirmPassword) => {
     console.log("Updating password...");
     const token = localStorage.getItem('access_token');
     
@@ -110,23 +110,23 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
-    // Set loading state if needed
+    // Set loading state
     setIsUpdating(true); // Add this state variable if you don't have it already
     
     api.put(`/users/update-password/`, {
+      current_password: currentPassword,
       new_password: newPassword,
       confirm_password: confirmPassword
     })
       .then((response) => {
         console.log("Password settings response:", response);
-        return response.data;
-      })
-      .then((data) => {
-        console.log("Password updated successfully:", data);
-        toast({ title: "Success", description: "Password updated successfully" });
+        toast({ 
+          title: "Success", 
+          description: "Password updated successfully. Please log in with your new password." 
+        });
         
-        // Close the modal if you have a state for showing/hiding it
-        setShowEditPasswordModal(false); // Add this state variable if you don't have it already
+        // Close the modal
+        setShowEditPasswordModal(false);
       })
       .catch((error) => {
         console.error("Error updating password:", error);
@@ -134,12 +134,16 @@ const AccountSettings: React.FC = () => {
         
         // Try to extract specific validation errors from the response
         if (error.response && error.response.data) {
-          if (error.response.data.new_password) {
+          if (error.response.data.current_password) {
+            errorMessage = error.response.data.current_password;
+          } else if (error.response.data.new_password) {
             errorMessage = error.response.data.new_password;
           } else if (error.response.data.confirm_password) {
             errorMessage = error.response.data.confirm_password;
           } else if (error.response.data.non_field_errors) {
             errorMessage = error.response.data.non_field_errors[0];
+          } else if (error.response.data.detail) {
+            errorMessage = error.response.data.detail;
           }
         }
         
@@ -151,7 +155,7 @@ const AccountSettings: React.FC = () => {
       })
       .finally(() => {
         // Reset loading state
-        setIsUpdating(false); // Add this state variable if you don't have it already
+        setIsUpdating(false);
       });
   };
 

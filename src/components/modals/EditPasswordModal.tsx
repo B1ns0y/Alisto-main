@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface EditPasswordModalProps {
   onClose: () => void;
-  onSave: (newPassword: string, confirmPassword: string) => void;
+  onSave: (currentPassword: string, newPassword: string, confirmPassword: string) => void;
 }
 
 const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }) => {
@@ -59,9 +59,8 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
 
     setIsLoading(true);
     
-    // Call the onSave handler with the new and confirm passwords
-    onSave(newPassword, confirmPassword);
-    setIsLoading(false);
+    // Call the onSave handler with all three passwords
+    onSave(currentPassword, newPassword, confirmPassword);
   };
 
   return (
