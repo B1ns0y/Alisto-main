@@ -1,6 +1,14 @@
 import api from "@/middleware/api";
-import { IUserProfile } from "@/interface/interfaces";
+import { IUserLoginData, IUserProfile } from "@/interface/interfaces";
 
+export const loginUser = async (data: IUserLoginData) => {
+  try {
+    const response = await api.post("/login/", data);
+    return response;
+  } catch (error) {
+    throw error
+  }
+}
 
 export const fetchUserData = async (username:string) => {
   try {

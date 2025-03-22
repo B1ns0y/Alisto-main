@@ -4,17 +4,18 @@ import { Eye, EyeOff } from "lucide-react";
 import AuthTerms from "./AuthTerms";
 import GoogleSignIn from "./GoogleSignIn";
 import api from "@/middleware/api";
+import { IUserLoginData } from "@/interface/interfaces";
+import useMutationAuth from "@/hooks/tanstack/auth/useMutationAuth";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  /*useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
       api
@@ -25,37 +26,13 @@ const Login: React.FC = () => {
 
     const savedUsername = localStorage.getItem("saved_username");
     if (savedUsername) setUsername(savedUsername);
-  }, [navigate]);
+  }, [navigate]);*/
 
+  const { useMutationLogin } = useMutationAuth();
+  const { mutate: loginUser, loading } = useMutationLogin();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await api.post("/token/", { username, password });
-
-      if (response.status === 200) {
-        localStorage.setItem("access_token", response.data.access);
-        localStorage.setItem("refresh_token", response.data.refresh);
-        localStorage.setItem("user_id", response.data.id);
-        localStorage.setItem("user_email", response.data.email);
-        localStorage.setItem("user_name", response.data.username);
-
-        if (rememberMe) {
-          localStorage.setItem("saved_username", username);
-        } else {
-          localStorage.removeItem("saved_username");
-        }
-
-        navigate("/dashboard");
-      }
-    } catch (err: any) {
-      setError(err.response?.status === 401 ? "Invalid username or password. Please try again." : "Wrong credentials or the user does not exist.");
-    } finally {
-      setLoading(false);
-    }
+  const handleLogin = (data: IUserLoginData) => {
+    loginUser(data);
   };
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
@@ -116,7 +93,7 @@ const Login: React.FC = () => {
         <div className="w-2/3 max-w-md flex flex-col items-center">
           <h2 className="text-4xl font-bold text-[#007AFF] mb-6 text-center">Login</h2>
           {error && <p className="text-red-500 mb-3">{error}</p>}
-          <form className="w-full" onSubmit={handleLogin}>
+          <form className="w-full" onSubmit={(e) => {e.preventDefault(); handleLogin({ username, password });}}>
             <input 
               className="w-full px-4 py-2 mb-4 border-gray-300 border rounded" 
               placeholder="Username" 

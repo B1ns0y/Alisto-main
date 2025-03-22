@@ -14,6 +14,11 @@ export interface ITask {
   important?: boolean;
 }
 
+export interface IUserLoginData {
+  user_id?: number;
+  username?: string;
+  password?: string;
+}
 
 export interface IUserProfile {
   username: string;
