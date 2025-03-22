@@ -14,6 +14,7 @@ const AccountSettings: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditUsernameModal, setShowEditUsernameModal] = useState(false);
   const [showEditPasswordModal, setShowEditPasswordModal] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
 
   // 🚀 Fetch user settings on load
@@ -109,6 +110,9 @@ const AccountSettings: React.FC = () => {
       return;
     }
     
+    // Set loading state if needed
+    setIsUpdating(true); // Add this state variable if you don't have it already
+    
     api.put(`/users/update/`, {
       new_password: newPassword,
       confirm_password: confirmPassword
@@ -120,6 +124,9 @@ const AccountSettings: React.FC = () => {
       .then((data) => {
         console.log("Password updated successfully:", data);
         toast({ title: "Success", description: "Password updated successfully" });
+        
+        // Close the modal if you have a state for showing/hiding it
+        setShowEditPasswordModal(false); // Add this state variable if you don't have it already
       })
       .catch((error) => {
         console.error("Error updating password:", error);
@@ -141,6 +148,10 @@ const AccountSettings: React.FC = () => {
           description: errorMessage,
           variant: "destructive",
         });
+      })
+      .finally(() => {
+        // Reset loading state
+        setIsUpdating(false); // Add this state variable if you don't have it already
       });
   };
 
