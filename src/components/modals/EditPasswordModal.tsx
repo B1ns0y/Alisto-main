@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface EditPasswordModalProps {
   onClose: () => void;
-  onSave: (currentPassword: string, newPassword: string) => void;
+  onSave: (currentPassword: string, newPassword: string, confirmPassword: string) => void;
 }
 
 const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }) => {
@@ -59,22 +59,14 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
 
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      onSave(currentPassword, newPassword);
-      setIsLoading(false);
-      toast({
-        title: "Success",
-        description: "Your password has been updated",
-      });
-      onClose();
-    }, 600);
+    // Call the onSave handler with all three passwords
+    onSave(currentPassword, newPassword, confirmPassword);
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div 
-        className="bg-white rounded-lg shadow-lg w-full max-w-md overflow-hidden animate-in fade-in duration-300"
+        className="bg-white rounded-lg shadow-lg w-full max-w-md overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b">
@@ -82,6 +74,7 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
           <button 
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500 transition-colors"
+            aria-label="Close"
           >
             <X size={20} />
           </button>
@@ -106,6 +99,7 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
                 type="button"
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                aria-label={showCurrentPassword ? "Hide password" : "Show password"}
               >
                 {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -129,6 +123,7 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
                 type="button"
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                 onClick={() => setShowNewPassword(!showNewPassword)}
+                aria-label={showNewPassword ? "Hide password" : "Show password"}
               >
                 {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -152,6 +147,7 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
                 type="button"
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
