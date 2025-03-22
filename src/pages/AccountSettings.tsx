@@ -113,7 +113,7 @@ const AccountSettings: React.FC = () => {
     // Set loading state if needed
     setIsUpdating(true); // Add this state variable if you don't have it already
     
-    api.put(`/users/update/`, {
+    api.put(`/users/update-password/`, {
       new_password: newPassword,
       confirm_password: confirmPassword
     })
