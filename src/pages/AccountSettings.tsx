@@ -97,7 +97,7 @@ const AccountSettings: React.FC = () => {
   };
 
   // 🔒 Update password
-  const handlePasswordUpdate = (currentPassword, newPassword, confirmPassword) => {
+  const handlePasswordUpdate = (newPassword, confirmPassword) => {
     console.log("Updating password...");
     const token = localStorage.getItem('access_token');
     
@@ -114,7 +114,6 @@ const AccountSettings: React.FC = () => {
     setIsUpdating(true); // Add this state variable if you don't have it already
     
     api.put(`/users/update-password/`, {
-      current_password: currentPassword,
       new_password: newPassword,
       confirm_password: confirmPassword
     })
