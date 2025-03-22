@@ -16,17 +16,12 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-<<<<<<< HEAD
-import { ITask } from '../../interface/interfaces';
+import { ITask } from '@/interface/interfaces'
 import { useToast } from '../../hooks/use-toast';
-import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos';
-=======
-import { ITask } from '../../types';
-import { useToast } from '../../hooks/use-toast';
-import { useTodos } from '@/hooks/tanstack/todos/useQueryTodos';
->>>>>>> 7d13150d5455460ad56346d9bf38874aa8936148
+import  useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos'
 import { fetchUserData } from '@/services/getUser/userService';
 
+const { useTodos } = useMutationTodo();
 
 interface SidebarProps {
   activeTab: string;
@@ -41,12 +36,6 @@ interface SidebarProps {
   userData: { username: string; profilePicture: string };
 }
 
-<<<<<<< HEAD
-const { useTodos } = useMutationTodo();
-
-
-=======
->>>>>>> 7d13150d5455460ad56346d9bf38874aa8936148
 const Sidebar: React.FC<SidebarProps> = ({ 
   activeTab, 
   setActiveTab, 

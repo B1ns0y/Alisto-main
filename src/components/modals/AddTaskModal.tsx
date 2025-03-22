@@ -6,15 +6,36 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/middleware/api'; 
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos';
-import { add } from 'date-fns';
+
+interface AddTaskModalProps {
+  isEditMode: boolean;
+  taskData: {
+    id?: string;
+    title: string;
+    description: string;
+    dueDate: Date | null;
+    dueTime: string;
+    important?: boolean;
+    completed?: boolean;
+    userId: string; 
+  };
+  setTaskData: React.Dispatch<React.SetStateAction<{
+    id?: string;
+    title: string;
+    description: string;
+    dueDate: Date | null;
+    dueTime: string;
+    important?: boolean;
+    completed?: boolean;
+    userId: string; 
+  }>>;
+  handleSubmit: () => void;
+  closeModal: () => void;
+  userId: string;
+}
 
 
-const { useMutationAddTodo } = useMutationTodo();
-const { mutate: addTodo } = useMutationAddTodo();
-
-
-/*const AddTaskModal: React.FC<AddTaskModalProps> = ({ 
+const AddTaskModal: React.FC<AddTaskModalProps> = ({ 
   isEditMode,
   taskData, 
   setTaskData, 
@@ -35,12 +56,6 @@ const { mutate: addTodo } = useMutationAddTodo();
       }));
       setEffectiveUserId(effectiveUserId);
     }
-  }, [user, userId]);*/
-
-  const [TaskTitle, setTaskTitle] = useState("");
-  const [TaskDescription, setTaskDescription] = useState("");
-  const [TaskImportance, toggleImportant] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   }, [userId, user, setTaskData]);
   
   
@@ -62,19 +77,6 @@ const { mutate: addTodo } = useMutationAddTodo();
       period: 'AM'
     };
   });
-
-  const handleAddTask = async () => {
-    addTodo({
-      title: TaskTitle,
-      description: TaskDescription,
-      dueDate: selectedDate,
-      dueTime: selectedTime,
-      important: TaskImportance,
-      completed: taskData.completed,
-      userId: taskData.userId
-    });
-  
-  const [showCalendar, setShowCalendar] = useState(false);
   
   const [currentMonth, setCurrentMonth] = useState(
     taskData.dueDate ? taskData.dueDate.getMonth() : new Date().getMonth()
@@ -93,12 +95,6 @@ const { mutate: addTodo } = useMutationAddTodo();
   
   const queryClient = useQueryClient();
   
-  const handleDeadlineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const deadline = e.target.value;
-    
-    setSelectedDate(deadline);
-  }
-
   // Add error state
   const [apiError, setApiError] = useState<string | null>(null);
   
@@ -401,7 +397,7 @@ const { mutate: addTodo } = useMutationAddTodo();
   };
   
   // Add function to clear deadline
-  const  clearDeadline = () => {
+  const clearDeadline = () => {
     setSelectedDate(null);
     setTaskData(prev => ({
       ...prev,
@@ -475,16 +471,16 @@ const { mutate: addTodo } = useMutationAddTodo();
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <input
             type="text"
-            value={TaskTitle}
-            onChange={(e) => setTaskTitle(e.target.value)}
+            value={taskData.title}
+            onChange={(e) => setTaskData({...taskData, title: e.target.value})}
             className="w-full p-2 text-xl font-medium placeholder-gray-400 border-none focus:outline-none"
             placeholder="Task name"
             autoFocus
           />
           
           <textarea
-            value={TaskDescription}
-            onChange={(e) => setTaskDescription(e.target.value)}
+            value={taskData.description}
+            onChange={(e) => setTaskData({...taskData, description: e.target.value})}
             className="w-full p-2 text-sm text-gray-700 border-none focus:outline-none resize-none"
             placeholder="Description"
             rows={2}
@@ -522,10 +518,10 @@ const { mutate: addTodo } = useMutationAddTodo();
             )}
             <button 
               type="button"
-              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${TaskImportance ? 'border-yellow-300 bg-yellow-50 text-yellow-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+              className={`px-3 py-1.5 text-sm border rounded-full flex items-center gap-2 ${taskData.important ? 'border-yellow-300 bg-yellow-50 text-yellow-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
               onClick={toggleImportant}
             >
-              <Star size={16} fill={TaskImportance ? "currentColor" : "none"} />
+              <Star size={16} fill={taskData.important ? "currentColor" : "none"} />
               Important
             </button>
           </div>
@@ -645,7 +641,7 @@ const { mutate: addTodo } = useMutationAddTodo();
                         !day.currentMonth && "text-gray-300",
                         isPastDate(day.day, day.currentMonth) && "text-gray-400 line-through"
                       )}
-                      onClick={() => setSelectedDate(new Date(day.day, day.currentMonth))}
+                      onClick={() => handleDayClick(day.day, day.currentMonth)}
                     >
                       {day.day}
                     </button>
