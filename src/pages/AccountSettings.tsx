@@ -8,6 +8,9 @@ import EditPasswordModal from "../components/modals/EditPasswordModal";
 import { useUser } from "@/contexts/UserContext";
 import api from "@/middleware/api";
 
+// Define a constant for the default profile picture
+const DEFAULT_PROFILE_PICTURE = "https://i.imgur.com/BLpauUN.jpeg";
+
 const AccountSettings: React.FC = () => {
   const { username, setUsername, profilePicture, setProfilePicture } = useUser();
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -34,7 +37,6 @@ const AccountSettings: React.FC = () => {
     api.get(`/user/`)
       .then((response) => {
         console.log("User settings response:", response);
-        // Don't check status here as it seems to be causing issues
         return response.data;
       })
       .then((data) => {
@@ -48,6 +50,9 @@ const AccountSettings: React.FC = () => {
         }
         if (data && data.profile_picture) {
           setProfilePicture(data.profile_picture);
+        } else {
+          // Explicitly set default profile picture if none exists
+          setProfilePicture(DEFAULT_PROFILE_PICTURE);
         }
       })
       .catch((error) => {
@@ -111,7 +116,7 @@ const AccountSettings: React.FC = () => {
     }
     
     // Set loading state
-    setIsUpdating(true); // Add this state variable if you don't have it already
+    setIsUpdating(true);
     
     api.put(`/users/update-password/`, {
       new_password: newPassword,
@@ -158,6 +163,14 @@ const AccountSettings: React.FC = () => {
       });
   };
 
+  // Handle profile picture upload success
+  const handleProfilePictureUpdate = (newProfilePicture: string) => {
+    setProfilePicture(newProfilePicture);
+    toast({ 
+      title: "Success", 
+      description: "Profile picture updated successfully" 
+    });
+  };
 
   return (
     <>
@@ -195,10 +208,10 @@ const AccountSettings: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
               <img
-                src={profilePicture || "https://i.imgur.com/BLpauUN.jpeg"}
+                src={profilePicture || DEFAULT_PROFILE_PICTURE}
                 className="w-full h-full object-cover"
                 alt="Profile"
-                onError={(e) => (e.currentTarget.src = "https://i.imgur.com/BLpauUN.jpeg")} // Fallback if image fails to load
+                onError={(e) => (e.currentTarget.src = DEFAULT_PROFILE_PICTURE)} // Fallback if image fails to load
               />
             </div>
             <button
@@ -227,7 +240,12 @@ const AccountSettings: React.FC = () => {
       </div>
   
       {/* ✅ Modals */}
-      {showUploadModal && <UploadImageModal onClose={() => setShowUploadModal(false)} onUpload={setProfilePicture} />}
+      {showUploadModal && (
+        <UploadImageModal 
+          onClose={() => setShowUploadModal(false)} 
+          onUpload={handleProfilePictureUpdate} 
+        />
+      )}
 
       {showEditUsernameModal && (
         <EditUsernameModal
@@ -237,7 +255,10 @@ const AccountSettings: React.FC = () => {
         />
       )}
       {showEditPasswordModal && (
-        <EditPasswordModal onClose={() => setShowEditPasswordModal(false)} onSave={handlePasswordUpdate} />
+        <EditPasswordModal 
+          onClose={() => setShowEditPasswordModal(false)} 
+          onSave={handlePasswordUpdate} 
+        />
       )}
       {showDeleteModal && <DeleteAccountModal onClose={() => setShowDeleteModal(false)} />}
     </>

@@ -18,10 +18,13 @@ import {
 import { Link } from 'react-router-dom';
 import { ITask } from '@/interface/interfaces'
 import { useToast } from '../../hooks/use-toast';
-import  useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos'
+import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos'
 import { fetchUserData } from '@/services/getUser/userService';
 
 const { useTodos } = useMutationTodo();
+
+// Define a constant for the default profile picture
+const DEFAULT_PROFILE_PICTURE = "https://i.imgur.com/BLpauUN.jpeg";
 
 interface SidebarProps {
   activeTab: string;
@@ -141,9 +144,18 @@ const Sidebar: React.FC<SidebarProps> = ({
             {/* Profile Picture */}
             <div className={`${collapsed ? 'w-8 h-8 mx-auto' : 'w-10 h-10'} rounded-full bg-gray-200 flex items-center justify-center text-gray-500 overflow-hidden`}>
             {userData.profilePicture ? (
-              <img src={userData.profilePicture} alt={userData.username} className="w-full h-full object-cover" />
+              <img 
+                src={userData.profilePicture} 
+                alt={userData.username} 
+                className="w-full h-full object-cover"
+                onError={(e) => (e.currentTarget.src = DEFAULT_PROFILE_PICTURE)} // Fallback if image fails to load
+              />
             ) : (
-              <img src="https://i.imgur.com/BLpauUN.jpeg" alt="Default Profile" className="w-full h-full object-cover" />
+              <img 
+                src={DEFAULT_PROFILE_PICTURE} 
+                alt="Default Profile" 
+                className="w-full h-full object-cover" 
+              />
             )}
             </div>
 
