@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchTodos, addTodo, deleteTodo, updateTodo } from "../../../services/todos/todos";
-import { IAddTaskModalProps } from "@/interface/interfaces";
+import { fetchTodos, addTodo, deleteTodo, updateTaskTitle, updateTodo } from "../../../services/todos/todos";
+import { IAddTaskModalProps, IUpdateTask } from "@/interface/interfaces";
 
 const useMutationTodo = () => {
 
@@ -48,6 +48,22 @@ const useMutationTodo = () => {
       },
     });
   };
-  return { useTodos, useMutationAddTodo, useDeleteTodo, useUpdateTodo };
+
+  const useMutationUpdateTodo = () =>{
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: async (data: IUpdateTask) => updateTaskTitle(data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["todos"]});
+      },
+      onError: () => {
+        
+      }
+      });
+    }
+
+
+  return { useTodos, useMutationAddTodo, useDeleteTodo, useUpdateTodo, useMutationUpdateTodo };
 }
+  
 export default useMutationTodo;

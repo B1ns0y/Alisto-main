@@ -1,4 +1,4 @@
-import { IAddTaskModalProps } from "@/interface/interfaces";
+import { IAddTaskModalProps, IUpdateTask } from "@/interface/interfaces";
 import api from "@/middleware/api";
 
 // Fetch all todos
@@ -41,7 +41,7 @@ export const deleteTodo = async (id: string) => {
   }
 };
 
-// Update a todo
+//Update a todo
 export const updateTodo = async (todoData: any) => {
   try {
     const { id, ...updateData } = todoData;
@@ -65,3 +65,13 @@ export const updateTodo = async (todoData: any) => {
     throw error;
   }
 };
+
+
+export const updateTaskTitle = (data: IUpdateTask) => {
+  try {
+    const response = api.put(`/todos/${data.id}/`, data);
+    return response;
+  } catch (error) {
+    console.error(error)
+  }
+}

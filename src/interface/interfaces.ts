@@ -22,7 +22,6 @@ export interface IUserProfile {
 }
 
 export interface IAddTaskModalProps {
-  isEditMode: boolean;
   id?: string;
   title: string;
   description: string;
@@ -32,3 +31,13 @@ export interface IAddTaskModalProps {
   completed?: boolean;
   userId: string; 
   };
+
+  export interface IUpdateTask {
+    id: number;
+    newTitle?: string;
+    newDescription?: string;
+    newDueDate?: Date | null;
+    newDueTime?: string;
+    completed?: boolean;
+    important?: boolean;
+  }

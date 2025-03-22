@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ITask } from '../types';
+import { ITask } from '@/interface/interfaces';
 import Sidebar from '@/components/ui/sidebar';
 import AddTaskModal from '../components/modals/AddTaskModal';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
