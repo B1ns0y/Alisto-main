@@ -21,14 +21,6 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (currentPassword.trim() === '') {
-      toast({
-        title: "Error",
-        description: "Please enter your current password",
-        variant: "destructive",
-      });
-      return;
-    }
 
     if (newPassword.trim() === '') {
       toast({

@@ -121,7 +121,7 @@ const AccountSettings: React.FC = () => {
         console.log("Password settings response:", response);
         toast({ 
           title: "Success", 
-          description: "Password updated successfully. Please log in with your new password." 
+          description: "Password updated successfully." 
         });
         
         // Close the modal
