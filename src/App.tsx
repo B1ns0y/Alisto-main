@@ -38,21 +38,17 @@ const App = () => (
             <Route path="/Privacy" element={<Privacy />} />
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
+
+            <Route element={<ProtectedRoute />}/>
+              <Dashboard />
+              <Route path="/settings" element={<Settings />} />
+            <Route />
+
             <Route path="/register" element={<Register />} />
             <Route path="/set-password" element={<SetPassword />} />
             <Route path="/set-password2" element={<SetPassword2 />} />
             <Route path="/reset-password/:uidb64/:token" element={<SetPassword3 />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/" element={<Index />} />
-            <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
             <Route path="/verify-email/:uid/:token/" element={<VerifyEmail />} />
           </Routes>

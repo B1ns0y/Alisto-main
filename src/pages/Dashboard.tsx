@@ -9,6 +9,7 @@ import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/middleware/api';
+import { useQueryUser } from '@/hooks/tanstack/getUser/useQueryUser';
 
 const Dashboard: React.FC = () => {
 
@@ -22,6 +23,9 @@ const Dashboard: React.FC = () => {
 
   const { useDeleteTodo } = useMutationTodo();
   const {mutate: deleteTaskMutation} = useDeleteTodo();
+
+  const userId = Number(localStorage.getItem("user_id"));
+  const { data: UserData } = useQueryUser(userId);
 
   useEffect(() => {
     if (data) {
@@ -106,7 +110,7 @@ const Dashboard: React.FC = () => {
     });
   };
  
-    
+
   // Add user data state
   const [userData, setUserData] = useState(() => {
     const savedUserData = localStorage.getItem('user_data');
@@ -145,38 +149,7 @@ const Dashboard: React.FC = () => {
   const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
-  
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-          navigate('/Home');
-          return;
-        }
-        
-        const response = await api.get(`/users/user/`);
-        
-        const user = {
-          username: response.data.username,
-          profilePicture: response.data.profilePicture || ''
-        };
-        
-        setUserData(user);
-        localStorage.setItem('user_data', JSON.stringify(user));
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
-        toast({
-          title: "Authentication Error",
-          description: "Failed to load user data. Please log in again.",
-          variant: "destructive",
-        });
-        navigate('/Home');
-      }
-    };
 
-    fetchUserData();
-  }, [navigate, toast]);
 
   // Calculate task statistics
   const completedTasksCount = tasks.filter(task => task.completed).length;

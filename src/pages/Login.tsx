@@ -15,19 +15,6 @@ const Login: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
-  /*useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      api
-        .get("/user/")
-        .then(() => navigate("/dashboard"))
-        .catch(() => localStorage.removeItem("access_token"));
-    }
-
-    const savedUsername = localStorage.getItem("saved_username");
-    if (savedUsername) setUsername(savedUsername);
-  }, [navigate]);*/
-
   const { useMutationLogin } = useMutationAuth();
   const { mutate: loginUser, loading } = useMutationLogin();
 
