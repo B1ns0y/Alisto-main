@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Pencil, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import UploadImageModal from "../components/settings/UploadImageModal";
 import DeleteAccountModal from "../components/settings/DeleteAccountModal";
 import EditUsernameModal from "../components/modals/EditUsernameModal";
 import EditPasswordModal from "../components/modals/EditPasswordModal";
@@ -13,7 +12,6 @@ const DEFAULT_PROFILE_PICTURE = "https://i.imgur.com/BLpauUN.jpeg";
 
 const AccountSettings: React.FC = () => {
   const { username, setUsername, profilePicture, setProfilePicture } = useUser();
-  const [showUploadModal, setShowUploadModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditUsernameModal, setShowEditUsernameModal] = useState(false);
   const [showEditPasswordModal, setShowEditPasswordModal] = useState(false);
@@ -163,15 +161,6 @@ const AccountSettings: React.FC = () => {
       });
   };
 
-  // Handle profile picture upload success
-  const handleProfilePictureUpdate = (newProfilePicture: string) => {
-    setProfilePicture(newProfilePicture);
-    toast({ 
-      title: "Success", 
-      description: "Profile picture updated successfully" 
-    });
-  };
-
   return (
     <>
       <div className="bg-white rounded-lg shadow p-6">
@@ -202,30 +191,24 @@ const AccountSettings: React.FC = () => {
             </button>
           </div>
   
-          {/* ✅ Profile Picture Section (Fixed Alignment & Delete Button) */}
+          {/* ✅ Profile Picture Section (View only - no update button) */}
           <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-              <img
-                src={profilePicture || DEFAULT_PROFILE_PICTURE}
-                className="w-full h-full object-cover"
-                alt="Profile"
-                onError={(e) => (e.currentTarget.src = DEFAULT_PROFILE_PICTURE)} // Fallback if image fails to load
-              />
+            <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+            <div className="flex items-center">
+              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                <img
+                  src={profilePicture || DEFAULT_PROFILE_PICTURE}
+                  className="w-full h-full object-cover"
+                  alt="Profile"
+                  onError={(e) => (e.currentTarget.src = DEFAULT_PROFILE_PICTURE)} // Fallback if image fails to load
+                />
+              </div>
             </div>
-            <button
-              className="px-3 py-1 text-sm font-medium text-blue-500 border border-blue-500 rounded-md hover:bg-blue-50 transition-colors"
-              onClick={() => setShowUploadModal(true)}
-            >
-              Update Photo
-            </button>
-          </div>
           </div>
         </div>
       </div>
   
-      {/* ✅ Delete Account Section Restored */}
+      {/* ✅ Delete Account Section */}
       <div className="bg-white rounded-lg shadow p-6 mt-6">
         <h2 className="text-xl font-semibold text-red-500">Delete Account</h2>
         <p className="text-sm text-gray-500 mb-4">
@@ -240,13 +223,6 @@ const AccountSettings: React.FC = () => {
       </div>
   
       {/* ✅ Modals */}
-      {showUploadModal && (
-        <UploadImageModal 
-          onClose={() => setShowUploadModal(false)} 
-          onUpload={handleProfilePictureUpdate} 
-        />
-      )}
-
       {showEditUsernameModal && (
         <EditUsernameModal
           currentUsername={username}
