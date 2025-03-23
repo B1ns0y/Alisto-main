@@ -10,9 +10,15 @@ export const loginUser = async (data: IUserLoginData) => {
   }
 }
 
-export const fetchUserData = async (data: IUserProfile) => {
+export const fetchUserData = async (username:string) => {
   try {
-    const res = await api.get(`/users/${data.username}`);
+    const res = await api.get(`/user/`);
+    console.log(res.data);
+    const data = res.data
+    const user: IUserProfile = {
+      username: data.username,
+      email: data.email,
+    }
     return res
   } catch (error) {
     throw error

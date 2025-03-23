@@ -1,7 +1,5 @@
-// UserContext.tsx
 import api from "@/middleware/api";
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
-
 
 interface UserContextType {
   username: string;
@@ -9,13 +7,13 @@ interface UserContextType {
   profilePicture: string | null;
   setProfilePicture: (url: string | null) => void;
   updateUser: (data: { username?: string; profilePicture?: string }) => Promise<void>;
-  initializeUser: (userData: any) => void; // Add this new function to the interface
+  initializeUser: (userData: any) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [username, setUsername] = useState<string>("User");
+  const [username, setUsername] = useState("User");
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   // Function to initialize user with default profile picture
@@ -81,7 +79,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       profilePicture, 
       setProfilePicture, 
       updateUser,
-      initializeUser // Add this to the context value
+      initializeUser 
     }}>
       {children}
     </UserContext.Provider>

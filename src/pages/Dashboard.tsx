@@ -6,27 +6,57 @@ import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TaskList from '../components/dashboard/TaskList';
 import { useToast } from '@/hooks/use-toast';
 import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import api from '@/middleware/api';
 import { useQueryUser } from '@/hooks/tanstack/getUser/useQueryUser';
 
 const Dashboard: React.FC = () => {
-
-  const navigate = useNavigate();
-
-  const { useTodos } = useMutationTodo();
+  const { toast } = useToast();
+  const { data: userData } = useQueryUser();
+  
+  // Todo operations with TanStack Query
+  const { useTodos, useUpdateTodo, useDeleteTodo } = useMutationTodo();
   const { data, isLoading, isError } = useTodos();
+  const { mutate: updateTaskMutation } = useUpdateTodo();
+  const { mutate: deleteTaskMutation } = useDeleteTodo();
 
-  const { useUpdateTodo } = useMutationTodo();
-  const {mutate: updateTaskMutation} = useUpdateTodo(); 
+  // Add user data state as fallback
+  const [userDataState, setUserDataState] = useState(() => {
+    const savedUserData = localStorage.getItem('user_data');
+    return savedUserData ? JSON.parse(savedUserData) : {
+      username: '',
+      profilePicture: ''
+    };
+  });
 
-  const { useDeleteTodo } = useMutationTodo();
-  const {mutate: deleteTaskMutation} = useDeleteTodo();
+  // Update local user data when query data changes
+  useEffect(() => {
+    if (userData) {
+      setUserDataState(userData);
+    }
+  }, [userData]);
 
-  const userId = Number(localStorage.getItem("user_id"));
-  const { data: UserData } = useQueryUser(userId);
+  // State management
+  const [tasks, setTasks] = useState<ITask[]>([]);
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const savedTab = localStorage.getItem('activeTab');
+    return savedTab || 'today';
+  });
+  
+  const [taskData, setTaskData] = useState<any>({
+    title: '',
+    description: '',
+    dueDate: null as Date | null,
+    dueTime: '',
+    important: false,
+    priority: 1,
+    userId: localStorage.getItem("user_id") || ''
+  });
+  
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
+  // Process todos data when it arrives
   useEffect(() => {
     if (data) {
       const formattedTasks = data.map((task: any) => {
@@ -61,6 +91,12 @@ const Dashboard: React.FC = () => {
     }
   }, [data]);
 
+  // Save active tab to localStorage
+  useEffect(() => {
+    localStorage.setItem('activeTab', activeTab);
+  }, [activeTab]);
+
+  // Delete task handler
   const deleteTask = (id: string) => {
     console.log("deleteTask called with ID:", id);
   
@@ -109,73 +145,8 @@ const Dashboard: React.FC = () => {
       }
     });
   };
- 
 
-  // Add user data state
-  const [userData, setUserData] = useState(() => {
-    const savedUserData = localStorage.getItem('user_data');
-    return savedUserData ? JSON.parse(savedUserData) : {
-      username: '',
-      profilePicture: ''
-    };
-  });
-
-  // Get tasks from localStorage 
-  const [tasks, setTasks] = useState<ITask[]>(() => {
-    const savedTasks = localStorage.getItem('tasks');
-    return savedTasks ? JSON.parse(savedTasks).map((task: any) => ({
-      ...task,
-      dueDate: task.dueDate ? new Date(task.dueDate) : null
-    })) : [];
-  });
-  
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    const savedTab = localStorage.getItem('activeTab');
-    return savedTab || 'today';
-  });
-  const { user, isAuthenticated } = useAuth();
-  const [taskData, setTaskData] = useState<any>({
-    title: '',
-    description: '',
-    dueDate: null as Date | null,
-    dueTime: '',
-    important: false,
-    priority: 1,
-    userId: user?.id || ''
-  });
-  
-  const [showTaskModal, setShowTaskModal] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [showTaskMenu, setShowTaskMenu] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const { toast } = useToast();
-
-
-  // Calculate task statistics
-  const completedTasksCount = tasks.filter(task => task.completed).length;
-  const totalTasksCount = tasks.length;
-  const uncompletedTasksCount = totalTasksCount - completedTasksCount;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayTasksCount = tasks.filter(task => {
-    if (!task.dueDate || task.completed) return false;
-    const taskDate = new Date(task.dueDate);
-    taskDate.setHours(0, 0, 0, 0);
-    return taskDate.getTime() === today.getTime();
-  }).length;
-
-  const upcomingTasksCount = tasks.filter(task => 
-    task.dueDate && new Date(task.dueDate).getTime() > Date.now() && !task.completed
-  ).length;
-  const importantTasksCount = tasks.filter(task => task.important && !task.completed).length;
-
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-    localStorage.setItem('activeTab', activeTab);
-  }, [tasks, activeTab]);
-
+  // Add/Edit task handler
   const handleAddTask = () => {
     if (taskData.title.trim() === '') return;
     
@@ -211,6 +182,7 @@ const Dashboard: React.FC = () => {
     resetTaskForm();
   };
 
+  // Reset task form
   const resetTaskForm = () => {
     setTaskData({ 
       title: '', 
@@ -219,18 +191,21 @@ const Dashboard: React.FC = () => {
       dueTime: '',
       important: false,
       priority: 1,
+      userId: localStorage.getItem("user_id") || ''
     });
     
     setIsEditMode(false);
     setShowTaskModal(false);
   };
 
+  // Open modal for adding a task
   const startAddTask = () => {
     resetTaskForm();
     setIsEditMode(false);
     setShowTaskModal(true);
   };
 
+  // Open modal for editing a task
   const startEditTask = (task: ITask) => {
     setTaskData({
       id: task.id,
@@ -239,12 +214,14 @@ const Dashboard: React.FC = () => {
       dueDate: task.dueDate || null,
       dueTime: task.dueTime || '',
       important: task.important || false,
+      userId: localStorage.getItem("user_id") || ''
     });
     setIsEditMode(true);
     setShowTaskModal(true);
     setShowTaskMenu(null);
   };
 
+  // Toggle task completion
   const toggleTaskCompletion = (id: string) => {
     const taskToUpdate = tasks.find(task => task.id === id);
     if (!taskToUpdate) return;
@@ -262,7 +239,7 @@ const Dashboard: React.FC = () => {
     console.log("Sending update data:", updateData);
   
     updateTaskMutation(updateData, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         const updatedTasks = tasks.map(task => 
           task.id === id ? { ...task, completed: !task.completed } : task
         );
@@ -292,6 +269,7 @@ const Dashboard: React.FC = () => {
     });
   };
   
+  // Toggle task importance
   const toggleTaskImportance = (id: string) => {
     const updatedTasks = tasks.map(task => 
       task.id === id ? { ...task, important: !task.important } : task
@@ -299,6 +277,25 @@ const Dashboard: React.FC = () => {
     
     setTasks(updatedTasks);
   };
+
+  // Calculate task statistics
+  const completedTasksCount = tasks.filter(task => task.completed).length;
+  const totalTasksCount = tasks.length;
+  const uncompletedTasksCount = totalTasksCount - completedTasksCount;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayTasksCount = tasks.filter(task => {
+    if (!task.dueDate || task.completed) return false;
+    const taskDate = new Date(task.dueDate);
+    taskDate.setHours(0, 0, 0, 0);
+    return taskDate.getTime() === today.getTime();
+  }).length;
+
+  const upcomingTasksCount = tasks.filter(task => 
+    task.dueDate && new Date(task.dueDate).getTime() > Date.now() && !task.completed
+  ).length;
+  const importantTasksCount = tasks.filter(task => task.important && !task.completed).length;
 
   // Filter tasks based on active tab and search query
   const getFilteredTasks = () => {
@@ -342,6 +339,16 @@ const Dashboard: React.FC = () => {
     });
   };
 
+  // Loading state
+  if (isLoading) {
+    return <div className="flex h-screen items-center justify-center">Loading tasks...</div>;
+  }
+
+  // Error state
+  if (isError) {
+    return <div className="flex h-screen items-center justify-center">Error loading tasks. Please try again.</div>;
+  }
+
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar 
@@ -354,7 +361,7 @@ const Dashboard: React.FC = () => {
         upcomingTasksCount={upcomingTasksCount}
         importantTasksCount={importantTasksCount}
         todayTasksCount={todayTasksCount}
-        userData={userData}
+        userData={userData || userDataState}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -365,16 +372,16 @@ const Dashboard: React.FC = () => {
         />
 
         <main className="flex-1 overflow-auto p-6 animate-fade-in">
-        <TaskList 
-          activeTab={activeTab}
-          filteredTasks={getFilteredTasks()}
-          showTaskMenu={showTaskMenu}
-          setShowTaskMenu={setShowTaskMenu}
-          toggleTaskCompletion={toggleTaskCompletion}
-          toggleTaskImportance={toggleTaskImportance}
-          deleteTask={deleteTask}
-          editTask={startEditTask}
-        />
+          <TaskList 
+            activeTab={activeTab}
+            filteredTasks={getFilteredTasks()}
+            showTaskMenu={showTaskMenu}
+            setShowTaskMenu={setShowTaskMenu}
+            toggleTaskCompletion={toggleTaskCompletion}
+            toggleTaskImportance={toggleTaskImportance}
+            deleteTask={deleteTask}
+            editTask={startEditTask}
+          />
         </main>
       </div>
 
@@ -385,7 +392,7 @@ const Dashboard: React.FC = () => {
           setTaskData={setTaskData}
           handleSubmit={handleAddTask}
           closeModal={resetTaskForm}
-          userId={user.id} 
+          userId={localStorage.getItem("user_id") || ''}
         />
       )}
     </div>

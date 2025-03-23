@@ -19,7 +19,9 @@ import { Link } from 'react-router-dom';
 import { ITask } from '@/interface/interfaces'
 import { useToast } from '../../hooks/use-toast';
 import useMutationTodo from '@/hooks/tanstack/todos/useQueryTodos'
-import { fetchUserData } from '@/services/getUser/userService';
+import { useQueryUser } from '@/hooks/tanstack/getUser/useQueryUser';
+import { useUser } from '@/contexts/UserContext';
+import api from '@/middleware/api';
 
 const { useTodos } = useMutationTodo();
 
@@ -58,14 +60,57 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [collapsed, setCollapsed] = useState(false);
   const [tasks, setTasks] = useState<ITask[]>([]);
   const { data, isLoading, isError } = useTodos();
+  const { username, setUsername, profilePicture, setProfilePicture } = useUser();
+  // Use the Tanstack Query hook to fetch user data
+  const { data: userQueryData } = useQueryUser();
+  useEffect(() => {
+    console.log("Fetching user settings...");
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "You are not logged in. Please log in to access your settings.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    api.get(`/user/`)
+      .then((response) => {
+        console.log("User settings response:", response);
+        return response.data;
+      })
+      .then((data) => {
+        console.log("User data:", data);
+        if (data && data.id) {
+          localStorage.setItem("user_id", data.id);
+        }
+        // Update user context with fetched data
+        if (data && data.username) {
+          setUsername(data.username);
+        }
+        if (data && data.profile_picture) {
+          setProfilePicture(data.profile_picture);
+        } else {
+          // Explicitly set default profile picture if none exists
+          setProfilePicture(DEFAULT_PROFILE_PICTURE);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching user settings:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch user settings",
+          variant: "destructive",
+        });
+      });
+  }, [setUsername, setProfilePicture, toast]);
   useEffect(() => {
     if (data) {
       setTasks(data);
     }
   }, [data]); // Runs only when `data` changes
-  
-  console.log(tasks);
-  
   
   // Handle clicking outside of dropdown
   React.useEffect(() => {
@@ -89,10 +134,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, []);
 
-  useEffect(() => {
-    console.log(userData);
-  }, [userData]
-);
   // Save collapsed state to localStorage when it changes
   useEffect(() => {
     localStorage.setItem('sidebar-collapsed', collapsed.toString());
@@ -162,7 +203,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {/* Username & Task Info */}
             {!collapsed && (
               <div className="ml-3">
-                <div className="text-sm font-medium">{userData.username}</div>
+                <div className="text-sm font-medium">{username}</div>
                 <div className="text-xs text-gray-500">{completedTasksCount}/{totalTasksCount} Tasks Done</div>
               </div>
             )}

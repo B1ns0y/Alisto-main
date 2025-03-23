@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/middleware/api';
@@ -32,14 +31,14 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
   const navigate = useNavigate();
+  
   const getAuthHeaders = () => {
     const token = localStorage.getItem('access_token');
     return { Authorization: `Bearer ${token}` };
   };
-  
   
   useEffect(() => {
     // Check auth status on app load
@@ -75,7 +74,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     navigate('/dashboard');
   };
   
-  // In src/services/auth.js or src/contexts/AuthContext.js
   const logout = (): void => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -89,13 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
   
   return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      user, 
-      login, 
-      logout,
-      getAuthHeaders 
-    }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, getAuthHeaders }}>
       {children}
     </AuthContext.Provider>
   );
