@@ -45,8 +45,6 @@ const Register: React.FC = () => {
         confirm_password: formData.confirmPassword
       };
 
-      // For debugging - remove in production
-      console.log("Sending data:", requestData);
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/register/`, {
         method: "POST",

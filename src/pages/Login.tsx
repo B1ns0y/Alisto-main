@@ -18,8 +18,12 @@ const Login: React.FC = () => {
   const { useMutationLogin } = useMutationAuth();
   const { mutate: loginUser, loading } = useMutationLogin();
 
-  const handleLogin = (data: IUserLoginData) => {
-    loginUser(data);
+  const handleLogin = async (data: IUserLoginData) => {
+    try {
+      await loginUser(data);
+    } catch (error: any) {
+      setError("Invalid credentials or the user does not exist.");
+    }
   };
 
   const handleGoogleSuccess = async (credentialResponse: any) => {

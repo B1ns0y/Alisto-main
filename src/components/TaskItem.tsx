@@ -152,22 +152,6 @@ const formatDueDate = () => {
                         left: menuButtonRef.current?.getBoundingClientRect().right - 192 + window.scrollX,
                       }}
                     >
-                      {/* <button 
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                        onClick={(e) => {
-                          e.preventDefault(); // Prevent any default action
-                          e.stopPropagation(); // Stop event propagation
-
-                          console.log("Edit", task.id); // Log click event
-
-                          deleteTask(task.id); // Call delete function
-                          setShowTaskMenu(null);
-                        }}
-                      >
-                        <Trash2 size={16} className="mr-2" />
-                        Update task
-                      </button>
-                       */}
                       <button 
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
                         onClick={(e) => {

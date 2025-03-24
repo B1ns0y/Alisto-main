@@ -38,10 +38,10 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/set-password" element={<SetPassword />} />
-            <Route path="/set-password-2" element={<SetPassword2 />} />
-            <Route path="/set-password-3" element={<SetPassword3 />} />
+            <Route path="/verify-email/${uid}/${token}" element={<VerifyEmail />} />
+            <Route path="/set-password/${uid}/${token}" element={<SetPassword />} />
+            <Route path="/set-password-2/${uid}/${token}" element={<SetPassword2 />} />
+            <Route path="/set-password-3/${uid}/${token}" element={<SetPassword3 />} />
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
