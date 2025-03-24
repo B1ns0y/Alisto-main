@@ -41,7 +41,7 @@ const App = () => (
             <Route path="/verify-email/:uid/:token" element={<VerifyEmail />} />
             <Route path="/set-password/" element={<SetPassword />} />
             <Route path="/set-password-2/" element={<SetPassword2 />} />
-            <Route path="/set-password-3/:uid/:token" element={<SetPassword3 />} />
+            <Route path="/set-password-3/:uidb64/:token" element={<SetPassword3 />} />
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
