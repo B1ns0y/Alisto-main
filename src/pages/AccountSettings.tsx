@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Pencil, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import DeleteAccountModal from "../components/settings/DeleteAccountModal";
 import EditUsernameModal from "../components/modals/EditUsernameModal";
 import EditPasswordModal from "../components/modals/EditPasswordModal";
 import { useUser } from "@/contexts/UserContext";
@@ -116,10 +115,10 @@ const AccountSettings: React.FC = () => {
     // Set loading state
     setIsUpdating(true);
     
-    api.put(`/users/update-password/`, {
+    api.put(`/users/update-password/`, console.log("Request payload:", {
       new_password: newPassword,
       confirm_password: confirmPassword
-    })
+    }))
       .then((response) => {
         console.log("Password settings response:", response);
         toast({ 
@@ -133,12 +132,10 @@ const AccountSettings: React.FC = () => {
       .catch((error) => {
         console.error("Error updating password:", error);
         let errorMessage = "Failed to update password";
-        
+        console.log("Full error response:", error.response ? error.response.data : error);
         // Try to extract specific validation errors from the response
         if (error.response && error.response.data) {
-          if (error.response.data.current_password) {
-            errorMessage = error.response.data.current_password;
-          } else if (error.response.data.new_password) {
+          if (error.response.data.new_password) {
             errorMessage = error.response.data.new_password;
           } else if (error.response.data.confirm_password) {
             errorMessage = error.response.data.confirm_password;
@@ -222,7 +219,6 @@ const AccountSettings: React.FC = () => {
           onSave={handlePasswordUpdate} 
         />
       )}
-      {showDeleteModal && <DeleteAccountModal onClose={() => setShowDeleteModal(false)} />}
     </>
   );
 }
