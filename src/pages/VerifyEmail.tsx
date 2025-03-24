@@ -17,7 +17,7 @@ import { useParams, useNavigate } from "react-router-dom";
 
     
     api
-      .get(`/users/verify-email/${uid}/${token}/`)
+      .get(`/verify-email/${uid}/${token}/`)
       .then((response) => {
         console.log("Verification response:", response.data);
         setMessage(
