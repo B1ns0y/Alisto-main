@@ -107,7 +107,7 @@ const AccountSettings: React.FC = () => {
     if (!token) {
       toast({
         title: "Authentication Error",
-        description: "You are not logged in. Please log in to update your password.",
+        description: "You are not logged in.",
         variant: "destructive",
       });
       return;
@@ -206,20 +206,6 @@ const AccountSettings: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-  
-      {/* ✅ Delete Account Section */}
-      <div className="bg-white rounded-lg shadow p-6 mt-6">
-        <h2 className="text-xl font-semibold text-red-500">Delete Account</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Once you delete your account, all of your data will be permanently removed. This action cannot be undone.
-        </p>
-        <button
-          className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors"
-          onClick={() => setShowDeleteModal(true)}
-        >
-          Delete Account
-        </button>
       </div>
   
       {/* ✅ Modals */}
