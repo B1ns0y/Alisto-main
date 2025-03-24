@@ -20,7 +20,7 @@ const SetPassword: React.FC = () => {
 
       localStorage.setItem('resetEmail', email);
       console.log('Navigating to /set-password2');
-      navigate('/set-password2');
+      navigate('/set-password2/');
     } catch (err) {
       console.error('Password reset error:', err);
       setError('Error sending reset email. Please check your server connection.');

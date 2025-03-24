@@ -10,12 +10,14 @@ import { useParams, useNavigate } from "react-router-dom";
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("UID:", uid, "Token:", token);
     if (!uid || !token) {
       setError("Invalid verification link.");
       return;
     }
 
-    
+    const url = `/users/verify-email/${uid}/${token}/`;
+    console.log("Calling API URL:", url);
     api
       .get(`/users/verify-email/${uid}/${token}/`)
       .then((response) => {
