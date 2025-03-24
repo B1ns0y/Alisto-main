@@ -39,7 +39,7 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/verify-email/:uid/:token" element={<VerifyEmail />} />
-            <Route path="/set-password/:uid/:token" element={<SetPassword />} />
+            <Route path="/set-password/" element={<SetPassword />} />
             <Route path="/set-password-2/:uid/:token" element={<SetPassword2 />} />
             <Route path="/set-password-3/:uid/:token" element={<SetPassword3 />} />
 
