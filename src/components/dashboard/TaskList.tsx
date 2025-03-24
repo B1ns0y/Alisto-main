@@ -24,6 +24,33 @@ const TaskList: React.FC<TaskListProps> = ({
   deleteTask,
   editTask
 }) => {
+  // Check if a task is overdue
+  const isTaskOverdue = (task: ITask) => {
+    if (!task.dueDate || task.completed) return false;
+    
+    const now = new Date();
+    const taskDate = new Date(task.dueDate);
+    
+    if (task.dueTime) {
+      // If there's a specific time, compare with current time
+      const [timeStr, period] = task.dueTime.split(' ');
+      let [hours, minutes] = timeStr.split(':').map(Number);
+      
+      // Convert to 24-hour format if needed
+      if (period === 'PM' && hours < 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      
+      taskDate.setHours(hours, minutes);
+      return taskDate.getTime() < now.getTime();
+    } else {
+      // If no specific time, just compare dates
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
+      taskDate.setHours(0, 0, 0, 0);
+      return taskDate.getTime() < todayDate.getTime();
+    }
+  };
+  
   // Group tasks by date for upcoming tab
   const getGroupedTasks = () => {
     if (activeTab !== 'upcoming') return null;
@@ -143,7 +170,8 @@ const TaskList: React.FC<TaskListProps> = ({
                     editTask={editTask}
                     showTaskMenu={showTaskMenu}
                     setShowTaskMenu={setShowTaskMenu}
-                    deadline={formatDeadline(task.dueDate, task.dueTime)} 
+                    deadline={formatDeadline(task.dueDate, task.dueTime)}
+                    isOverdue={isTaskOverdue(task)}
                   />
                 ))}
               </div>
@@ -162,7 +190,8 @@ const TaskList: React.FC<TaskListProps> = ({
               editTask={editTask}
               showTaskMenu={showTaskMenu}
               setShowTaskMenu={setShowTaskMenu}
-              deadline={formatDeadline(task.dueDate, task.dueTime)} 
+              deadline={formatDeadline(task.dueDate, task.dueTime)}
+              isOverdue={isTaskOverdue(task)}
             />
           ))}
         </div>

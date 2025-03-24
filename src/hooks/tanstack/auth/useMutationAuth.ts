@@ -20,14 +20,16 @@ const useMutationAuth = () => {
             onSuccess: (res) => {
                 if (res?.status === 200){
                     const data = res?.data;
+                    console.log("Sheesh", res)
+                    console.log("111111", res.data.user.id)
                     localStorage.setItem("access_token", data.access);
                     localStorage.setItem("refresh_token", data.refresh);
-                    localStorage.setItem("user_id", data.id);
-                    localStorage.setItem("user_email", data.email);
-                    localStorage.setItem("user_name", data.username);
+                    localStorage.setItem("user_id", data.user.id);
+                    localStorage.setItem("user_email", data.user.email);
+                    localStorage.setItem("user_name", data.user.username);
 
                     if (rememberMe) {
-                        localStorage.setItem("saved_username", data.username);
+                        localStorage.setItem("saved_username", data.user.username);
                       } else {
                         localStorage.removeItem("saved_username");
                       }

@@ -14,6 +14,7 @@ interface TaskItemProps {
   setShowTaskMenu: (id: string | null) => void;
   projectName?: string;
   deadline?: string;
+  isOverdue: boolean; 
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({ 
@@ -25,7 +26,8 @@ const TaskItem: React.FC<TaskItemProps> = ({
   showTaskMenu, 
   setShowTaskMenu,
   projectName,
-  deadline 
+  deadline,
+  isOverdue
 }) => {
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
 
@@ -174,51 +176,25 @@ const formatDueDate = () => {
               </div>
             </div>
           </div>
-          {deadline && (
-            <div className="text-sm text-gray-500 mt-1 flex items-center">
-              <svg 
-                className="w-4 h-4 mr-1" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
-                />
-              </svg>
-              {deadline}
-            </div>
-          )}
+         
           {task.description && (
             <p className="text-sm text-gray-500 mt-1 break-words">
               {task.description}
             </p>
           )}
-          
-          <div className="flex flex-wrap gap-2 mt-3">
-            {projectName && (
-              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">
-                 {projectName}
+          {/* Due date/time display */}
+          <div className="flex items-center mt-2 text-sm">
+            {deadline && (
+              <span className={`flex items-center ${isOverdue && !task.completed ? 'text-red-500 font-medium' : 'text-gray-500'}`}>
+                <span className="mr-1">📅</span>
+                {deadline}
+                {isOverdue && !task.completed && (
+                  <span className="ml-2 bg-red-100 text-red-500 px-2 py-0.5 rounded-full text-xs font-medium">
+                    OVERDUE
+                  </span>
+                )}
               </span>
             )}
-            
-            {(task.dueDate || task.deadline) && (
-            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">
-              <Calendar size={12} className="mr-1" />
-              {formatDueDate()}
-            </span>
-          )}
-
-          {task.dueTime && (
-            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">
-              <Clock size={12} className="mr-1" />
-              {task.dueTime}
-            </span>
-          )}
           </div>
         </div>
       </div>

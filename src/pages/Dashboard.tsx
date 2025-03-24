@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
   const { data, isLoading, isError } = useTodos();
   const { mutate: updateTaskMutation } = useUpdateTodo();
   const { mutate: deleteTaskMutation } = useDeleteTodo();
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // Add user data state as fallback
   const [userDataState, setUserDataState] = useState(() => {
     const savedUserData = localStorage.getItem('user_data');
@@ -151,6 +151,14 @@ const Dashboard: React.FC = () => {
   // Add/Edit task handler
   const handleAddTask = () => {
     if (taskData.title.trim() === '') return;
+    if (taskData.dueTime) {
+      const [hours, minutes] = taskData.dueTime.split(':').map(Number);
+      if (minutes > 59) {
+        setErrorMessage('Minutes cannot exceed 59.');
+        return;
+      }
+    }
+
     console.log(`${taskData.id}`);
     
     if (isEditMode && taskData.id) {
@@ -201,6 +209,7 @@ const Dashboard: React.FC = () => {
     
     setIsEditMode(false);
     setShowTaskModal(false);
+    setErrorMessage(null);
   };
 
   // Open modal for adding a task
@@ -303,7 +312,6 @@ const Dashboard: React.FC = () => {
   ).length;
   const importantTasksCount = tasks.filter(task => task.important && !task.completed).length;
 
-  // Filter tasks based on active tab and search query
   const getFilteredTasks = () => {
     let filtered = tasks;
     
@@ -315,36 +323,63 @@ const Dashboard: React.FC = () => {
         (task.description && task.description.toLowerCase().includes(query))
       );
     }
-    
-    // For debugging
-    console.log("Active Tab:", activeTab);
-    console.log("Tasks before filtering:", filtered);
-    
+
     // Apply tab filter
-    return filtered.filter(task => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+
+    const overdueTasks = [];
+    const upcomingTasks = [];
+
+    filtered.forEach(task => {
+      // First, check if the task is overdue
+      const isOverdue = task.dueDate && 
+                      (task.dueTime ? 
+                        (new Date(`${task.dueDate.toDateString()} ${task.dueTime}`).getTime() < now.getTime()) :
+                        (new Date(task.dueDate).getTime() < today.getTime()));
+      
+      // Assign overdue property to the task
+      const taskWithOverdueStatus = { ...task, isOverdue: isOverdue && !task.completed };
       
       const taskDate = task.dueDate ? new Date(task.dueDate) : null;
       if (taskDate) {
         taskDate.setHours(0, 0, 0, 0);
       }
-      
+
       switch (activeTab) {
         case 'today':
-          return taskDate && taskDate.getTime() === today.getTime() && !task.completed;
+          if (taskDate && taskDate.getTime() === today.getTime() && !task.completed) {
+            upcomingTasks.push(taskWithOverdueStatus);
+          }
+          break;
         case 'upcoming':
-          return taskDate && taskDate.getTime() > today.getTime() && !task.completed;
+          if (taskDate && taskDate.getTime() >= today.getTime() && !task.completed) {
+            upcomingTasks.push(taskWithOverdueStatus);
+          } else if (taskDate && taskDate.getTime() < today.getTime() && !task.completed) {
+            overdueTasks.push(taskWithOverdueStatus);
+          }
+          break;
         case 'completed':
-          return task.completed;
+          if (task.completed) {
+            upcomingTasks.push(taskWithOverdueStatus);
+          }
+          break;
         case 'important':
-          return task.important && !task.completed;
+          if (task.important && !task.completed) {
+            upcomingTasks.push(taskWithOverdueStatus);
+          }
+          break;
         default:
-          return !task.completed;
+          if (!task.completed) {
+            upcomingTasks.push(taskWithOverdueStatus);
+          }
+          break;
       }
     });
-  };
 
+    return { overdueTasks, upcomingTasks };
+  };
   // Loading state
   if (isLoading) {
     return <div className="flex h-screen items-center justify-center">Loading tasks...</div>;
@@ -369,18 +404,18 @@ const Dashboard: React.FC = () => {
         todayTasksCount={todayTasksCount}
         userData={userData || userDataState}
       />
-
+  
       <div className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader 
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           activeTab={activeTab}
         />
-
+  
         <main className="flex-1 overflow-auto p-6 animate-fade-in">
           <TaskList 
             activeTab={activeTab}
-            filteredTasks={getFilteredTasks()}
+            filteredTasks={getFilteredTasks().upcomingTasks}
             showTaskMenu={showTaskMenu}
             setShowTaskMenu={setShowTaskMenu}
             toggleTaskCompletion={toggleTaskCompletion}
@@ -388,9 +423,26 @@ const Dashboard: React.FC = () => {
             deleteTask={deleteTask}
             editTask={startEditTask}
           />
+  
+          {activeTab === 'upcoming' && getFilteredTasks().overdueTasks.length > 0 && (
+            <div>
+              <hr className="border-red-500 my-4" />
+              <h2 className="text-red-500 font-bold">Overdue</h2>
+              <TaskList 
+                activeTab={activeTab}
+                filteredTasks={getFilteredTasks().overdueTasks}
+                showTaskMenu={showTaskMenu}
+                setShowTaskMenu={setShowTaskMenu}
+                toggleTaskCompletion={toggleTaskCompletion}
+                toggleTaskImportance={toggleTaskImportance}
+                deleteTask={deleteTask}
+                editTask={startEditTask}
+              />
+            </div>
+          )}
         </main>
       </div>
-
+  
       {showTaskModal && (
         <AddTaskModal 
           isEditMode={isEditMode}
@@ -399,6 +451,7 @@ const Dashboard: React.FC = () => {
           handleSubmit={handleAddTask}
           closeModal={resetTaskForm}
           userId={localStorage.getItem("user_id") || ''}
+          errorMessage={errorMessage}
         />
       )}
     </div>

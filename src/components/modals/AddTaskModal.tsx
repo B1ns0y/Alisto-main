@@ -32,6 +32,7 @@ interface AddTaskModalProps {
   handleSubmit: () => void;
   closeModal: () => void;
   userId: string;
+  errorMessage: string | null;
 }
 
 
@@ -41,7 +42,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   setTaskData, 
   handleSubmit: parentHandleSubmit, 
   closeModal,
-  userId
+  userId,
+  errorMessage
 }) => {
   const { user, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
@@ -411,28 +413,53 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   // New handleFormSubmit that fixes the issue with the add task button
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+  
     // Validate date if present
     if (taskData.dueDate) {
       validateDate(taskData.dueDate);
       if (dateError) return;
+  
+      // Validate time if date is today
+      const today = new Date();
+      if (
+        taskData.dueDate.getFullYear() === today.getFullYear() &&
+        taskData.dueDate.getMonth() === today.getMonth() &&
+        taskData.dueDate.getDate() === today.getDate()
+      ) {
+        const currentTime = new Date();
+        const selectedTime = new Date(taskData.dueDate);
+        const [timeStr, period] = taskData.dueTime.split(' ');
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        let hour = hours;
+        if (period === 'PM' && hours < 12) {
+          hour += 12;
+        } else if (period === 'AM' && hours === 12) {
+          hour = 0;
+        }
+        selectedTime.setHours(hour, minutes, 0, 0);
+  
+        if (selectedTime < currentTime) {
+          setDateError("Task should not be overdue");
+          return;
+        }
+      }
     }
-    
+  
     setApiError(null);
-    
+  
     if (!effectiveUserId) {
       setApiError("User ID is required but not available. Please log in again.");
       return;
     }
-    
+  
     // Update the taskData with our verified userId
     const updatedTaskData = {
       ...taskData,
       userId: effectiveUserId
     };
-    
+  
     setTaskData(updatedTaskData);
-    
+  
     // Prepare task data for submission
     const newTask: ITask = {
       ...updatedTaskData,
@@ -443,10 +470,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       deadline: undefined,
       userData: {}
     };
-    
+  
     // Use mutation to submit the task
     taskMutation.mutate(newTask);
-    
+  
     // Also call the parent's handleSubmit if provided
     if (typeof parentHandleSubmit === 'function') {
       parentHandleSubmit();
@@ -526,7 +553,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
               Important
             </button>
           </div>
-          
+          {errorMessage && (
+            <div className="text-red-500 text-sm flex items-center gap-1">
+              <AlertCircle size={16} />
+              {errorMessage}
+            </div>
+          )}
           {dateError && (
             <div className="text-red-500 text-sm flex items-center gap-1">
               <AlertCircle size={16} />
