@@ -34,7 +34,12 @@ const useMutationTodo = () => {
       mutationFn: deleteTodo,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["todos"] });
+        queryClient.refetchQueries({ queryKey: ["todos"] });
       },
+      onError: () => {
+        console.log("Error deleting todo");
+        
+      }
     });
   };
 

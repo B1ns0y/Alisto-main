@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
 
   // Delete task handler
   const deleteTask = (id: string) => {
-    console.log("deleteTask called with ID:", id);
+    console.log("deleteTask called with ID:", `${id}`);
   
     if (!id) {
       toast({
@@ -124,6 +124,7 @@ const Dashboard: React.FC = () => {
   
     // Call the delete mutation
     deleteTaskMutation(id, {
+      
       onSuccess: () => {
         console.log("Task successfully deleted from backend");
   
@@ -133,9 +134,10 @@ const Dashboard: React.FC = () => {
           title: "Task deleted",
           description: `"${taskToDelete.title}" has been removed successfully.`,
         });
+
       },
       onError: (error) => {
-        console.error("Failed to delete task:", error);
+        console.error("Failed to delete task:", error, `${id}`);
         
         toast({
           title: "Deletion failed",
@@ -149,6 +151,7 @@ const Dashboard: React.FC = () => {
   // Add/Edit task handler
   const handleAddTask = () => {
     if (taskData.title.trim() === '') return;
+    console.log(`${taskData.id}`);
     
     if (isEditMode && taskData.id) {
       // Update existing task
@@ -175,8 +178,10 @@ const Dashboard: React.FC = () => {
       toast({
         title: "Task added",
         description: `"${taskData.title}" has been added to your tasks.`,
+        
       });
     }
+    
     
     // Reset form and close modal
     resetTaskForm();
@@ -243,6 +248,7 @@ const Dashboard: React.FC = () => {
         const updatedTasks = tasks.map(task => 
           task.id === id ? { ...task, completed: !task.completed } : task
         );
+        console.log(`${id}`);
         
         setTasks(updatedTasks);
         

@@ -115,10 +115,10 @@ const AccountSettings: React.FC = () => {
     // Set loading state
     setIsUpdating(true);
     
-    api.put(`/users/update-password/`, console.log("Request payload:", {
+    api.put(`/users/update-password/`, {
       new_password: newPassword,
       confirm_password: confirmPassword
-    }))
+    })
       .then((response) => {
         console.log("Password settings response:", response);
         toast({ 
@@ -132,10 +132,12 @@ const AccountSettings: React.FC = () => {
       .catch((error) => {
         console.error("Error updating password:", error);
         let errorMessage = "Failed to update password";
-        console.log("Full error response:", error.response ? error.response.data : error);
+        
         // Try to extract specific validation errors from the response
         if (error.response && error.response.data) {
-          if (error.response.data.new_password) {
+          if (error.response.data.current_password) {
+            errorMessage = error.response.data.current_password;
+          } else if (error.response.data.new_password) {
             errorMessage = error.response.data.new_password;
           } else if (error.response.data.confirm_password) {
             errorMessage = error.response.data.confirm_password;

@@ -181,7 +181,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     },
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+      queryClient.refetchQueries({ queryKey: ["todos"] });
       // Close the modal
       closeModal();
       // Navigate to dashboard
