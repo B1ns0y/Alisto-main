@@ -28,7 +28,7 @@ import { useParams, useNavigate } from "react-router-dom";
         setTimeout(() => navigate("/login"), 10000);
       })
       .catch((err) => {
-        console.error("Verification error:", err.response?.data);
+        console.error("Verification error:", err);
         setError(err.response?.data?.error || "Email verification failed.");
       });
   }, [uid, token, navigate]);
