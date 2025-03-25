@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { X, Eye, EyeOff } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { IUserProfileUpdate } from '@/interface/interfaces';
 
 interface EditPasswordModalProps {
   onClose: () => void;
-  onSave: (newPassword: string, confirmPassword: string) => void;
+  onSave: (data: IUserProfileUpdate) => void;
 }
 
 const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }) => {
-  const [newPassword, setNewPassword] = useState('');
+  const [newPassword, setNewPassword] = useState<IUserProfileUpdate>({ password: '' });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -20,7 +21,7 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
     e.preventDefault();
     
 
-    if (newPassword.trim() === '') {
+    if (newPassword.password.trim() === '') {
       toast({
         title: "Error",
         description: "Please enter a new password",
@@ -29,7 +30,7 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    if (newPassword.password !== confirmPassword) {
       toast({
         title: "Error",
         description: "Passwords do not match",
@@ -38,7 +39,7 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
       return;
     }
 
-    if (newPassword.length < 8) {
+    if (newPassword.password.length < 8) {
       toast({
         title: "Error",
         description: "Password must be at least 8 characters long",
@@ -49,8 +50,15 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
 
     setIsLoading(true);
     
-    // Call the onSave handler with all three passwords
-    onSave(newPassword, confirmPassword);
+    setTimeout(() => {
+      onSave(newPassword);
+      setIsLoading(false);
+      toast({
+        title: "Success",
+        description: "Your password has been updated",
+      });
+      onClose();
+    }, 600);
   };
 
   return (
@@ -79,8 +87,8 @@ const EditPasswordModal: React.FC<EditPasswordModalProps> = ({ onClose, onSave }
               <input
                 id="newPassword"
                 type={showNewPassword ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                value={newPassword.password}
+                onChange={(e) => setNewPassword({ ...newPassword, password: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10"
                 placeholder="Enter new password"
               />

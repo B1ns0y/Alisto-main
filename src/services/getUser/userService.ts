@@ -1,5 +1,5 @@
 import api from "@/middleware/api";
-import { IUserLoginData, IUserProfile } from "@/interface/interfaces";
+import { IUserLoginData, IUserProfile, IUserProfileUpdate } from "@/interface/interfaces";
 
 export const loginUser = async (data: IUserLoginData) => {
   try {
@@ -10,20 +10,23 @@ export const loginUser = async (data: IUserLoginData) => {
   }
 }
 
-export const fetchUserData = async (username:string) => {
+export const fetchUserData = async () => { // Removed unused username parameter
   try {
-    const res = await api.get(`/user/`);
+    const res = await api.get(`/user/`); 
     console.log(res.data);
-    const data = res.data
+
+    // Extracting and returning only relevant user data
     const user: IUserProfile = {
-      username: data.username,
-      email: data.email,
-    }
-    return res
+      username: res.data.username,
+      email: res.data.email,
+    };
+
+    return user; // ✅ Return processed user data, not entire response
   } catch (error) {
-    throw error
+    console.error("Error fetching user data:", error);
+    throw error;
   }
-}
+};
 
 export const refreshToken = async (): Promise<string> => {
   const refreshToken = localStorage.getItem('refresh_token');
@@ -50,11 +53,14 @@ export const refreshToken = async (): Promise<string> => {
 
 export const updateUser = async (data: IUserProfile) =>{
   try {
-    const response = await api.put(`/users/${data.username}/`, data);
+    const response = await api.put(`/users/update/`, data);
+    console.log(response.data);
     return response.data;
   } catch (error) {
     throw error
   }
 }
+
+
 
 

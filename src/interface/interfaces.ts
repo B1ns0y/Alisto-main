@@ -21,9 +21,17 @@ export interface IUserLoginData {
 }
 
 export interface IUserProfile {
-  username: string;
-  email: string;
+  user_id?: number;
+  user_name?: string;
+  username?: string;
+  email?: string;
   password?: string;
+}
+
+export interface IUserProfileUpdate {
+  username?: string;
+  password?: string;
+  confirmPassword?: string;
 }
 
 export interface IAddTaskModalProps {

@@ -79,6 +79,43 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       period: 'AM'
     };
   });
+
+  const handleMinuteInput = (value: string) => {
+    const minuteValue = parseInt(value);
+    
+    // If input is empty, reset to 0
+    if (isNaN(minuteValue)) {
+      setSelectedTime(prev => ({...prev, minute: 0}));
+      return;
+    }
+
+    // If input is over 59, wrap to 00
+    const processedMinute = minuteValue > 59 ? 0 : minuteValue;
+    
+    setSelectedTime(prev => ({
+      ...prev, 
+      minute: processedMinute
+    }));
+  };
+
+  const handleHourInput = (value: string) => {
+    const hourValue = parseInt(value);
+    
+    // If input is empty, reset to 10
+    if (isNaN(hourValue)) {
+      setSelectedTime(prev => ({...prev, hour: 10}));
+      return;
+    }
+
+    // Limit hour between 1 and 12
+    const processedHour = Math.max(1, Math.min(12, hourValue));
+    
+    setSelectedTime(prev => ({
+      ...prev, 
+      hour: processedHour
+    }));
+  };
+
   
   const [currentMonth, setCurrentMonth] = useState(
     taskData.dueDate ? taskData.dueDate.getMonth() : new Date().getMonth()
@@ -684,40 +721,52 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                 <div className="mt-4 flex justify-between items-center">
                   <div className="text-xs text-gray-500">Time</div>
                   <div className="flex items-center gap-2">
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center relative">
                       <button 
                         type="button"
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1 hover:bg-gray-100 rounded absolute -top-6"
                         onClick={incrementHour}
                       >
                         <ChevronUp size={14} />
                       </button>
-                      <div className="w-8 text-center font-mono">
-                        {selectedTime.hour.toString().padStart(2, '0')}
-                      </div>
+                      <input 
+                        type="number" 
+                        value={selectedTime.hour} 
+                        onChange={(e) => handleHourInput(e.target.value)}
+                        min={1} 
+                        max={12} 
+                        className="w-10 text-center font-mono border rounded px-1 py-0.5 text-sm focus:outline-blue-500"
+                        style={{ appearance: 'textfield' }}
+                      />
                       <button 
                         type="button"
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1 hover:bg-gray-100 rounded absolute -bottom-6"
                         onClick={decrementHour}
                       >
                         <ChevronDown size={14} />
                       </button>
                     </div>
-                    <div className="text-lg font-mono">:</div>
-                    <div className="flex flex-col items-center">
+                    <div className="text-lg font-mono mt-2">:</div>
+                    <div className="flex flex-col items-center relative">
                       <button 
                         type="button"
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1 hover:bg-gray-100 rounded absolute -top-6"
                         onClick={incrementMinute}
                       >
                         <ChevronUp size={14} />
                       </button>
-                      <div className="w-8 text-center font-mono">
-                        {selectedTime.minute.toString().padStart(2, '0')}
-                      </div>
+                      <input 
+                        type="number" 
+                        value={selectedTime.minute.toString().padStart(2, '0')} 
+                        onChange={(e) => handleMinuteInput(e.target.value)}
+                        min={0} 
+                        max={59} 
+                        className="w-10 text-center font-mono border rounded px-1 py-0.5 text-sm focus:outline-blue-500"
+                        style={{ appearance: 'textfield' }}
+                      />
                       <button 
                         type="button"
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1 hover:bg-gray-100 rounded absolute -bottom-6"
                         onClick={decrementMinute}
                       >
                         <ChevronDown size={14} />

@@ -1,27 +1,34 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { toast, useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { IUserProfileUpdate } from '@/interface/interfaces';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface EditUsernameModalProps {
   currentUsername: string;
   onClose: () => void;
-  onSave: (username: string) => void;
+  onSave: (data: IUserProfileUpdate) => void;
 }
+
+
 
 const EditUsernameModal: React.FC<EditUsernameModalProps> = ({ 
   currentUsername, 
   onClose, 
-  onSave 
+  onSave
+   
 }) => {
-  const [username, setUsername] = useState(currentUsername);
+  const [userProfile, setUserProfile] = useState<IUserProfileUpdate>({ username: currentUsername });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (username.trim() === '') {
+    if (userProfile.username.trim() === '') {
       toast({
         title: "Error",
         description: "Username cannot be empty",
@@ -34,13 +41,18 @@ const EditUsernameModal: React.FC<EditUsernameModalProps> = ({
     
     // Simulate API call
     setTimeout(() => {
-      onSave(username);
+      onSave(userProfile);
       setIsLoading(false);
       toast({
         title: "Success",
         description: "Your username has been updated",
       });
+      console.log(userProfile.username);
+      
       onClose();
+      // Invalidate and refetch user settings to update the displayed userna
+      queryClient.refetchQueries({queryKey: ["user"]});
+     
     }, 600);
   };
 
@@ -68,8 +80,8 @@ const EditUsernameModal: React.FC<EditUsernameModalProps> = ({
             <input
               id="username"
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={userProfile.username}
+              onChange={(e) => setUserProfile({ ...userProfile, username: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="Enter your username"
               autoFocus

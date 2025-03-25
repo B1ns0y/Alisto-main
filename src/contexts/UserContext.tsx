@@ -67,6 +67,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (data.username) setUsername(response.data.username);
       if (data.profilePicture) setProfilePicture(response.data.profile_picture || "https://i.imgur.com/BLpauUN.jpeg");
+      return response.data;
     } catch (error) {
       console.error("Error updating user:", error);
     }

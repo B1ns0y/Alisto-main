@@ -5,17 +5,26 @@ import EditUsernameModal from "../components/modals/EditUsernameModal";
 import EditPasswordModal from "../components/modals/EditPasswordModal";
 import { useUser } from "@/contexts/UserContext";
 import api from "@/middleware/api";
+import useMutationUpdateAccountSettings from "@/hooks/tanstack/getUser/useMutationUpdateAccountSettings";
+import { fetchUserData, updateUser } from "@/services/getUser/userService";
+import { IUserProfileUpdate } from "@/interface/interfaces";
+import { useQueryClient } from "@tanstack/react-query";
+import { useQueryUser } from "@/hooks/tanstack/getUser/useQueryUser";
 
 // Define a constant for the default profile picture
 const DEFAULT_PROFILE_PICTURE = "https://i.imgur.com/BLpauUN.jpeg";
 
 const AccountSettings: React.FC = () => {
   const { username, setUsername, profilePicture, setProfilePicture } = useUser();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditUsernameModal, setShowEditUsernameModal] = useState(false);
   const [showEditPasswordModal, setShowEditPasswordModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
+  
+  const { useMutationUpdateUsername, useMutationUpdatePassword } = useMutationUpdateAccountSettings();
+
+  const { mutate: updateUsername } = useMutationUpdateUsername();
+  const { mutate: updatePassword } = useMutationUpdatePassword();
 
   // 🚀 Fetch user settings on load
   useEffect(() => {
@@ -30,43 +39,13 @@ const AccountSettings: React.FC = () => {
       });
       return;
     }
-    
-    api.get(`/user/`)
-      .then((response) => {
-        console.log("User settings response:", response);
-        return response.data;
-      })
-      .then((data) => {
-        console.log("User data:", data);
-        if (data && data.id) {
-          localStorage.setItem("user_id", data.id);
-        }
-        // Update user context with fetched data
-        if (data && data.username) {
-          setUsername(data.username);
-        }
-        if (data && data.profile_picture) {
-          setProfilePicture(data.profile_picture);
-        } else {
-          // Explicitly set default profile picture if none exists
-          setProfilePicture(DEFAULT_PROFILE_PICTURE);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching user settings:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch user settings",
-          variant: "destructive",
-        });
-      });
   }, [setUsername, setProfilePicture, toast]);
 
-  // ✏️ Update username
-  const handleUsernameUpdate = (newUsername: string) => {
-    console.log("Updating username to:", newUsername);
-    const token = localStorage.getItem('access_token');
+   // ✏️ Update username
+   const handleUsernameUpdate = (data: IUserProfileUpdate) => {
+    console.log("Updating username to:", data.username);
     
+    const token = localStorage.getItem('access_token');
     if (!token) {
       toast({
         title: "Authentication Error",
@@ -75,31 +54,13 @@ const AccountSettings: React.FC = () => {
       });
       return;
     }
-    
-    api.put(`/users/update/`, {
-      username: newUsername
-    })
-      .then((response) => {
-        console.log("Username settings response:", response);
-        return response.data;
-      })
-      .then((data) => {
-        console.log("Username updated successfully:", data);
-        setUsername(newUsername);
-        toast({ title: "Success", description: "Username updated successfully" });
-      })
-      .catch((error) => {
-        console.error("Error updating username:", error);
-        toast({
-          title: "Error",
-          description: "Failed to update username",
-          variant: "destructive",
-        });
-      });
+
+    updateUsername(data);
+    setUsername(data.username);
   };
 
   // 🔒 Update password
-  const handlePasswordUpdate = (newPassword, confirmPassword) => {
+  const handlePasswordUpdate = (data: IUserProfileUpdate) => {
     console.log("Updating password...");
     const token = localStorage.getItem('access_token');
     
@@ -115,49 +76,7 @@ const AccountSettings: React.FC = () => {
     // Set loading state
     setIsUpdating(true);
     
-    api.put(`/users/update-password/`, {
-      new_password: newPassword,
-      confirm_password: confirmPassword
-    })
-      .then((response) => {
-        console.log("Password settings response:", response);
-        toast({ 
-          title: "Success", 
-          description: "Password updated successfully." 
-        });
-        
-        // Close the modal
-        setShowEditPasswordModal(false);
-      })
-      .catch((error) => {
-        console.error("Error updating password:", error);
-        let errorMessage = "Failed to update password";
-        
-        // Try to extract specific validation errors from the response
-        if (error.response && error.response.data) {
-          if (error.response.data.current_password) {
-            errorMessage = error.response.data.current_password;
-          } else if (error.response.data.new_password) {
-            errorMessage = error.response.data.new_password;
-          } else if (error.response.data.confirm_password) {
-            errorMessage = error.response.data.confirm_password;
-          } else if (error.response.data.non_field_errors) {
-            errorMessage = error.response.data.non_field_errors[0];
-          } else if (error.response.data.detail) {
-            errorMessage = error.response.data.detail;
-          }
-        }
-        
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      })
-      .finally(() => {
-        // Reset loading state
-        setIsUpdating(false);
-      });
+    updatePassword(data);
   };
 
   return (
@@ -210,15 +129,17 @@ const AccountSettings: React.FC = () => {
       {/* ✅ Modals */}
       {showEditUsernameModal && (
         <EditUsernameModal
-          currentUsername={username}
+          currentUsername={username} 
           onClose={() => setShowEditUsernameModal(false)}
           onSave={handleUsernameUpdate}
+          
         />
       )}
       {showEditPasswordModal && (
         <EditPasswordModal 
           onClose={() => setShowEditPasswordModal(false)} 
           onSave={handlePasswordUpdate} 
+
         />
       )}
     </>
