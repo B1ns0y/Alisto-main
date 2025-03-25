@@ -1,6 +1,6 @@
-import Portal from './ui/Portal'; // Ensure the file exists at this path or update the path to the correct location
+import Portal from './ui/Portal'; 
 import React from 'react';
-import { MoreHorizontal, Trash2, Star, Clock, Calendar, Edit } from 'lucide-react';
+import { MoreHorizontal, Trash2, Star } from 'lucide-react';
 import { ITask } from '../interface/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -25,7 +25,6 @@ const TaskItem: React.FC<TaskItemProps> = ({
   editTask, 
   showTaskMenu, 
   setShowTaskMenu,
-  projectName,
   deadline,
   isOverdue
 }) => {

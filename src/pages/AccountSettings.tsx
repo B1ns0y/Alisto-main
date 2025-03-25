@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Pencil, User } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EditUsernameModal from "../components/modals/EditUsernameModal";
 import EditPasswordModal from "../components/modals/EditPasswordModal";
 import { useUser } from "@/contexts/UserContext";
-import api from "@/middleware/api";
 import useMutationUpdateAccountSettings from "@/hooks/tanstack/getUser/useMutationUpdateAccountSettings";
-import { fetchUserData, updateUser } from "@/services/getUser/userService";
 import { IUserProfileUpdate } from "@/interface/interfaces";
-import { useQueryClient } from "@tanstack/react-query";
-import { useQueryUser } from "@/hooks/tanstack/getUser/useQueryUser";
+
 
 // Define a constant for the default profile picture
 const DEFAULT_PROFILE_PICTURE = "https://i.imgur.com/BLpauUN.jpeg";

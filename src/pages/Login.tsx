@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import AuthTerms from "./AuthTerms";
 import GoogleSignIn from "./GoogleSignIn";
 import api from "@/middleware/api";
 import { IUserLoginData } from "@/interface/interfaces";

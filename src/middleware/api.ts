@@ -11,7 +11,6 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-// Request Interceptor - Attach Authorization Token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");

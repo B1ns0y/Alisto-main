@@ -51,7 +51,7 @@ export const useMutationUpdateTodo = () => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
     onError: () => {
-      // Handle error
+      console.log("Error updating task title");
     },
   });
 };

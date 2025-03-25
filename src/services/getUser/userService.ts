@@ -1,5 +1,5 @@
 import api from "@/middleware/api";
-import { IUserLoginData, IUserProfile, IUserProfileUpdate } from "@/interface/interfaces";
+import { IUserLoginData, IUserProfile } from "@/interface/interfaces";
 
 export const loginUser = async (data: IUserLoginData) => {
   try {
@@ -10,18 +10,17 @@ export const loginUser = async (data: IUserLoginData) => {
   }
 }
 
-export const fetchUserData = async () => { // Removed unused username parameter
+export const fetchUserData = async () => {
   try {
     const res = await api.get(`/user/`); 
     console.log(res.data);
 
-    // Extracting and returning only relevant user data
     const user: IUserProfile = {
       username: res.data.username,
       email: res.data.email,
     };
 
-    return user; // ✅ Return processed user data, not entire response
+    return user; 
   } catch (error) {
     console.error("Error fetching user data:", error);
     throw error;

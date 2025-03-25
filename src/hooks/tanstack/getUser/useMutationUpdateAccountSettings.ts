@@ -9,14 +9,14 @@ const useMutationUpdateAccountSettings = () => {
         const queryClient = useQueryClient();
     
         return useMutation({
-            mutationFn: async (data: IUserProfileUpdate) => updateUser(data), // Ensure this returns updated user data
+            mutationFn: async (data: IUserProfileUpdate) => updateUser(data),
             onSuccess: (updatedUser) => {
                 queryClient.setQueryData(["user"], (oldData: any) => ({
                     ...oldData,
-                    username: updatedUser.username, // ✅ Ensure updated data is set
+                    username: updatedUser.username,
                 }));
     
-                queryClient.invalidateQueries({ queryKey: ["user"] }); // ✅ This will trigger a fresh fetch
+                queryClient.invalidateQueries({ queryKey: ["user"] }); 
             },
         });
     };

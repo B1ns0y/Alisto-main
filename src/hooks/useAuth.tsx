@@ -12,7 +12,7 @@ export const useAuth = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Add loading state
+  const [isLoading, setIsLoading] = useState<boolean>(true); 
   
   // Initialize user data from localStorage on hook mount
   useEffect(() => {
@@ -31,11 +31,10 @@ export const useAuth = () => {
       setUser(null);
       setIsAuthenticated(false);
     }
-    setIsLoading(false); // Set loading to false when done
+    setIsLoading(false);
   }, []);
   
   const logout = (): void => {
-    // Clear all authentication tokens
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user_id");
