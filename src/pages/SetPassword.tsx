@@ -1,32 +1,19 @@
-import api from '@/middleware/api';
+import useMutationAuth from '@/hooks/tanstack/auth/useMutationAuth';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const SetPassword: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const {useMutationResetPasswordEmail} = useMutationAuth();
+  const {mutate: resetPasswordUser} = useMutationResetPasswordEmail();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    
-    try {
-      const response = await api.post(`/password-reset/`, { email });
-      console.log('Response:', response); 
 
-      localStorage.setItem('resetEmail', email);
-      console.log('Navigating to /set-password-2');
-      navigate('/set-password-2/');
-    } catch (err) {
-      console.error('Password reset error:', err);
-      setError('Error sending reset email. Please check your server connection.');
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmit = async (email: string) => {
+    resetPasswordUser(email);
   };
 
   return (
@@ -45,7 +32,10 @@ const SetPassword: React.FC = () => {
         <div className="bg-white p-8 rounded-lg w-full text-center">
           <h1 className="text-[35px] font-semibold text-[#007AFF] mb-2">Set new password</h1>
           {error && <p className="text-red-500 mb-4">{error}</p>}
-          <form className="space-y-4" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit(email);
+          }}>
             <input
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="Email"

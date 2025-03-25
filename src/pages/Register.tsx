@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react"; 
+import useMutationAuth from "@/hooks/tanstack/auth/useMutationAuth";
 
 const Register: React.FC = () => {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     full_name: "",
     username: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    confirm_password: "",
   });
 
   const [errors, setErrors] = useState<string[]>([]);
@@ -17,6 +17,8 @@ const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false); // 
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const {useMutationRegister} = useMutationAuth();
+  const {mutate: registerUser} = useMutationRegister();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -30,66 +32,14 @@ const Register: React.FC = () => {
     setIsSubmitting(true);
     setErrors([]);
 
-    if (formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.confirm_password) {
       setErrors(["Passwords do not match."]);
       setIsSubmitting(false);
       return;
     }
 
-    try {
-      const requestData = {
-        full_name: formData.full_name,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        confirm_password: formData.confirmPassword
-      };
+  registerUser(formData);
 
-
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/register/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      const data = await response.json();
-      console.log("Response:", data);
-
-      if (!response.ok) {
-        // Handle different types of error responses
-        if (data.detail) {
-          setErrors([data.detail]);
-        } else if (data.error) {
-          setErrors([data.error]);
-        } else if (typeof data === 'object') {
-          // Extract error messages from object fields
-          const errorMessages = Object.entries(data)
-            .map(([key, value]) => {
-              if (Array.isArray(value)) return `${key}: ${value[0]}`;
-              if (typeof value === 'string') return `${key}: ${value}`;
-              return null;
-            })
-            .filter(Boolean) as string[];
-          
-          setErrors(errorMessages.length > 0 ? errorMessages : ["Registration failed."]);
-        } else {
-          setErrors(["Registration failed. Please try again."]);
-        }
-        setIsSubmitting(false);
-        return;
-      }
-
-      setBackendMessage("Registration successful!");
-      setErrors([]);
-      setTimeout(() => navigate("/login"), 1000);
-    } catch (error) {
-      console.error("Registration error:", error);
-      setErrors(["An error occurred. Please try again."]);
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   return (
@@ -161,8 +111,8 @@ const Register: React.FC = () => {
             {/* Confirm Password Field with Toggle */}
             <div className="mb-4 relative">
               <input
-                name="confirmPassword"
-                value={formData.confirmPassword}
+                name="confirm_password"
+                value={formData.confirm_password}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border-gray-300 border rounded pr-10" // Add padding for icon
                 placeholder="Confirm Password"

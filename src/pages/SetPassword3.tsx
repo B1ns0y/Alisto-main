@@ -2,49 +2,49 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import api from '@/middleware/api';
+import useMutationAuth from '@/hooks/tanstack/auth/useMutationAuth';
 
 const SetPassword3: React.FC = () => {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formData, setFormData] = useState({
+    password: "",
+    confirm_password: "",
+    uidb64: "",
+    token: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const navigate = useNavigate();
   const { uidb64, token } = useParams<{ uidb64: string; token: string }>();
+  const {useMutationResetPassword} = useMutationAuth();
+  const {mutate: resetPasswordUserConfirm} = useMutationResetPassword();
 
   useEffect(() => {
     if (!uidb64 || !token) {
       setError('Invalid password reset link.');
     }
   }, [uidb64, token]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirm_password) {
       setError('Passwords do not match.');
       return;
     }
-    if (password.length < 8) {
+    if (formData.password.length < 8) {
       setError('Password must be at least 8 characters.');
       return;
     }
     setLoading(true);
     setError('');
-    try {
-      await api.post(`/password-reset-confirm/${uidb64}/${token}/`, {
-        new_password: password,
-        confirm_password: confirmPassword,
-      });
-      setSuccess(true);
-      localStorage.removeItem('resetEmail');
-      setTimeout(() => navigate('/login'), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Error resetting password. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    resetPasswordUserConfirm(formData);
   };
 
   return (
@@ -74,8 +74,8 @@ const SetPassword3: React.FC = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Password"
                     type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={formData.password}
+                    onChange={handleChange}
                     required
                   />
                   <button
@@ -91,8 +91,8 @@ const SetPassword3: React.FC = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Confirm Password"
                     type={showConfirmPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    value={formData.confirm_password}
+                    onChange={handleChange}
                     required
                   />
                   <button

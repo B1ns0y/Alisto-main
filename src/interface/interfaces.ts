@@ -20,6 +20,14 @@ export interface IUserLoginData {
   password?: string;
 }
 
+export interface IUserRegisterData {
+  username: string;
+  email:string;
+  full_name: string;
+  password: string;
+  confirm_password: string;
+}
+
 export interface IUserProfile {
   user_id?: number;
   user_name?: string;
@@ -53,4 +61,11 @@ export interface IAddTaskModalProps {
     newDueTime?: string;
     completed?: boolean;
     important?: boolean;
+  }
+
+  export interface IUserResetPassword {
+    password: string;
+    confirm_password: string;
+    uidb64: string;
+    token: string;
   }

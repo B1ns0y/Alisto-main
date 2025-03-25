@@ -14,7 +14,6 @@ import Settings from "./pages/Settings";
 import Terms from "./pages/Terms";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Privacy from "./pages/PrivacyPolicy";
-import SetPassword2 from "./pages/SetPassword2";
 import SetPassword3 from "./pages/SetPassword3";
 import { UserProvider } from "./contexts/UserContext";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -40,7 +39,6 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/verify-email/:uid/:token" element={<VerifyEmail />} />
             <Route path="/set-password/" element={<SetPassword />} />
-            <Route path="/set-password-2/" element={<SetPassword2 />} />
             <Route path="/set-password-3/:uidb64/:token" element={<SetPassword3 />} />
 
             {/* Protected routes */}

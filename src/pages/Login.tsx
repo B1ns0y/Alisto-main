@@ -21,6 +21,7 @@ const Login: React.FC = () => {
     try {
       await loginUser(data);
     } catch (error: any) {
+      console.log("Login error:", error);
       setError("Invalid credentials or the user does not exist.");
     }
   };

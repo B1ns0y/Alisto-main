@@ -7,8 +7,6 @@ import { useUser } from "@/contexts/UserContext";
 import useMutationUpdateAccountSettings from "@/hooks/tanstack/getUser/useMutationUpdateAccountSettings";
 import { IUserProfileUpdate } from "@/interface/interfaces";
 
-
-// Define a constant for the default profile picture
 const DEFAULT_PROFILE_PICTURE = "https://i.imgur.com/BLpauUN.jpeg";
 
 const AccountSettings: React.FC = () => {
@@ -71,8 +69,7 @@ const AccountSettings: React.FC = () => {
     }
     
     // Set loading state
-    setIsUpdating(true);
-    
+    setIsUpdating(true);    
     updatePassword(data);
   };
 
